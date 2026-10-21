@@ -30,7 +30,7 @@ docs/pos-screenshots/
 .phpunit.cache/
 
 # --- dependencies ---
-vendor/
+/laravel/vendor/
 node_modules/
 
 # --- Laravel runtime ---
