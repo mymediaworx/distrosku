@@ -25,7 +25,7 @@ class RoutePlanner
         return SalesOrder::with('customer', 'shipTo')
             ->whereIn('status', [S::Confirmed, S::Picked])->where('warehouse_id', $warehouseId)
             ->where(fn ($q) => $q->whereNull('channel')->orWhereNotIn('channel', ['pos', 'van']))
-            ->where(fn ($q) => $q->whereNull('fulfillment')->orWhere('fulfillment', '!=', 'pickup')) // 0.19.4: counter pickup is never auto-scheduled
+            ->where('fulfillment', 'delivery') // 0.19.6: only sales the user chose to deliver are routed
             ->whereNotIn('id', $busy)->get()
             ->filter(fn ($so) => $ignoreDays || in_array($day, DeliveryDays::effective($so->shipTo, $so->customer), true))
             ->filter(fn ($so) => $route === null || $route === '' || strcasecmp((string) $so->shipTo?->route_name, $route) === 0)

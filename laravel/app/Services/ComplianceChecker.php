@@ -77,9 +77,10 @@ class ComplianceChecker
     public function checkOrder(SalesOrder $order, bool $withRegistry = true): array
     {
         $order->loadMissing('lines.product', 'customer', 'shipTo');
+        $loc = $order->location(); // 0.19.6: counter pickup = the selling warehouse
         $out = [];
         foreach ($order->lines as $line) {
-            $r = $this->checkLine($line->product, $order->customer, $order->shipTo, $order->order_date, $withRegistry);
+            $r = $this->checkLine($line->product, $order->customer, $loc, $order->order_date, $withRegistry);
             if ($r) {
                 $out[$line->product->sku] = $r;
             }

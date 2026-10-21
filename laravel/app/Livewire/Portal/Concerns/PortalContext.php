@@ -12,6 +12,9 @@ trait PortalContext
 {
     public ?int $shipToId = null;
 
+    /** 0.19.6: counter pickup unless the customer chooses Delivery. */
+    public string $fulfillment = 'pickup';
+
     /** @var array<int|string, string> product_id => qty */
     public array $cart = [];
 
@@ -24,6 +27,7 @@ trait PortalContext
     {
         $this->shipToId = session('portal.ship_to');
         $this->shipToId = $this->shipTo()?->id;
+        $this->fulfillment = session('portal.fulfillment') === 'delivery' ? 'delivery' : 'pickup';
         $this->cart = session($this->cartKey(), []);
     }
 
@@ -35,6 +39,24 @@ trait PortalContext
     protected function shipTo(): ?ShipTo
     {
         return app(PortalService::class)->shipToFor($this->contact(), $this->shipToId);
+    }
+
+    protected function isDelivery(): bool
+    {
+        return $this->fulfillment === 'delivery';
+    }
+
+    /** Where compliance is checked: the ship-to for delivery, else the pickup counter (main warehouse). Null = delivery with no ship-to. */
+    protected function location(): ?ShipTo
+    {
+        return $this->isDelivery() ? $this->shipTo()
+            : \App\Models\SalesOrder::pickupLocation(\App\Models\Warehouse::where('code', 'MAIN')->value('id'), $this->contact()?->customer_id);
+    }
+
+    public function updatedFulfillment(): void
+    {
+        $this->fulfillment = $this->fulfillment === 'delivery' ? 'delivery' : 'pickup';
+        session(['portal.fulfillment' => $this->fulfillment]);
     }
 
     protected function cartKey(): string

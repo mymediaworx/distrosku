@@ -1,13 +1,17 @@
 <div>
     <div class="card">
         <p class="muted">{{ $contact->customer->name }} · {{ $contact->name }}</p>
-        @if($shipTos->count() > 1)
-            <label for="st">Ship to</label>
-            <select id="st" wire:model.live="shipToId">@foreach($shipTos as $s)<option value="{{ $s->id }}">{{ $s->name }} ({{ $s->state }})</option>@endforeach</select>
-        @elseif($shipTo)
-            <p>Ship to: <strong>{{ $shipTo->name }}</strong> ({{ $shipTo->state }})</p>
-        @else
-            <p class="err">No ship-to address on file. Please contact us.</p>
+        <label for="ff">Fulfillment</label>
+        <select id="ff" wire:model.live="fulfillment" data-test="fulfillment"><option value="pickup">Counter pickup</option><option value="delivery">Delivery</option></select>
+        @if($delivery)
+            @if($shipTos->count() > 1)
+                <label for="st">Ship to</label>
+                <select id="st" wire:model.live="shipToId">@foreach($shipTos as $s)<option value="{{ $s->id }}">{{ $s->name }} ({{ $s->state }})</option>@endforeach</select>
+            @elseif($shipTo)
+                <p>Ship to: <strong>{{ $shipTo->name }}</strong> ({{ $shipTo->state }})</p>
+            @else
+                <p class="err">No ship-to address on file for delivery. Choose Counter pickup or contact us.</p>
+            @endif
         @endif
         <div class="inline" style="margin-top:.5rem">
             <input type="search" wire:model.live.debounce.400ms="q" placeholder="Search name, SKU or UPC" enterkeyhint="search">
@@ -37,7 +41,7 @@
                 <p class="price" style="text-align:right">Total ${{ number_format((float) $total, 2) }}</p>
                 <label for="n">Note / PO number (optional)</label><textarea id="n" wire:model="note" rows="2" maxlength="500"></textarea>
                 @if($blocked)<p class="err">Remove unavailable items before submitting.</p>@endif
-                <p><button type="button" wire:click="submit" @disabled($blocked || ! $shipTo) wire:loading.attr="disabled">Submit order</button></p>
+                <p><button type="button" wire:click="submit" @disabled($blocked || ! $location) wire:loading.attr="disabled">Submit order</button></p>
             @endif
         </div>
     @endif

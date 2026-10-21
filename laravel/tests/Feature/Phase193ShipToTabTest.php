@@ -96,7 +96,7 @@ class Phase193ShipToTabTest extends TestCase
         $b = ShipTo::create(['customer_id' => $this->c->id, 'name' => 'Default B', 'state' => 'KY', 'is_default' => true]);
         $this->as('owner');
         Livewire::test(\App\Filament\Resources\SalesOrderResource\Pages\CreateSalesOrder::class)
-            ->fillForm(['customer_id' => $this->c->id])->assertFormSet(['ship_to_id' => $b->id]);
+            ->fillForm(['customer_id' => $this->c->id, 'fulfillment' => 'delivery'])->assertFormSet(['ship_to_id' => $b->id]); // 0.19.6: only delivery uses a ship-to
         $m = include database_path('migrations/2026_11_14_000001_phase193_ship_to_default.php');
         $m->up();
         $this->assertTrue(Schema::hasColumn('ship_tos', 'is_default'));

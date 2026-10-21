@@ -70,7 +70,7 @@ class Phase15DeliveryTest extends TestCase
     {
         $c ??= $this->ky;
         $p = Product::where('sku', $sku)->first();
-        $so = SalesOrder::create(['number' => 'SO-T'.uniqid(), 'customer_id' => $c->id, 'ship_to_id' => $c->shipTos()->value('id'),
+        $so = SalesOrder::create(['number' => 'SO-T'.uniqid(), 'customer_id' => $c->id, 'ship_to_id' => $c->shipTos()->value('id'), 'fulfillment' => 'delivery',
             'warehouse_id' => Warehouse::where('code', $p->sku === 'TST-BEV-001' ? 'BEV' : 'MAIN')->value('id'), 'order_date' => now()->toDateString()]);
         $so->lines()->create(['product_id' => $p->id, 'qty' => $qty, 'unit_price' => $p->price]);
 

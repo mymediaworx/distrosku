@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Auth;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/** 0.19.5: POS / van / portal always show a ship-to when the customer has one. */
+/** 0.19.5: POS / van / portal always show a ship-to when the customer has one (0.19.6: when the sale is a Delivery). */
 class Phase195ShipToPickTest extends TestCase
 {
     use RefreshDatabase;
@@ -44,14 +44,14 @@ class Phase195ShipToPickTest extends TestCase
     public function test_pos_one_ship_to_is_selected(): void
     {
         $c = $this->customer('ABC Convenience Store', 1);
-        Livewire::test(CounterPos::class)->set('customerId', $c->id)
+        Livewire::test(CounterPos::class)->set('fulfillment', 'delivery')->set('customerId', $c->id)
             ->assertSet('shipToId', $c->shipTos()->value('id'))->assertSee('ABC Convenience Store store 1')->assertDontSee('No ship-to');
     }
 
     public function test_pos_no_ship_to_shows_add_link(): void
     {
         $c = $this->customer('Empty Mart', 0);
-        Livewire::test(CounterPos::class)->set('customerId', $c->id)
+        Livewire::test(CounterPos::class)->set('fulfillment', 'delivery')->set('customerId', $c->id)
             ->assertSet('shipToId', null)->assertSee('No ship-to')->assertSee('add one')->assertSee('/admin/customers/'.$c->id.'/edit');
     }
 
@@ -59,7 +59,7 @@ class Phase195ShipToPickTest extends TestCase
     {
         $c = $this->customer('Multi Mart', 3, true);
         $ids = $c->shipTos()->orderBy('id')->pluck('id');
-        $lw = Livewire::test(CounterPos::class)->set('customerId', $c->id)->assertSet('shipToId', $ids[0]);
+        $lw = Livewire::test(CounterPos::class)->set('fulfillment', 'delivery')->set('customerId', $c->id)->assertSet('shipToId', $ids[0]);
         $lw->set('shipToId', $ids[2])->assertSet('shipToId', $ids[2]);
         // a ship-to of another customer is never kept
         $other = Customer::where('code', 'CTEST-KY')->first();
@@ -72,7 +72,7 @@ class Phase195ShipToPickTest extends TestCase
         $b = $c->shipTos()->orderByDesc('id')->first();
         $b->update(['is_default' => true]);
         $other = Customer::where('code', 'CTEST-KY')->first();
-        session(['pos_cart' => ['cart' => [], 'customerId' => $c->id, 'shipToId' => $other->shipTos()->value('id')]]);
+        session(['pos_cart' => ['cart' => [], 'customerId' => $c->id, 'shipToId' => $other->shipTos()->value('id'), 'fulfillment' => 'delivery']]);
         Livewire::test(CounterPos::class)->assertSet('customerId', $c->id)->assertSet('shipToId', $b->id);
     }
 
@@ -83,7 +83,7 @@ class Phase195ShipToPickTest extends TestCase
         $many->shipTos()->orderByDesc('id')->first()->update(['is_default' => true]);
         $none = $this->customer('Van None', 0);
         $drv = User::where('role', 'driver')->first();
-        $lw = Livewire::actingAs($drv)->test(VanSale::class);
+        $lw = Livewire::actingAs($drv)->test(VanSale::class)->set('fulfillment', 'delivery'); // 0.19.6: ship-to only for delivery
         $lw->set('customerId', $one->id)->assertSet('shipToId', $one->shipTos()->value('id'))->assertSee('Van One store 1');
         $lw->set('customerId', $many->id)->assertSet('shipToId', $many->defaultShipTo()->id);
         $lw->set('customerId', $none->id)->assertSet('shipToId', null)->assertSee('No ship-to');

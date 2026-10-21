@@ -2,7 +2,7 @@
 @include('docs._head', ['docTitle' => 'DELIVERY RECEIPT', 'docSub' => $so->number])
 <table style="border:0;margin:10px 0"><tr>
     <td style="border:0;width:50%" class="box"><strong>Customer</strong><br>{{ $so->customer->name }}<br>{{ $so->customer->code }} · Terms {{ $so->customer->terms }}</td>
-    <td style="border:0;width:50%" class="box"><strong>Delivered to</strong><br>{{ $so->shipTo?->name }}<br>{{ $so->shipTo?->address }} {{ $so->shipTo?->city }} {{ $so->shipTo?->state }} {{ $so->shipTo?->zip }}</td>
+    <td style="border:0;width:50%" class="box">@if($so->isPickup())<strong>Fulfillment</strong><br>Counter pickup @else<strong>Delivered to</strong><br>{{ $so->shipTo?->name }}<br>{{ $so->shipTo?->address }} {{ $so->shipTo?->city }} {{ $so->shipTo?->state }} {{ $so->shipTo?->zip }}@endif</td>
 </tr></table>
 @foreach($so->deliveryStops as $st)
 <p>Manifest {{ $st->manifest?->number }} · stop {{ $st->sequence }} · <strong>{{ strtoupper($st->status) }}</strong>@if($st->delivered_at) · {{ $st->delivered_at->timezone(config('app.timezone'))->format('m/d/Y g:i A T') }}@endif @if($st->manifest?->driver) · driver {{ $st->manifest->driver->name }}@endif

@@ -164,7 +164,7 @@ class KyTobaccoXml
             $cm = $lines->first()->creditMemo;
             $c = $cm->customer;
             $code = in_array($c->type, ['wholesaler', 'subjobber', 'distributor'], true) ? '1B' : '1C';
-            $out[$code][] = $this->customerDoc($c, $cm->salesOrder->shipTo, $cm->memo_date->toDateString(), 'Credit Memo', $cm->number,
+            $out[$code][] = $this->customerDoc($c, $cm->salesOrder->location(), $cm->memo_date->toDateString(), 'Credit Memo', $cm->number,
                 $lines->map(fn ($l) => [$l->product, $l->qty, $l->line_total, 'KY'])->all());
         }
 
@@ -177,7 +177,7 @@ class KyTobaccoXml
             $so = $lines->first()->salesOrder;
             $c = $so->customer;
             $code = in_array($c->type, ['wholesaler', 'subjobber', 'distributor'], true) ? '2B' : '2C';
-            $out[$code][] = $this->customerDoc($c, $so->shipTo, $so->delivered_at->toDateString(), 'Invoice', $so->number,
+            $out[$code][] = $this->customerDoc($c, $so->location(), $so->delivered_at->toDateString(), 'Invoice', $so->number,
                 $lines->map(fn ($l) => [$l->product, $l->qty, $l->line_total, 'KY'])->all());
         }
         ksort($out);

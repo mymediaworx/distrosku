@@ -73,9 +73,18 @@ class PortalService
      * Submit the cart as a portal SalesOrder. Compliance is checked per line (and again by SalesOrderService::confirm).
      * Confirmed when stock allows; otherwise kept as a draft for the office to review.
      */
-    public function submit(CustomerContact $c, ShipTo $shipTo, array $cart, ?string $note = null): SalesOrder
+    public function submit(CustomerContact $c, ?ShipTo $shipTo, array $cart, ?string $note = null, string $fulfillment = 'pickup'): SalesOrder
     {
-        abort_unless((int) $shipTo->customer_id === (int) $c->customer_id && $c->allowedShipTos()->contains('id', $shipTo->id), 403);
+        // 0.19.6: counter pickup (default) needs no ship-to; delivery needs one this contact may order for.
+        $fulfillment = $fulfillment === 'delivery' ? 'delivery' : 'pickup';
+        $whId = Warehouse::where('code', 'MAIN')->value('id') ?? Warehouse::value('id');
+        if ($fulfillment === 'pickup') {
+            $shipTo = null;
+        } elseif (! $shipTo) {
+            throw new WorkflowException('Choose a ship-to for delivery, or switch to Counter pickup.');
+        }
+        abort_unless(! $shipTo || ((int) $shipTo->customer_id === (int) $c->customer_id && $c->allowedShipTos()->contains('id', $shipTo->id)), 403);
+        $loc = $shipTo ?? SalesOrder::pickupLocation($whId, $c->customer_id);
         $lines = [];
         foreach ($cart as $pid => $qty) {
             $qty = Money::s($qty);
@@ -86,7 +95,7 @@ class PortalService
             if (! $p) {
                 continue;
             }
-            if ($r = $this->reasons($p, $c, $shipTo)) {
+            if ($r = $this->reasons($p, $c, $loc)) {
                 throw new WorkflowException("{$p->sku} {$p->name}: ".implode(' ', $r));
             }
             $lines[] = [$p, $qty, $this->pricing->price($p, $c->customer, $qty)];
@@ -105,9 +114,9 @@ class PortalService
                     .CreditLimit::fmt($avail->isNegative() ? 0 : $avail).'). Please make a payment on the Pay page, reduce the order, or contact your sales rep.');
             }
         }
-        $so = DB::transaction(function () use ($c, $shipTo, $lines, $note) {
-            $so = SalesOrder::create(['customer_id' => $c->customer_id, 'ship_to_id' => $shipTo->id, 'channel' => 'portal',
-                'warehouse_id' => Warehouse::where('code', 'MAIN')->value('id') ?? Warehouse::value('id'),
+        $so = DB::transaction(function () use ($c, $shipTo, $lines, $note, $fulfillment, $whId) {
+            $so = SalesOrder::create(['customer_id' => $c->customer_id, 'ship_to_id' => $shipTo?->id, 'channel' => 'portal', 'fulfillment' => $fulfillment,
+                'warehouse_id' => $whId,
                 'order_date' => now()->toDateString(), 'notes' => trim("Portal order by {$c->name} <{$c->email}>. ".($note ?? ''))]);
             foreach ($lines as [$p, $qty, $price]) {
                 $so->lines()->create(['product_id' => $p->id, 'qty' => $qty, 'unit_price' => $price]);

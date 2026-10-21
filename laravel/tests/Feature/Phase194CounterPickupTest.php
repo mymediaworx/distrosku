@@ -58,15 +58,14 @@ class Phase194CounterPickupTest extends TestCase
         $this->assertSame('delivery', ShipTo::where('name', 'Truck stop')->value('fulfillment'));
     }
 
-    public function test_orders_follow_ship_to_unless_changed(): void
+    public function test_orders_are_pickup_unless_delivery_chosen(): void
     {
         $this->assertSame('pickup', $this->order()->fulfillment);
         $d = ShipTo::create(['customer_id' => $this->ky->id, 'name' => 'Route stop', 'state' => 'KY', 'fulfillment' => 'delivery']);
-        $this->assertSame('delivery', $this->order($d)->fulfillment);
+        $this->assertSame('pickup', $this->order($d)->fulfillment); // 0.19.6: the ship-to no longer decides
         $this->assertSame('delivery', $this->order(null, ['fulfillment' => 'delivery'])->fulfillment); // user choice kept
         $this->actingAs(User::factory()->create(['role' => 'owner', 'active' => true]));
-        Livewire::test(CreateSalesOrder::class)->fillForm(['customer_id' => $this->ky->id])->assertFormSet(['fulfillment' => 'pickup'])
-            ->fillForm(['ship_to_id' => $d->id])->assertFormSet(['fulfillment' => 'delivery']);
+        Livewire::test(CreateSalesOrder::class)->fillForm(['customer_id' => $this->ky->id])->assertFormSet(['fulfillment' => 'pickup', 'ship_to_id' => null]);
         // portal + POS
         $this->assertSame('pickup', SalesOrder::create(['customer_id' => $this->ky->id, 'ship_to_id' => $this->ky->defaultShipTo()->id, 'channel' => 'portal',
             'warehouse_id' => Warehouse::value('id'), 'order_date' => now()->toDateString()])->fulfillment);
@@ -79,15 +78,15 @@ class Phase194CounterPickupTest extends TestCase
         $this->actingAs(User::factory()->create(['role' => 'owner', 'active' => true]));
         $svc = app(SalesOrderService::class);
         $p = $svc->confirm($this->order());
-        $d = $svc->confirm($this->order(ShipTo::create(['customer_id' => $this->ky->id, 'name' => 'R', 'state' => 'KY', 'fulfillment' => 'delivery'])));
+        $d = $svc->confirm($this->order(ShipTo::create(['customer_id' => $this->ky->id, 'name' => 'R', 'state' => 'KY', 'fulfillment' => 'delivery']), ['fulfillment' => 'delivery']));
         $legacy = $svc->confirm($this->order());
-        DB::table('sales_orders')->where('id', $legacy->id)->update(['fulfillment' => null]); // pre-0.19.4 order
+        DB::table('sales_orders')->where('id', $legacy->id)->update(['fulfillment' => null]); // pre-0.19.4 order: 0.19.6 migration backfills open ones to pickup
         $m = DeliveryManifest::create(['delivery_date' => now()->toDateString(), 'warehouse_id' => $p->warehouse_id, 'status' => 'open']);
         app(RoutePlanner::class)->plan($m, null, true);
         $ids = $m->stops()->pluck('sales_order_id')->all();
         $this->assertNotContains($p->id, $ids);
         $this->assertContains($d->id, $ids);
-        $this->assertContains($legacy->id, $ids);
+        $this->assertNotContains($legacy->id, $ids);
     }
 
     public function test_regulated_pickup_still_needs_signature(): void

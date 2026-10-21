@@ -32,7 +32,7 @@
                 </tr>
                 @if($openId === $o->id)
                     <tr><td colspan="6">@foreach($o->lines as $l)<div>{{ (float) $l->qty }} × {{ $l->product?->sku }} {{ $l->product?->name }} @ ${{ number_format((float) $l->unit_price, 2) }}</div>@endforeach
-                        <span class="muted">Ship to {{ $o->shipTo?->name }}</span></td></tr>
+                        <span class="muted">{{ $o->isPickup() ? 'Counter pickup' : 'Ship to '.$o->shipTo?->name }}</span></td></tr>
                 @endif
             @empty
                 <tr><td colspan="6">No orders yet.</td></tr>

@@ -48,12 +48,12 @@ class KyCigaretteXml extends KyTobaccoXml
             $so = SalesOrder::with(['customer', 'shipTo', 'lines'])->find($soId);
             $c = $so->customer;
             $code = in_array($c->type, ['wholesaler', 'subjobber', 'distributor'], true) ? '2B' : '2C';
-            $out[$code][] = $this->customerDoc($c, $so->shipTo, $ms->first()->created_at->toDateString(), 'Invoice', $so->number,
+            $out[$code][] = $this->customerDoc($c, $so->location(), $ms->first()->created_at->toDateString(), 'Invoice', $so->number,
                 $ms->map(function ($m) use ($so) {
                     $line = $so->lines->firstWhere('product_id', $m->product_id);
                     $qty = Money::of($m->qty)->abs();
 
-                    return [$m->product, $qty, $line ? Money::mul($qty, $line->unit_price) : 0, $so->shipTo->state === 'KY' ? 'KY' : $so->shipTo->state];
+                    return [$m->product, $qty, $line ? Money::mul($qty, $line->unit_price) : 0, $so->location()->state === 'KY' ? 'KY' : $so->location()->state];
                 })->all());
         }
         $cml = CreditMemoLine::with(['product', 'creditMemo.customer', 'creditMemo.salesOrder.shipTo'])
@@ -62,7 +62,7 @@ class KyCigaretteXml extends KyTobaccoXml
         foreach ($cml->groupBy('credit_memo_id') as $lines) {
             $cm = $lines->first()->creditMemo;
             $code = in_array($cm->customer->type, ['wholesaler', 'subjobber', 'distributor'], true) ? '1B' : '1C';
-            $out[$code][] = $this->customerDoc($cm->customer, $cm->salesOrder->shipTo, $cm->memo_date->toDateString(), 'Credit Memo', $cm->number,
+            $out[$code][] = $this->customerDoc($cm->customer, $cm->salesOrder->location(), $cm->memo_date->toDateString(), 'Credit Memo', $cm->number,
                 $lines->map(fn ($l) => [$l->product, $l->qty, $l->line_total, 'KY'])->all());
         }
         ksort($out);

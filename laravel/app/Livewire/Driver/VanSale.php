@@ -30,6 +30,9 @@ class VanSale extends Component
 
     public ?int $shipToId = null;
 
+    /** 0.19.6: counter pickup unless the driver picks Delivery. */
+    public string $fulfillment = 'pickup';
+
     public string $scan = '';
 
     /** @var list<array{product_id:int, name:string, sku:string, qty:string, price:string}> */
@@ -55,9 +58,15 @@ class VanSale extends Component
             ->when(! $u->isAdmin(), fn ($q) => $q->where(fn ($w) => $w->where('van_driver_id', $u->id)->orWhereNull('van_driver_id')))->orderBy('name');
     }
 
+    public function updatedFulfillment(): void
+    {
+        $this->fulfillment = $this->fulfillment === 'delivery' ? 'delivery' : 'pickup';
+        $this->shipToId = $this->fulfillment === 'delivery' ? Customer::find($this->customerId)?->resolveShipToId($this->shipToId) : null;
+    }
+
     public function updatedCustomerId(): void
     {
-        $this->shipToId = \App\Models\Customer::find($this->customerId)?->resolveShipToId();
+        $this->shipToId = $this->fulfillment === 'delivery' ? Customer::find($this->customerId)?->resolveShipToId() : null;
         $this->reprice();
         $this->resetSignature();
     }
@@ -125,8 +134,9 @@ class VanSale extends Component
         try {
             $van = $this->vans()->whereKey($this->vanId)->firstOrFail();
             $c = Customer::findOrFail($this->customerId);
-            $st = ShipTo::where('customer_id', $c->id)->findOrFail($this->shipToId);
-            $so = $svc->sell($van, $c, $st, array_map(fn ($l) => ['product_id' => $l['product_id'], 'qty' => $l['qty']], $this->cart), $this->tender, $this->sigInput());
+            $delivery = $this->fulfillment === 'delivery';
+            $st = $delivery && $this->shipToId ? ShipTo::where('customer_id', $c->id)->find($this->shipToId) : null;
+            $so = $svc->sell($van, $c, $st, array_map(fn ($l) => ['product_id' => $l['product_id'], 'qty' => $l['qty']], $this->cart), $this->tender, $this->sigInput(), $delivery ? 'delivery' : 'pickup');
             $this->ok = "Sale {$so->number} invoiced: \$".number_format((float) $so->total, 2).($this->tender === 'account' ? ' charged to account.' : " paid by {$this->tender}.");
             $this->cart = [];
             $this->resetSignature();

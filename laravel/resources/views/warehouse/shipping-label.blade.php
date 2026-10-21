@@ -8,8 +8,8 @@
 @unless($pdf)<div class="noprint"><button onclick="window.print()">Print</button> <a href="{{ request()->fullUrlWithQuery(['format' => 'pdf']) }}">PDF (4x6)</a>@if($url) · <a href="{{ $url }}" target="_blank" rel="noopener">Track</a>@endif</div>@endunless
 <div class="lbl">
 <div class="sec sm"><strong>FROM</strong><br>{{ $company->name }}<br>{{ $so->warehouse->name }}</div>
-<div class="sec"><span class="sm"><strong>SHIP TO</strong></span><br><span class="big">{{ $so->shipTo->name ?: $so->customer->name }}</span><br>{{ $so->shipTo->address }}<br>
-<span class="big">{{ $so->shipTo->city }}, {{ $so->shipTo->state }} {{ $so->shipTo->zip }}</span>@if($so->customer->phone)<br><span class="sm">{{ $so->customer->phone }}</span>@endif</div>
+<div class="sec"><span class="sm"><strong>SHIP TO</strong></span><br><span class="big">{{ $so->location()->name ?: $so->customer->name }}</span><br>{{ $so->location()->address }}<br>
+<span class="big">{{ $so->location()->city }}, {{ $so->location()->state }} {{ $so->location()->zip }}</span>@if($so->customer->phone)<br><span class="sm">{{ $so->customer->phone }}</span>@endif</div>
 <div class="sec"><span class="big">{{ $pkg->carrier?->name ?? 'CARRIER: ________' }}</span> {{ $pkg->service }}<br>
 <span class="sm">Order {{ $so->number }} · Carton {{ $pkg->seq }} of {{ $count }}@if($pkg->weight_lb) · {{ (float) $pkg->weight_lb }} lb @endif</span></div>
 <div class="sec c">@if($pkg->tracking_number)

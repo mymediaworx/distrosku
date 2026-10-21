@@ -87,7 +87,7 @@ class KySubjobberCigaretteReport extends TaxReport
             $st = Money::of($l->qty)->multipliedBy($per);
             $licensee = in_array($cm->customer->type, ['wholesaler', 'subjobber', 'distributor'], true);
             $receipts[] = [$licensee ? '1B' : '1C', $cm->memo_date->toDateString(), 'Credit Memo', $cm->number, $cm->customer->name, $licensee ? 'Licensee' : 'Retailer',
-                $cm->customer->fein, trim(($cm->salesOrder->shipTo->address ?? '').' '.($cm->salesOrder->shipTo->city ?? '')), $cm->salesOrder->shipTo->state ?? '',
+                $cm->customer->fein, trim(($cm->salesOrder->location()->address ?? '').' '.($cm->salesOrder->location()->city ?? '')), $cm->salesOrder->location()->state ?? '',
                 $l->product->upc, $l->product->name.($l->disposition === 'damage' ? ' (damaged)' : ''), Money::s($l->qty), (string) $st->dividedBy(200, 2, RoundingMode::HALF_UP), (string) $st->toScale(0)];
             $refs['in'][] = $mk('cm', $cm, $cm->memo_date->toDateString(), $cm->customer->name, $l->product, $l->qty);
             $totIn = $totIn->plus($st);

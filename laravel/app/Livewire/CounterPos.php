@@ -38,6 +38,9 @@ class CounterPos extends Component
 
     public ?int $shipToId = null;
 
+    /** 0.19.6: every sale is counter pickup unless the cashier picks Delivery (then a ship-to is needed). */
+    public string $fulfillment = 'pickup';
+
     public ?int $warehouseId = null;
 
     public string $scan = '';
@@ -85,13 +88,14 @@ class CounterPos extends Component
     {
         $cash = Customer::where('code', 'CASH')->first() ?? Customer::first();
         $this->customerId = $cash?->id;
-        $this->shipToId = $cash?->resolveShipToId();
+        $this->shipToId = null;
         $this->warehouseId = Warehouse::where('code', 'MAIN')->value('id') ?? Warehouse::value('id');
         // 0.14.1: an in-progress sale survives the idle lock / employee switch (kept in this terminal's session).
         if ($held = session('pos_cart')) {
             $this->cart = $held['cart'] ?? [];
             $this->customerId = $held['customerId'] ?? $this->customerId;
-            $this->shipToId = Customer::find($this->customerId)?->resolveShipToId($held['shipToId'] ?? null);
+            $this->fulfillment = ($held['fulfillment'] ?? 'pickup') === 'delivery' ? 'delivery' : 'pickup';
+            $this->shipToId = $this->fulfillment === 'delivery' ? Customer::find($this->customerId)?->resolveShipToId($held['shipToId'] ?? null) : null;
             $this->tender = $held['tender'] ?? $this->tender;
             $this->notes = $held['notes'] ?? '';
             if ($this->cart) {
@@ -111,7 +115,7 @@ class CounterPos extends Component
 
     public function dehydrate(): void
     {
-        session()->put('pos_cart', ['cart' => $this->cart, 'customerId' => $this->customerId, 'shipToId' => $this->shipToId, 'tender' => $this->tender, 'notes' => $this->notes]);
+        session()->put('pos_cart', ['cart' => $this->cart, 'customerId' => $this->customerId, 'shipToId' => $this->shipToId, 'fulfillment' => $this->fulfillment, 'tender' => $this->tender, 'notes' => $this->notes]);
     }
 
     public function inc(int $i): void
@@ -157,16 +161,24 @@ class CounterPos extends Component
         return Money::of($this->tendered)->minus(Money::of($this->total))->toScale(2, RoundingMode::HALF_UP)->__toString();
     }
 
+    /** 0.19.6: Delivery prefills the customer's default ship-to; Counter pickup carries none. */
+    public function updatedFulfillment(): void
+    {
+        $this->fulfillment = $this->fulfillment === 'delivery' ? 'delivery' : 'pickup';
+        $this->shipToId = $this->fulfillment === 'delivery' ? Customer::find($this->customerId)?->resolveShipToId($this->shipToId) : null;
+        $this->recheck();
+    }
+
     public function updatedCustomerId(): void
     {
-        $this->shipToId = Customer::find($this->customerId)?->resolveShipToId();
+        $this->shipToId = $this->fulfillment === 'delivery' ? Customer::find($this->customerId)?->resolveShipToId() : null;
         $this->reprice(true);
         $this->recheck();
     }
 
     public function updatedShipToId(): void
     {
-        $this->shipToId = Customer::find($this->customerId)?->resolveShipToId($this->shipToId ?: null);
+        $this->shipToId = $this->fulfillment === 'delivery' ? Customer::find($this->customerId)?->resolveShipToId($this->shipToId ?: null) : null;
         $this->recheck();
     }
 
@@ -337,7 +349,8 @@ class CounterPos extends Component
         $this->resetSignature();
         $cash = Customer::where('code', 'CASH')->first() ?? Customer::first();
         $this->customerId = $cash?->id;
-        $this->shipToId = $cash?->resolveShipToId();
+        $this->shipToId = null;
+        $this->fulfillment = 'pickup';
     }
 
     public function getHeldSalesProperty()
@@ -365,7 +378,8 @@ class CounterPos extends Component
             return;
         }
         $this->customerId = $h->customer_id ?? $this->customerId;
-        $this->shipToId = Customer::find($this->customerId)?->resolveShipToId($h->ship_to_id);
+        $this->fulfillment = $h->ship_to_id ? 'delivery' : 'pickup'; // 0.19.6: a held sale with a ship-to was a delivery
+        $this->shipToId = $this->fulfillment === 'delivery' ? Customer::find($this->customerId)?->resolveShipToId($h->ship_to_id) : null;
         $this->tender = $h->tender ?: $this->tender;
         $this->notes = (string) $h->notes;
         $this->cart = array_map(fn ($l) => $l + ['reasons' => []], array_values(array_filter($h->cart ?? [], fn ($l) => Product::whereKey($l['product_id'] ?? 0)->where('active', true)->exists())));
@@ -452,10 +466,13 @@ class CounterPos extends Component
     public function recheck(): void
     {
         $c = Customer::find($this->customerId);
-        $s = ShipTo::find($this->shipToId);
+        // 0.19.6: counter pickup is checked at the selling warehouse; delivery at the chosen ship-to.
+        $s = $this->fulfillment === 'delivery'
+            ? ShipTo::where('customer_id', $this->customerId)->find($this->shipToId)
+            : SalesOrder::pickupLocation($this->warehouseId, $this->customerId);
         foreach ($this->cart as $i => $line) {
             $this->cart[$i]['reasons'] = ($c && $s && ($p = Product::find($line['product_id'])))
-                ? app(ComplianceChecker::class)->checkLine($p, $c, $s) : ['Pick a customer and ship-to.'];
+                ? app(ComplianceChecker::class)->checkLine($p, $c, $s) : [$c ? 'Pick a ship-to for delivery, or switch to Counter pickup.' : 'Pick a customer.'];
         }
     }
 
@@ -495,8 +512,8 @@ class CounterPos extends Component
             $so = DB::transaction(function () use ($svc) {
                 $so = SalesOrder::create([
                     'number' => SalesOrderService::nextNumber('POS', SalesOrder::class),
-                    'customer_id' => $this->customerId, 'ship_to_id' => $this->shipToId, 'warehouse_id' => $this->warehouseId,
-                    'channel' => 'pos', 'order_date' => now()->toDateString(), 'notes' => trim($this->notes) ?: null,
+                    'customer_id' => $this->customerId, 'ship_to_id' => $this->fulfillment === 'delivery' ? $this->shipToId : null, 'warehouse_id' => $this->warehouseId,
+                    'fulfillment' => $this->fulfillment === 'delivery' ? 'delivery' : 'pickup', 'channel' => 'pos', 'order_date' => now()->toDateString(), 'notes' => trim($this->notes) ?: null,
                 ]);
                 foreach ($this->cart as $l) {
                     $so->lines()->create(['product_id' => $l['product_id'], 'qty' => Money::s($l['qty']), 'unit_price' => Money::s($l['price'])]);

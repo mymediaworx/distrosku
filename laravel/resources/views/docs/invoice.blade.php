@@ -2,7 +2,7 @@
 @include('docs._head', ['docTitle' => 'INVOICE', 'docSub' => $so->number])
 <table style="border:0;margin:10px 0"><tr>
     <td style="border:0;width:50%" class="box"><strong>Bill to</strong><br>{{ $so->customer->name }}<br>{{ $so->customer->code }}</td>
-    <td style="border:0;width:50%" class="box"><strong>Ship to</strong><br>{{ $so->shipTo?->name }}<br>{{ $so->shipTo?->address }} {{ $so->shipTo?->city }} {{ $so->shipTo?->state }} {{ $so->shipTo?->zip }}</td>
+    <td style="border:0;width:50%" class="box">@if($so->isPickup())<strong>Fulfillment</strong><br>Counter pickup @else<strong>Ship to</strong><br>{{ $so->shipTo?->name }}<br>{{ $so->shipTo?->address }} {{ $so->shipTo?->city }} {{ $so->shipTo?->state }} {{ $so->shipTo?->zip }}@endif</td>
 </tr></table>
 <p>Invoice date: {{ ($so->invoiced_at ?? $so->order_date)?->format('m/d/Y') }} · Order date: {{ $so->order_date?->format('m/d/Y') }} · Terms: {{ $so->customer->terms }}</p>
 <table>

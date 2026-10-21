@@ -200,12 +200,10 @@ class Eligibility
     {
         $so->loadMissing('lines.product', 'shipTo');
         $out = ['block' => [], 'warn' => []];
-        if (! $so->shipTo) {
-            return $out;
-        }
+        $loc = $so->location(); // 0.19.6: counter pickup = the selling warehouse
         foreach ($so->lines as $l) {
             foreach (self::orderDates($so) as $d) {
-                $e = $this->evaluate($l->product, $so->shipTo, $d);
+                $e = $this->evaluate($l->product, $loc, $d);
                 foreach (['block', 'warn'] as $k) {
                     if ($e[$k]) {
                         $out[$k][$l->product->sku] = array_values(array_unique(array_merge($out[$k][$l->product->sku] ?? [], $e[$k])));

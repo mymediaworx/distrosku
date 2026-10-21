@@ -1,7 +1,17 @@
-# Vega ERP — Phase 19.5 UPGRADE (existing install at vegatest1.distrosku.com)
+# Vega ERP — Phase 19.6 UPGRADE (existing install at vegatest1.distrosku.com)
 
 For a site already installed from `vega-erp-phase1.zip` and upgraded through phase 3 (a phase-2 site can also take this zip: seeders are cumulative). TEST data only. No secrets in this package.
 This zip contains **no `laravel/.env` and no `laravel/storage/`**, so extracting it over the live site keeps both.
+
+## What's new in 0.19.6 (includes everything through 0.19.5)
+
+- **Every sale is Counter pickup unless you choose Delivery.** Fulfillment is now chosen on the sale (POS, van sale, portal, office sales orders), not taken from the ship-to.
+  - Counter pickup needs **no ship-to**: no ship-to field, no "No ship-to" warning. Customers with no ship-to on file (e.g. a new account) can buy at the counter.
+  - Choosing **Delivery** shows the ship-to picker, prefilled with the customer's default ship-to; a delivery cannot be saved without one.
+  - Only **Delivery** orders are put on delivery routes / the driver app.
+  - Invoices, pick lists, packing lists and delivery receipts print **Counter pickup** for pickup sales.
+  - Compliance for a pickup sale is checked against the customer's default ship-to when they have one (same as before), otherwise against the selling warehouse.
+- **Migration** (re-runnable): order ship-to becomes optional; orders without a fulfillment are set: open ones to Counter pickup (unless already on a delivery stop), closed POS sales to Counter pickup, other closed orders to Delivery. Ship-tos already on orders are kept. Logged as `order_fulfillment_migrated`.
 
 ## What's new in 0.19.5 (includes everything through 0.19.4)
 

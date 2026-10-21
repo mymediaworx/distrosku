@@ -195,7 +195,7 @@ class PortalTest extends TestCase
         $k = $this->contact('CTEST-KY', ['ship_to_id' => $second->id]);
         $this->portal($k);
         $p = Product::where('sku', 'TST-GEN-001')->first();
-        $lw = Livewire::test(Catalog::class)->assertSee('Second store')->assertDontSee('Main store')
+        $lw = Livewire::test(Catalog::class)->set('fulfillment', 'delivery')->assertSee('Second store')->assertDontSee('Main store')
             ->call('add', $p->id)->call('add', $p->id)->set('showCart', true)->assertSee('Submit order')
             ->call('setQty', $p->id, 3)->set('note', 'PO 778')->call('submit')->assertRedirect(route('portal.orders'));
         $so = SalesOrder::where('channel', 'portal')->firstOrFail();
@@ -208,7 +208,7 @@ class PortalTest extends TestCase
 
         // tampering: a ship-to outside the restriction is refused
         $this->expectException(HttpException::class);
-        app(PortalService::class)->submit($k, $ky->shipTos()->where('name', 'Main store')->first(), [$p->id => 1]);
+        app(PortalService::class)->submit($k, $ky->shipTos()->where('name', 'Main store')->first(), [$p->id => 1], null, 'delivery');
     }
 
     public function test_compliance_blocked_cart_cannot_submit_and_reorder_skips_blocked(): void

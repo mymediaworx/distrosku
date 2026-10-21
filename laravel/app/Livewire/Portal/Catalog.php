@@ -39,7 +39,12 @@ class Catalog extends Component
     {
         $this->reset('message', 'error');
         $p = Product::find($productId);
-        if (! $p || ($r = app(PortalService::class)->reasons($p, $this->contact(), $this->shipTo()))) {
+        if (! $this->location()) {
+            $this->error = 'Choose a ship-to for delivery, or switch to Counter pickup.';
+
+            return;
+        }
+        if (! $p || ($r = app(PortalService::class)->reasons($p, $this->contact(), $this->location() ?? $this->shipTo()))) {
             $this->error = 'Not available: '.implode(' ', $r ?? ['unknown item']);
 
             return;
@@ -71,7 +76,7 @@ class Catalog extends Component
         $this->reset('message', 'error');
         $this->validate(['note' => 'nullable|string|max:500']);
         try {
-            $so = app(PortalService::class)->submit($this->contact(), $this->shipTo(), $this->cart, $this->note);
+            $so = app(PortalService::class)->submit($this->contact(), $this->isDelivery() ? $this->shipTo() : null, $this->cart, $this->note, $this->fulfillment);
         } catch (WorkflowException $e) {
             $this->error = $e->getMessage();
 
@@ -88,7 +93,7 @@ class Catalog extends Component
     public function render()
     {
         $c = $this->contact();
-        $s = $this->shipTo();
+        $s = $this->location();
         $svc = app(PortalService::class);
         $pricing = app(PortalPricing::class);
         $lines = [];
@@ -98,12 +103,12 @@ class Catalog extends Component
                 $price = $pricing->price($p, $c->customer);
                 $lt = Money::mul($qty, $price);
                 $total = Money::add($total, $lt);
-                $lines[] = ['p' => $p, 'qty' => $qty, 'price' => $price, 'total' => $lt, 'reasons' => $s ? $svc->reasons($p, $c, $s) : ['No ship-to address on file.']];
+                $lines[] = ['p' => $p, 'qty' => $qty, 'price' => $price, 'total' => $lt, 'reasons' => $s ? $svc->reasons($p, $c, $s) : ['No ship-to address on file for delivery. Switch to Counter pickup or contact us.']];
             }
         }
 
         return view('livewire.portal.catalog', [
-            'contact' => $c, 'shipTos' => $c->allowedShipTos(), 'shipTo' => $s,
+            'contact' => $c, 'shipTos' => $c->allowedShipTos(), 'shipTo' => $this->shipTo(), 'location' => $s, 'delivery' => $this->isDelivery(),
             'rows' => $s ? $svc->catalog($c, $s, $this->q, $this->departmentId) : collect(),
             'departments' => Department::where('active', true)->orderBy('name')->get(),
             'lines' => $lines, 'total' => $total, 'blocked' => collect($lines)->contains(fn ($l) => $l['reasons']),

@@ -25,12 +25,20 @@ class VanSaleService
     /**
      * @param  list<array{product_id:int, qty:mixed, price?:mixed}>  $lines  price omitted = engine price
      */
-    public function sell(Warehouse $van, Customer $c, ShipTo $st, array $lines, string $tender, ?array $signature = null): SalesOrder
+    public function sell(Warehouse $van, Customer $c, ?ShipTo $st, array $lines, string $tender, ?array $signature = null, string $fulfillment = SalesOrder::PICKUP): SalesOrder
     {
+        // 0.19.6: counter pickup (the default) needs no ship-to; delivery needs one of this customer's ship-tos.
+        $fulfillment = $fulfillment === SalesOrder::DELIVERY ? SalesOrder::DELIVERY : SalesOrder::PICKUP;
+        if ($fulfillment === SalesOrder::PICKUP) {
+            $st = null;
+        } elseif (! $st) {
+            throw new WorkflowException('Choose a ship-to for a delivery (or switch the sale to Counter pickup).');
+        }
+        $loc = $st ?? SalesOrder::pickupLocation($van->id, $c->id);
         if (! $van->is_van) {
             throw new WorkflowException("{$van->name} is not a van/truck warehouse.");
         }
-        if ($st->customer_id !== $c->id) {
+        if ($st && (int) $st->customer_id !== (int) $c->id) {
             throw new WorkflowException('Ship-to does not belong to the customer.');
         }
         if (! in_array($tender, ['cash', 'check', 'account'], true)) {
@@ -45,17 +53,17 @@ class VanSaleService
         }
         $products = Product::whereIn('id', array_column($lines, 'product_id'))->get()->keyBy('id');
         foreach ($products as $p) {
-            if ($r = app(ComplianceChecker::class)->checkLine($p, $c, $st)) {
-                \App\Audit\Audit::durable('van_sale_blocked', $p, "Van sale blocked: {$p->sku} to {$c->name} ({$st->state})",
-                    ['channel' => 'van', 'van_id' => $van->id, 'customer_id' => $c->id, 'ship_to_id' => $st->id, 'sku' => $p->sku, 'reasons' => $r]);
+            if ($r = app(ComplianceChecker::class)->checkLine($p, $c, $loc)) {
+                \App\Audit\Audit::durable('van_sale_blocked', $p, "Van sale blocked: {$p->sku} to {$c->name} ({$loc->state})",
+                    ['channel' => 'van', 'van_id' => $van->id, 'customer_id' => $c->id, 'ship_to_id' => $st?->id, 'sku' => $p->sku, 'reasons' => $r]);
                 throw new WorkflowException("{$p->name}: ".implode(' ', $r));
             }
         }
 
-        return DB::transaction(function () use ($van, $c, $st, $lines, $tender, $signature, $products) {
+        return DB::transaction(function () use ($van, $c, $st, $lines, $tender, $signature, $products, $fulfillment) {
             $so = SalesOrder::create([
                 'number' => SalesOrderService::nextNumber('VAN', SalesOrder::class),
-                'customer_id' => $c->id, 'ship_to_id' => $st->id, 'warehouse_id' => $van->id,
+                'customer_id' => $c->id, 'ship_to_id' => $st?->id, 'warehouse_id' => $van->id, 'fulfillment' => $fulfillment,
                 'channel' => 'van', 'order_date' => now()->toDateString(),
             ]);
             foreach ($lines as $l) {

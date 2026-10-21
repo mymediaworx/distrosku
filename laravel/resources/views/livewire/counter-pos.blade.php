@@ -47,12 +47,16 @@
                 <div><label>Customer</label>
                     <select wire:model.live="customerId">@foreach($customers as $c)<option value="{{ $c->id }}">{{ $c->name }}</option>@endforeach</select>
                     @if(! is_null($this->customerBalance))<small data-test="customer-balance">Account balance: {{ number_format((float) $this->customerBalance, 2) }}{{ (float) $this->customerBalance < 0 ? ' (credit)' : '' }}</small>@endif</div>
+                <div><label>Fulfillment</label>
+                    <select wire:model.live="fulfillment" data-test="fulfillment"><option value="pickup">Counter pickup</option><option value="delivery">Delivery</option></select></div>
+                @if($fulfillment === 'delivery')
                 <div><label>Ship-to</label>
                     @if($shipTos->isEmpty())
-                        <p class="warn" data-test="no-ship-to">No ship-to: @if($addShipToUrl)<a href="{{ $addShipToUrl }}" target="_blank" rel="noopener">add one</a>@else add one on the customer page @endif</p>
+                        <p class="warn" data-test="no-ship-to">No ship-to for delivery: @if($addShipToUrl)<a href="{{ $addShipToUrl }}" target="_blank" rel="noopener">add one</a>@else add one on the customer page @endif, or switch to Counter pickup.</p>
                     @else
                         <select wire:model.live="shipToId" data-test="ship-to">@foreach($shipTos as $s)<option value="{{ $s->id }}" wire:key="st-{{ $customerId }}-{{ $s->id }}">{{ $s->name }}{{ $s->is_default ? ' (default)' : '' }} - {{ $s->city ? $s->city.', ' : '' }}{{ $s->state }}</option>@endforeach</select>
                     @endif</div>
+                @endif
                 <div><label>Warehouse</label>
                     <select wire:model="warehouseId">@foreach($warehouses as $w)<option value="{{ $w->id }}">{{ $w->name }}</option>@endforeach</select></div>
             </div>

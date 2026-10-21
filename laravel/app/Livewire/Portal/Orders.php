@@ -29,7 +29,7 @@ class Orders extends Component
     public function reorder(int $id)
     {
         $so = SalesOrder::where('customer_id', $this->contact()->customer_id)->find($id) ?? abort(404);
-        [$this->cart, $this->skipped] = app(PortalService::class)->reorder($this->contact(), $so, $this->shipTo(), $this->cart);
+        [$this->cart, $this->skipped] = app(PortalService::class)->reorder($this->contact(), $so, $this->location() ?? $this->shipTo(), $this->cart);
         $this->saveCart();
         if ($this->skipped) {
             return null;
