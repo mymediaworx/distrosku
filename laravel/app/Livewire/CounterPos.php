@@ -5,7 +5,11 @@ namespace App\Livewire;
 use App\Delivery\SignatureService;
 use App\Http\Middleware\PosAccess;
 use App\Livewire\Concerns\SignaturePad;
+use App\Audit\Audit;
+use App\Credit\CreditLimit;
 use App\Models\Customer;
+use App\Models\Inventory;
+use App\Models\PosHeldSale;
 use App\Models\Product;
 use App\Models\SalesOrder;
 use App\Models\ShipTo;
@@ -50,6 +54,33 @@ class CounterPos extends Component
 
     public ?string $error = null;
 
+    /** 0.19.3 */
+    public string $notes = '';
+
+    public bool $browsing = false;
+
+    public string $browseFilter = '';
+
+    public ?string $browseCategory = null;
+
+    public ?string $browseBrand = null;
+
+    public ?int $pickProductId = null;
+
+    public string $pickQty = '1';
+
+    /** The first digit typed replaces the starting 1. */
+    public bool $pickFresh = true;
+
+    public bool $holding = false;
+
+    public string $holdLabel = '';
+
+    public bool $recalling = false;
+
+    /** @var list<string> warnings shown after a recall (price changes, stock, credit) */
+    public array $recallNotes = [];
+
     public function mount(): void
     {
         $cash = Customer::where('code', 'CASH')->first() ?? Customer::first();
@@ -62,6 +93,7 @@ class CounterPos extends Component
             $this->customerId = $held['customerId'] ?? $this->customerId;
             $this->shipToId = $held['shipToId'] ?? $this->shipToId;
             $this->tender = $held['tender'] ?? $this->tender;
+            $this->notes = $held['notes'] ?? '';
             if ($this->cart) {
                 $this->reprice();
                 $this->recheck();
@@ -79,7 +111,7 @@ class CounterPos extends Component
 
     public function dehydrate(): void
     {
-        session()->put('pos_cart', ['cart' => $this->cart, 'customerId' => $this->customerId, 'shipToId' => $this->shipToId, 'tender' => $this->tender]);
+        session()->put('pos_cart', ['cart' => $this->cart, 'customerId' => $this->customerId, 'shipToId' => $this->shipToId, 'tender' => $this->tender, 'notes' => $this->notes]);
     }
 
     public function inc(int $i): void
@@ -127,7 +159,7 @@ class CounterPos extends Component
 
     public function updatedCustomerId(): void
     {
-        $this->shipToId = ShipTo::where('customer_id', $this->customerId)->value('id');
+        $this->shipToId = Customer::find($this->customerId)?->defaultShipTo()?->id;
         $this->reprice(true);
         $this->recheck();
     }
@@ -151,20 +183,233 @@ class CounterPos extends Component
 
             return;
         }
+        $this->addProduct($p, '1');
+        $this->scan = '';
+    }
+
+    /** Shared by scan/search and Browse: same pricing and eligibility checks. */
+    private function addProduct(Product $p, string $qty): void
+    {
         foreach ($this->cart as $i => $line) {
             if ($line['product_id'] === $p->id) {
-                $this->cart[$i]['qty'] = self::q(Money::add($line['qty'], 1));
-                $this->scan = '';
+                $this->cart[$i]['qty'] = self::q(Money::add($line['qty'], $qty));
                 $this->reprice();
                 $this->recheck();
 
                 return;
             }
         }
-        $q = $this->quote($p, '1');
-        $this->cart[] = ['product_id' => $p->id, 'sku' => $p->sku, 'name' => $p->name, 'qty' => '1', 'price' => $q->price, 'quoted' => $q->price, 'source' => $q->source, 'reasons' => []];
-        $this->scan = '';
+        $q = $this->quote($p, $qty);
+        $this->cart[] = ['product_id' => $p->id, 'sku' => $p->sku, 'name' => $p->name, 'qty' => self::q($qty), 'price' => $q->price, 'quoted' => $q->price, 'source' => $q->source, 'reasons' => []];
         $this->recheck();
+    }
+
+    // ---- 0.19.3 Browse catalog -------------------------------------------------
+
+    public function openBrowse(): void
+    {
+        $this->browsing = true;
+        $this->pickProductId = null;
+    }
+
+    public function closeBrowse(): void
+    {
+        $this->browsing = false;
+        $this->pickProductId = null;
+    }
+
+    public function browseBy(?string $category = null, ?string $brand = null): void
+    {
+        $this->browseCategory = $category;
+        $this->browseBrand = $brand;
+    }
+
+    public function pick(int $id): void
+    {
+        $this->pickProductId = $id;
+        $this->pickQty = '1';
+        $this->pickFresh = true;
+    }
+
+    public function pickKey(string $k): void
+    {
+        if ($this->pickFresh && ctype_digit($k)) {
+            $this->pickQty = '';
+        }
+        $this->pickFresh = false;
+        if ($k === 'back') {
+            $this->pickQty = substr($this->pickQty, 0, -1);
+        } elseif ($k === 'clear') {
+            $this->pickQty = '';
+        } elseif (ctype_digit($k) && strlen($this->pickQty) < 5) {
+            $this->pickQty = ltrim($this->pickQty.$k, '0') ?: '0';
+        }
+    }
+
+    public function addPicked(): void
+    {
+        $this->reset('message', 'error');
+        $p = $this->pickProductId ? $this->catalogQuery()->whereKey($this->pickProductId)->first() : null;
+        $qty = (int) $this->pickQty;
+        if (! $p || $qty < 1) {
+            $this->error = $p ? 'Enter a quantity of 1 or more.' : 'Product not available.';
+
+            return;
+        }
+        $this->addProduct($p, (string) $qty);
+        $this->pickProductId = null;
+        $this->message = "Added {$qty} × {$p->name}.";
+    }
+
+    private function catalogQuery()
+    {
+        return Product::where('active', true)->notArchived();
+    }
+
+    /** Tiles for the browser: name, unit, price for the selected customer, stock in this warehouse. */
+    public function getBrowseTilesProperty(): array
+    {
+        if (! $this->browsing) {
+            return [];
+        }
+        $f = trim($this->browseFilter);
+        $ps = $this->catalogQuery()
+            ->when($this->browseCategory, fn ($q) => $q->where('category', $this->browseCategory))
+            ->when($this->browseBrand, fn ($q) => $q->where('brand', $this->browseBrand))
+            ->when($f !== '', fn ($q) => $q->where(fn ($w) => $w->where('name', 'like', "%{$f}%")->orWhere('sku', 'like', "%{$f}%")->orWhere('upc', $f)->orWhere('brand', 'like', "%{$f}%")))
+            ->orderBy('name')->limit(60)->get();
+        $stock = Inventory::where('warehouse_id', $this->warehouseId)->whereIn('product_id', $ps->pluck('id'))->get()->keyBy('product_id');
+        $c = Customer::find($this->customerId);
+
+        return $ps->map(fn (Product $p) => ['id' => $p->id, 'name' => $p->name, 'sku' => $p->sku, 'unit' => $p->unit, 'brand' => $p->brand,
+            'price' => app(PricingEngine::class)->quote($p, $c, 1)->price,
+            'stock' => isset($stock[$p->id]) ? self::q(Money::of($stock[$p->id]->qty)->minus(Money::of($stock[$p->id]->reserved))) : '0'])->all();
+    }
+
+    public function getBrowseFacetsProperty(): array
+    {
+        if (! $this->browsing) {
+            return ['categories' => [], 'brands' => []];
+        }
+        $q = $this->catalogQuery();
+
+        return ['categories' => (clone $q)->whereNotNull('category')->where('category', '!=', '')->distinct()->orderBy('category')->pluck('category')->all(),
+            'brands' => (clone $q)->whereNotNull('brand')->where('brand', '!=', '')->when($this->browseCategory, fn ($w) => $w->where('category', $this->browseCategory))
+                ->distinct()->orderBy('brand')->pluck('brand')->all()];
+    }
+
+    // ---- 0.19.3 Hold / Recall ----------------------------------------------------
+
+    public function hold(): void
+    {
+        $this->reset('message', 'error');
+        if (! $this->cart) {
+            $this->error = 'Cart is empty: nothing to hold.';
+
+            return;
+        }
+        $h = PosHeldSale::create([
+            'label' => trim($this->holdLabel) ?: null, 'customer_id' => $this->customerId, 'ship_to_id' => $this->shipToId,
+            'warehouse_id' => $this->warehouseId, 'user_id' => auth()->id(), 'register' => self::register(), 'tender' => $this->tender,
+            'notes' => trim($this->notes) ?: null, 'total' => Money::s($this->total),
+            'cart' => array_map(fn ($l) => array_intersect_key($l, array_flip(['product_id', 'sku', 'name', 'qty', 'price', 'quoted', 'source'])), $this->cart),
+            'expires_at' => now()->addDays(PosHeldSale::days()),
+        ]);
+        Audit::action('pos_hold', null, 'POS sale held: '.($h->label ?: '#'.$h->id), ['held_id' => $h->id, 'customer_id' => $h->customer_id, 'lines' => count($h->cart), 'total' => $h->total]);
+        $this->clearSale();
+        $this->holding = false;
+        $this->holdLabel = '';
+        $this->message = 'Sale held'.($h->label ? " as \"{$h->label}\"" : '').'. No stock is reserved. Recall it from "Recall".';
+    }
+
+    private static function register(): string
+    {
+        return mb_substr((string) (session('pos_register') ?: request()->ip()), 0, 80);
+    }
+
+    private function clearSale(): void
+    {
+        $this->cart = [];
+        $this->tendered = '';
+        $this->notes = '';
+        $this->recallNotes = [];
+        $this->resetSignature();
+        $cash = Customer::where('code', 'CASH')->first() ?? Customer::first();
+        $this->customerId = $cash?->id;
+        $this->shipToId = $cash?->defaultShipTo()?->id;
+    }
+
+    public function getHeldSalesProperty()
+    {
+        if (! $this->recalling) {
+            return collect();
+        }
+        PosHeldSale::purgeExpired();
+
+        return PosHeldSale::live()->with(['customer:id,name', 'user:id,name'])->where('warehouse_id', $this->warehouseId)->latest()->limit(50)->get();
+    }
+
+    public function recall(int $id): void
+    {
+        $this->reset('message', 'error');
+        $h = PosHeldSale::live()->where('warehouse_id', $this->warehouseId)->find($id);
+        if (! $h) {
+            $this->error = 'That held sale is gone (recalled, deleted or expired).';
+
+            return;
+        }
+        if ($this->cart) {
+            $this->error = 'Finish, hold or clear the current sale first.';
+
+            return;
+        }
+        $this->customerId = $h->customer_id ?? $this->customerId;
+        $this->shipToId = $h->ship_to_id ?? Customer::find($this->customerId)?->defaultShipTo()?->id;
+        $this->tender = $h->tender ?: $this->tender;
+        $this->notes = (string) $h->notes;
+        $this->cart = array_map(fn ($l) => $l + ['reasons' => []], array_values(array_filter($h->cart ?? [], fn ($l) => Product::whereKey($l['product_id'] ?? 0)->where('active', true)->exists())));
+        $notes = [];
+        if (count($this->cart) < count($h->cart ?? [])) {
+            $notes[] = 'Some items are no longer active and were left out.';
+        }
+        $before = collect($this->cart)->mapWithKeys(fn ($l) => [$l['product_id'] => $l['price']])->all();
+        $this->reprice();
+        $this->recheck();
+        foreach ($this->cart as $l) {
+            if (isset($before[$l['product_id']]) && ! Money::of($before[$l['product_id']])->isEqualTo(Money::of($l['price']))) {
+                $notes[] = "Price changed: {$l['sku']} \${$before[$l['product_id']]} → \${$l['price']}.";
+            }
+            $inv = Inventory::where('warehouse_id', $this->warehouseId)->where('product_id', $l['product_id'])->first();
+            $avail = $inv ? Money::of($inv->qty)->minus(Money::of($inv->reserved)) : Money::of(0);
+            if ($avail->isLessThan(Money::of($l['qty'] ?: 0))) {
+                $notes[] = "Low stock: {$l['sku']} needs {$l['qty']}, ".self::q($avail).' available.';
+            }
+        }
+        $c = Customer::find($this->customerId);
+        if ($c && $this->tender === 'account' && ($a = app(CreditLimit::class)->available($c)) !== null && Money::of($a)->isLessThan(Money::of($this->total))) {
+            $notes[] = 'Credit: available $'.number_format((float) $a, 2).' is less than this sale.';
+        }
+        if ($this->blocked) {
+            $notes[] = 'Some items are now blocked (see the lines).';
+        }
+        Audit::action('pos_recall', null, 'POS held sale recalled: '.($h->label ?: '#'.$h->id), ['held_id' => $h->id, 'held_by' => $h->user_id, 'changes' => $notes]);
+        $h->delete();
+        $this->recallNotes = $notes;
+        $this->recalling = false;
+        $this->message = 'Held sale recalled'.($notes ? ' with changes: check below.' : '.');
+    }
+
+    public function deleteHeld(int $id): void
+    {
+        if (! auth()->user()?->isAdmin()) {
+            $this->error = 'Only an owner or admin can delete a held sale.';
+
+            return;
+        }
+        if ($h = PosHeldSale::find($id)) {
+            Audit::action('pos_hold_deleted', null, 'Held POS sale deleted: '.($h->label ?: '#'.$h->id), ['held_id' => $h->id, 'customer_id' => $h->customer_id, 'total' => $h->total]);
+            $h->delete();
+        }
     }
 
     public function remove(int $i): void
@@ -250,7 +495,7 @@ class CounterPos extends Component
                 $so = SalesOrder::create([
                     'number' => SalesOrderService::nextNumber('POS', SalesOrder::class),
                     'customer_id' => $this->customerId, 'ship_to_id' => $this->shipToId, 'warehouse_id' => $this->warehouseId,
-                    'channel' => 'pos', 'order_date' => now()->toDateString(),
+                    'channel' => 'pos', 'order_date' => now()->toDateString(), 'notes' => trim($this->notes) ?: null,
                 ]);
                 foreach ($this->cart as $l) {
                     $so->lines()->create(['product_id' => $l['product_id'], 'qty' => Money::s($l['qty']), 'unit_price' => Money::s($l['price'])]);
@@ -273,6 +518,8 @@ class CounterPos extends Component
             $this->message = "Sale {$so->number} complete: \${$so->total}.".($change !== null && (float) $change >= 0 ? " Change due \${$change}." : '');
             $this->cart = [];
             $this->tendered = '';
+            $this->notes = '';
+            $this->recallNotes = [];
             $this->resetSignature();
         } catch (ValidationException $e) {
             $this->error = implode(' ', array_unique($e->validator->errors()->all()));
@@ -301,6 +548,7 @@ class CounterPos extends Component
             'operator' => auth()->user()?->name,
             'pinSession' => (bool) session(PosPin::SESSION_USER),
             'sigAcks' => $this->signatureAcks(),
+            'canDeleteHeld' => (bool) auth()->user()?->isAdmin(),
         ]);
     }
 }

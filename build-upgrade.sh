@@ -242,12 +242,12 @@ fi
 if [ "$PHASE" = "19.3" ]; then
   L=stage-up/laravel
   for f in database/migrations/2026_11_12_000001_phase191_marketing_inbound.php database/migrations/2026_11_11_000001_phase19_overrides_ghl.php \
-           database/migrations/2026_11_13_000001_phase192_marketing_oneway.php app/Marketing/MarketingFields.php database/migrations/2026_11_14_000001_phase193_ship_to_default.php app/Filament/Resources/CustomerResource/RelationManagers/ShipTosRelationManager.php app/Pricing/PricingEngine.php; do
+           database/migrations/2026_11_13_000001_phase192_marketing_oneway.php app/Marketing/MarketingFields.php database/migrations/2026_11_14_000001_phase193_ship_to_default.php app/Filament/Resources/CustomerResource/RelationManagers/ShipTosRelationManager.php database/migrations/2026_11_14_000002_phase193_pos_held_sales.php app/Models/PosHeldSale.php app/Pricing/PricingEngine.php; do
     test -f $L/$f || { echo "CHECK FAILED: $f missing"; exit 1; }
   done
   test -f $L/vendor/livewire/livewire/dist/livewire.min.js || { echo "CHECK FAILED: livewire dist missing"; exit 1; }
   grep -q "'version' => '0.19.3'" $L/config/erp.php || { echo "CHECK FAILED: erp version is not 0.19.3"; exit 1; }
-  [ "$(ls $L/database/migrations | tail -1)" = "2026_11_14_000001_phase193_ship_to_default.php" ] || { echo "CHECK FAILED: last migration is not 19.3"; exit 1; }
+  [ "$(ls $L/database/migrations | tail -1)" = "2026_11_14_000002_phase193_pos_held_sales.php" ] || { echo "CHECK FAILED: last migration is not 19.3"; exit 1; }
   grep -q "'enabled' => false, 'verify_with_counsel' => false" $L/database/migrations/2026_11_09_000001_phase181_ky_hemp_registry.php || { echo "CHECK FAILED: KY registry rule must seed disabled"; exit 1; }
   ! has_val "$CLIENT_ID" $L/app $L/config $L/database $L/resources || { echo "CHECK FAILED: client MSA ID in package"; exit 1; }
   ! grep -rqi "highlevel\|gohighlevel" $L/resources/views || { echo "CHECK FAILED: vendor name in UI"; exit 1; }

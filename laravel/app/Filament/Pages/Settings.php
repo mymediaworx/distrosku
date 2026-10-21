@@ -43,7 +43,8 @@ class Settings extends Page implements HasForms
             'reorder_velocity_days' => Setting::get('reorder_velocity_days', 30), 'reorder_default_lead_days' => Setting::get('reorder_default_lead_days', 7),
             'reorder_cover_days' => Setting::get('reorder_cover_days', 14),
             'count_auto_approve_value' => Setting::get('count_auto_approve_value', 25), 'count_auto_approve_pct' => Setting::get('count_auto_approve_pct', 2),
-            'pact_interstate_enabled' => (bool) Setting::get('pact_interstate_enabled'), 'msa_directory_strict' => (bool) Setting::get('msa_directory_strict'), 'coa_expiry_warn_days' => Setting::get('coa_expiry_warn_days', 30)];
+            'pact_interstate_enabled' => (bool) Setting::get('pact_interstate_enabled'), 'msa_directory_strict' => (bool) Setting::get('msa_directory_strict'), 'coa_expiry_warn_days' => Setting::get('coa_expiry_warn_days', 30),
+            'pos_hold_days' => Setting::get('pos_hold_days', 7)];
         foreach (array_keys(KyTobaccoXml::filerSettingKeys()) as $k) {
             $vals[$k] = Setting::get($k);
         }
@@ -75,6 +76,8 @@ class Settings extends Page implements HasForms
                 Forms\Components\TextInput::make('reorder_cover_days')->label('Reorder: days of cover to order')->integer()->minValue(0),
                 Forms\Components\TextInput::make('count_auto_approve_value')->label('Count: auto-approve variance up to $ per line')->numeric()->minValue(0)
                     ->helperText('A submitted count posts automatically when every line is within this value OR the % below. Set both to 0 to always need an admin. Auto-approvals are logged in Warehouse events.'),
+                Forms\Components\TextInput::make('pos_hold_days')->label('POS: held sales expire after (days)')->integer()->minValue(1)->maxValue(90)
+                    ->helperText('Held (parked) POS sales are removed after this many days; each removal is logged.'),
                 Forms\Components\TextInput::make('count_auto_approve_pct')->label('Count: auto-approve variance up to % of expected per line')->numeric()->minValue(0)->maxValue(100),
             ])->columns(2),
             Forms\Components\Section::make('PACT Act and MSA directories')->schema([

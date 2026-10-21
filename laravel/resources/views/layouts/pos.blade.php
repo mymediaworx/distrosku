@@ -29,6 +29,14 @@ button{background:#1e3a8a;color:#fff;border:0;font-weight:600;cursor:pointer}but
 .keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem;margin:.5rem 0}.keypad button{min-height:64px;font-size:1.6rem;background:#e5e7eb;color:#111}
 .keypad button.alt{background:#cbd5e1}.tenders{display:grid;grid-template-columns:repeat(2,1fr);gap:.5rem}
 .tenders button{background:#e5e7eb;color:#111}.tenders button.on{background:#1e3a8a;color:#fff}
+.posbar{display:grid;grid-template-columns:2fr 1fr 1fr;gap:.5rem;margin-top:.5rem}.posbar button{min-height:64px;font-size:1.1rem;background:#e5e7eb;color:#111}.posbar button.big{background:#1e3a8a;color:#fff;font-size:1.3rem}
+.warn{color:#92400e;background:#fef3c7;padding:.35rem .5rem;border-radius:.4rem;margin:.3rem 0}
+.ovl{position:fixed;inset:0;background:rgba(15,23,42,.55);display:flex;align-items:flex-start;justify-content:center;padding:2vh 2vw;z-index:50;overflow:auto}
+.ovl-in{background:#fff;border-radius:.8rem;padding:1rem;width:100%;max-width:1100px}
+.chips{display:flex;flex-wrap:wrap;gap:.4rem;margin:.6rem 0}.chips button{width:auto;min-height:48px;padding:0 1rem;background:#e5e7eb;color:#111}.chips button.on{background:#1e3a8a;color:#fff}.chips.sm button{min-height:40px;font-size:.9rem}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:.6rem}
+.tile{display:flex;flex-direction:column;align-items:flex-start;gap:.2rem;min-height:130px;padding:.7rem;background:#f8fafc;color:#111;border:1px solid #cbd5e1;text-align:left}
+.tile .tp{font-size:1.3rem;font-weight:700;color:#047857}.tile small.out{color:#b91c1c}
 .pay{min-height:64px;font-size:1.3rem;background:#047857;margin-top:.5rem}
 .who{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:.6rem}.who button{min-height:72px;background:#e5e7eb;color:#111;font-size:1.1rem}.who button.on{background:#1e3a8a;color:#fff}
 .dots{display:flex;justify-content:center;gap:1rem;margin:1rem 0}.dots span{width:22px;height:22px;border-radius:50%;border:2px solid #1e3a8a}.dots span.f{background:#1e3a8a}

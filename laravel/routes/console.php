@@ -24,6 +24,7 @@ if (is_file(base_path('.env')) || app()->configurationIsCached() || app()->runni
     Schedule::command('rules:sync')->dailyAt('02:30')->withoutOverlapping();
     // 0.17: vendor price files with a future effective date.
     Schedule::command('costs:apply')->dailyAt('00:05')->withoutOverlapping();
+    Schedule::command('pos:expire-holds')->dailyAt('00:15')->withoutOverlapping(); // 0.19.3
     Schedule::command('marketing:reconcile')->dailyAt('02:45')->withoutOverlapping(); // 0.19.2: nightly, NEW (unlinked) customers only
     Schedule::command('marketing:invoice-events')->dailyAt('07:00')->withoutOverlapping(); // 0.19 (no-op when BrandWorx Marketing is off)
 }
@@ -82,3 +83,8 @@ Artisan::command('marketing:reconcile', function () {
     $n = \App\Marketing\MarketingSync::queueMany(\App\Models\Customer::where('active', true)->whereNull('ghl_contact_id'));
     $this->line("Queued {$n} new customer(s).");
 })->purpose('Queue customers not yet in BrandWorx Marketing');
+
+// 0.19.3: remove POS held sales past their expiry (Setting pos_hold_days, default 7). Each removal is logged.
+Artisan::command('pos:expire-holds', function () {
+    $this->line('Expired '.\App\Models\PosHeldSale::purgeExpired().' held sale(s).');
+})->purpose('Remove expired POS held sales');

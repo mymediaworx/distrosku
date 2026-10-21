@@ -8,6 +8,9 @@ This zip contains **no `laravel/.env` and no `laravel/storage/`**, so extracting
 - *Ship Tos* is gone from the menu; the old screen still opens by URL and has an **Open customer** button. Bulk delete removed there.
 - A ship-to used on orders cannot be deleted (message shown).
 - Permissions unchanged (Sales view/manage; Warehouse/Driver none; full roles all).
+- **POS: Browse catalog.** Big button next to the scan box opens a touch browser: category and brand chips, a filter box, tiles with name, SKU / unit, the price for the selected customer and stock at this warehouse. Tap a tile, enter the qty on the keypad, **Add to sale**. Same pricing and eligibility / regulated checks as scanning.
+- **POS: Hold / Recall.** **Hold** saves the cart (customer, ship-to, lines, prices, tender, notes) with an optional label, cashier and register, then clears the screen. **No stock is reserved.** **Recall** lists held sales at this warehouse (label, customer, items, total, time, cashier); any user at that location can recall; owners/admins can delete. On recall the lines are re-priced and eligibility, stock and credit are re-checked; changes are shown in yellow. Held sales expire after *Admin > Settings > POS: held sales expire after (days)* (default 7; nightly 00:15). Hold, recall, delete and expiry are in the Activity log. A held sale (and the cart in progress) survives the PIN lock. New **Notes** box on the POS (saved on the order).
+- Migration `2026_11_14_000002_phase193_pos_held_sales` (re-runnable).
 - Migration `2026_11_14_000001_phase193_ship_to_default` (adds the default flag and sets each customer's oldest ship-to as default; re-runnable). Run the upgrade page as usual.
 
 ## What's new in 0.19.2 (includes everything through 0.19.1)
