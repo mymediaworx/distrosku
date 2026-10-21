@@ -1,7 +1,15 @@
-# Vega ERP — Phase 19.3 UPGRADE (existing install at vegatest1.distrosku.com)
+# Vega ERP — Phase 19.4 UPGRADE (existing install at vegatest1.distrosku.com)
 
 For a site already installed from `vega-erp-phase1.zip` and upgraded through phase 3 (a phase-2 site can also take this zip: seeders are cumulative). TEST data only. No secrets in this package.
 This zip contains **no `laravel/.env` and no `laravel/storage/`**, so extracting it over the live site keeps both.
+
+## What's new in 0.19.4 (includes everything through 0.19.3)
+- **Counter pickup is the default fulfillment.** New field **Fulfillment** on every ship-to (Counter pickup / Delivery (route)) and on every order (Counter pickup / Delivery / Ship).
+  - New ship-tos default to Counter pickup. **The migration sets every existing ship-to to Counter pickup** (the count is written to the log and the Activity log as `shipto_fulfillment_migrated`).
+  - New orders take the ship-to's fulfillment (sales order form, portal); POS = pickup, van = delivery. On the sales order form it can be changed per order.
+  - **Impact:** delivery days, route names and route sequence stay on the ship-tos as data, but **Plan route no longer adds counter-pickup orders**. To keep delivering to a customer, set that ship-to (or the order) to **Delivery (route)**. Orders created before the upgrade keep the old behaviour (still delivery candidates). Manifests already built and the driver app are not changed.
+  - Regulated products still need the signature at pickup (Sales Orders > Pickup (signature)) and at the counter.
+- Migration `2026_11_15_000001_phase194_counter_pickup_default` (re-runnable; the flip runs only once, when the field is first added). Run the upgrade page as usual.
 
 ## What's new in 0.19.3 (includes everything through 0.19.2)
 - **Ship-to addresses now live on the customer page.** *Customers > (customer) > Ship-to addresses* tab: add, edit and delete ship-tos inline with all fields (address, city, **county**, state, zip, delivery days, route, phone, MSA fields) and a licenses count. **Default ship-to**: one per customer (the first is default automatically; **Make default** on any row). New orders, POS and marketing use the default.

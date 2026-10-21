@@ -11,6 +11,11 @@ class ShipTo extends Model
 
     protected $guarded = ['id'];
 
+    /** 0.19.4: pickup = counter pickup (default), delivery = our truck / route. */
+    public const FULFILLMENT = ['pickup' => 'Counter pickup', 'delivery' => 'Delivery (route)'];
+
+    protected $attributes = ['fulfillment' => 'pickup'];
+
     protected function casts(): array
     {
         return ['msa_cash_and_carry' => 'boolean', 'is_default' => 'boolean'];

@@ -24,10 +24,23 @@ class SalesOrder extends Model
             if (blank($m->number)) {
                 $m->number = Sequence::next('SO', static::class);
             }
+            // 0.19.4: fulfillment follows the ship-to (counter pickup by default) unless the user picked one.
+            if (blank($m->fulfillment)) {
+                $m->fulfillment = match ($m->channel) {
+                    'pos' => 'pickup',
+                    'van' => 'delivery',
+                    default => ($m->ship_to_id ? ShipTo::whereKey($m->ship_to_id)->value('fulfillment') : null) ?: 'pickup',
+                };
+            }
             if (blank($m->sales_rep_id) && $m->customer_id) {
                 $m->sales_rep_id = Customer::whereKey($m->customer_id)->value('sales_rep_id');
             }
         });
+    }
+
+    public function isPickup(): bool
+    {
+        return $this->fulfillment === 'pickup';
     }
 
     protected function casts(): array

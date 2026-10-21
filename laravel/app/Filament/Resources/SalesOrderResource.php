@@ -56,12 +56,20 @@ class SalesOrderResource extends Resource
             Forms\Components\Section::make()->columns(['default' => 1, 'md' => 3])->schema([
                 Forms\Components\TextInput::make('number')->disabled()->dehydrated(false)->placeholder('Assigned on save'),
                 Forms\Components\Select::make('customer_id')->relationship('customer', 'name')->searchable()->preload()->required()->live()
-                    ->afterStateUpdated(fn (Set $set, $state) => $set('ship_to_id', $state ? \App\Models\Customer::find($state)?->defaultShipTo()?->id : null)), // 0.19.3: default ship-to
+                    ->afterStateUpdated(function (Set $set, $state) { // 0.19.3 default ship-to; 0.19.4 its fulfillment
+                        $st = $state ? \App\Models\Customer::find($state)?->defaultShipTo() : null;
+                        $set('ship_to_id', $st?->id);
+                        $set('fulfillment', $st?->fulfillment ?? 'pickup');
+                    }),
                 Forms\Components\Placeholder::make('available_credit')->label('Available credit')
                     ->visible(fn (Get $get) => filled($get('customer_id')))
                     ->content(fn (Get $get) => ($c = Customer::find($get('customer_id'))) ? CreditLimit::summary($c) : ''),
                 Forms\Components\Select::make('ship_to_id')->label('Ship-to')->required()
-                    ->options(fn (Get $get) => ShipTo::where('customer_id', $get('customer_id'))->orderByDesc('is_default')->orderBy('id')->get()->mapWithKeys(fn ($s) => [$s->id => "{$s->name} ({$s->state})"])),
+                    ->options(fn (Get $get) => ShipTo::where('customer_id', $get('customer_id'))->orderByDesc('is_default')->orderBy('id')->get()->mapWithKeys(fn ($s) => [$s->id => "{$s->name} ({$s->state})"]))
+                    ->live()->afterStateUpdated(fn (Set $set, $state) => $set('fulfillment', ($state ? ShipTo::whereKey($state)->value('fulfillment') : null) ?? 'pickup')),
+                Forms\Components\Select::make('fulfillment')->label('Fulfillment')->options(['pickup' => 'Counter pickup', 'delivery' => 'Delivery (route)', 'ship' => 'Ship (carrier)'])
+                    ->default('pickup')->required()->selectablePlaceholder(false)
+                    ->helperText('From the ship-to; change it for this order if needed. Counter pickup orders are not put on delivery routes.'),
                 Forms\Components\Select::make('sales_rep_id')->label('Sales rep')->relationship('salesRep', 'name')->searchable()->preload()->nullable()->helperText('Blank = customer\'s rep'),
                 Forms\Components\Select::make('warehouse_id')->relationship('warehouse', 'name')->required()->default(fn () => Warehouse::where('code', 'MAIN')->value('id') ?? Warehouse::value('id')),
                 Forms\Components\DatePicker::make('order_date')->default(now())->required(),
@@ -106,6 +114,8 @@ class SalesOrderResource extends Resource
                 Tables\Columns\TextColumn::make('number')->searchable()->sortable(),
                 Tables\Columns\TextColumn::make('customer.name')->searchable()->wrap(),
                 Tables\Columns\TextColumn::make('shipTo.state')->label('St'),
+                Tables\Columns\TextColumn::make('fulfillment')->label('Fulfil.')->badge()->toggleable()
+                    ->formatStateUsing(fn ($state) => ['pickup' => 'Pickup', 'delivery' => 'Delivery', 'ship' => 'Ship'][$state] ?? '—'),
                 Tables\Columns\TextColumn::make('status')->badge()->formatStateUsing(fn ($state) => ucfirst($state->value))
                     ->color(fn ($state) => match ($state) {
                         S::Invoiced => 'success', S::Cancelled => 'gray', S::Draft => 'warning', default => 'info'

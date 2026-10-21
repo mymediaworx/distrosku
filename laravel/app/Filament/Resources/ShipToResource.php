@@ -45,6 +45,8 @@ class ShipToResource extends Resource
                 Forms\Components\TextInput::make('state')
                     ->required(),
                 Forms\Components\TextInput::make('zip'),
+                Forms\Components\Radio::make('fulfillment')->label('Fulfillment')->options(ShipTo::FULFILLMENT)->default('pickup')->inline()->required()
+                    ->helperText('Counter pickup (default): orders are not put on delivery routes. Choose Delivery to use the delivery days and route below.')->columnSpanFull(),
                 Forms\Components\CheckboxList::make('delivery_days')->options(DeliveryDays::DAYS)->columns(7)->gridDirection('row')
                     ->formatStateUsing(fn ($state) => DeliveryDays::parse($state))->dehydrateStateUsing(fn ($state) => DeliveryDays::toCsv($state))->helperText('Leave empty to use the customer\'s delivery days.')->columnSpanFull(),
                 Forms\Components\TextInput::make('route_name')->maxLength(60),
@@ -87,6 +89,7 @@ class ShipToResource extends Resource
                 Tables\Columns\TextColumn::make('zip')
                     ->searchable(),
                 Tables\Columns\IconColumn::make('is_default')->label('Default')->boolean(),
+                Tables\Columns\TextColumn::make('fulfillment')->badge()->formatStateUsing(fn ($state) => ShipTo::FULFILLMENT[$state] ?? $state),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

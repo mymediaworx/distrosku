@@ -60,6 +60,7 @@ class ShipTosRelationManager extends RelationManager
             ->columns([
                 Tables\Columns\IconColumn::make('is_default')->label('Default')->boolean(),
                 Tables\Columns\TextColumn::make('name')->searchable(),
+                Tables\Columns\TextColumn::make('fulfillment')->badge()->formatStateUsing(fn ($state) => ShipTo::FULFILLMENT[$state] ?? $state),
                 Tables\Columns\TextColumn::make('address'),
                 Tables\Columns\TextColumn::make('city'),
                 Tables\Columns\TextColumn::make('county'),

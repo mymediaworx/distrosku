@@ -212,6 +212,7 @@ class Phase15DeliveryTest extends TestCase
         ShipTo::create(['customer_id' => $c2->id, 'name' => 'S', 'state' => 'KY', 'route_sequence' => 1, 'delivery_days' => "$day,$other"]);
         CustomerLicense::create(['customer_id' => $c2->id, 'type' => 'tobacco_retail', 'number' => 'L2', 'state' => 'KY', 'expires_at' => now()->addYear()]);
         $this->kyShip->update(['route_sequence' => 2]);
+        ShipTo::query()->update(['fulfillment' => 'delivery']); // 0.19.4: ship-tos default to counter pickup
         $a = $this->order('TST-GEN-001');
         $b = $this->order('TST-GEN-001', '1', $c2);
         $this->order('TST-GEN-001', '1', $cash); // other day: skipped
