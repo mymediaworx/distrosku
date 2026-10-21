@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xsd:annotation>
+		<xsd:documentation>
+			<Description>Transmission Header for FSET, used wrap multiple Acknowledgements together</Description>
+			<TaxYear>2009</TaxYear>
+			<Version>production Release</Version>
+			<ReleaseDate>August 18, 2009</ReleaseDate>
+		</xsd:documentation>
+	</xsd:annotation>
+	<xsd:include schemaLocation="TransmissionHeader.xsd"/>
+	<xsd:include schemaLocation="Acknowledgment.xsd"/>
+	<xsd:element name="AckTransmission">
+		<xsd:annotation>
+			<xsd:documentation>Integrated Transmission schema for inclusion in SOAP body</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element ref="TransmissionHeader"/>
+				<xsd:element ref="Acknowledgement" maxOccurs="unbounded"/>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+</xsd:schema>
+	 

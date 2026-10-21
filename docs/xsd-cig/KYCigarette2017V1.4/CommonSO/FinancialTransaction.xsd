@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xsd:annotation>
+		<xsd:documentation>
+			<Description>Data for tax payments or refund deposits</Description>
+			<ReleaseDate>November 12, 2009</ReleaseDate>
+		</xsd:documentation>
+	</xsd:annotation>
+	<xsd:include schemaLocation="efileTypes.xsd"/>
+	<xsd:include schemaLocation="StateeFileTypes.xsd"/>
+	<!-- Root Element -->
+	<xsd:element name="FinancialTransaction" type="FinancialTransactionType">
+		<xsd:annotation>
+			<xsd:documentation>Root element for Financial Transaction</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<!--Structure for Full Financial Transaction Schema-->
+	<xsd:complexType name="FinancialTransactionType">
+		<xsd:sequence>
+			<xsd:choice minOccurs="0">
+				<!-- Payment(s) -->
+				<xsd:element name="StatePayment" maxOccurs="unbounded">
+					<xsd:complexType>
+						<xsd:complexContent>
+							<xsd:extension base="ACHEntityDetailType">
+								<xsd:choice>
+									<xsd:element name="NotIATTransaction" type="CheckboxType"/>
+									<xsd:element name="IsIATTransaction">
+										<xsd:complexType>
+											<xsd:simpleContent>
+												<xsd:extension base="CheckboxType">
+													<xsd:attribute name="receivingDFIName" type="String50Type"/>
+												</xsd:extension>
+											</xsd:simpleContent>
+										</xsd:complexType>
+									</xsd:element>
+									<xsd:element name="FullIAT" type="FullIATType"/>
+								</xsd:choice>
+							</xsd:extension>
+						</xsd:complexContent>
+					</xsd:complexType>
+				</xsd:element>
+				<!-- Refund(s) -->
+				<xsd:element name="RefundDirectDeposit" maxOccurs="3">
+					<xsd:complexType>
+						<xsd:complexContent>
+							<xsd:extension base="StateDirectDepositType">
+								<xsd:choice>
+									<xsd:element name="NotIATTransaction" type="CheckboxType"/>
+									<xsd:element name="IsIATTransaction">
+										<xsd:complexType>
+											<xsd:simpleContent>
+												<xsd:extension base="CheckboxType">
+													<xsd:attribute name="receivingDFIName" type="String50Type"/>
+												</xsd:extension>
+											</xsd:simpleContent>
+										</xsd:complexType>
+									</xsd:element>
+									<xsd:element name="FullIAT" type="FullIATType"/>
+								</xsd:choice>
+							</xsd:extension>
+						</xsd:complexContent>
+					</xsd:complexType>
+				</xsd:element>
+				<!-- ACH Credit -->
+				<xsd:element name="ACHCreditInfo">
+					<xsd:complexType>
+						<xsd:complexContent>
+							<xsd:extension base="ACHCreditDetailType">
+								<xsd:choice>
+									<xsd:element name="NotIATTransaction" type="CheckboxType"/>
+									<xsd:element name="IsIATTransaction">
+										<xsd:complexType>
+											<xsd:simpleContent>
+												<xsd:extension base="CheckboxType">
+													<xsd:attribute name="originatingDFIName" type="String50Type"/>
+												</xsd:extension>
+											</xsd:simpleContent>
+										</xsd:complexType>
+									</xsd:element>
+								</xsd:choice>
+							</xsd:extension>
+						</xsd:complexContent>
+					</xsd:complexType>
+				</xsd:element>
+			</xsd:choice>
+
+
+			<!-- Estimated Payment(s) -->
+			<xsd:element name="EstimatedPayments" minOccurs="0" maxOccurs="4">
+				<xsd:complexType>
+					<xsd:complexContent>
+						<xsd:extension base="ACHEntityDetailType">
+							<xsd:choice>
+								<xsd:element name="NotIATTransaction" type="CheckboxType"/>
+								<xsd:element name="IsIATTransaction">
+									<xsd:complexType>
+										<xsd:simpleContent>
+											<xsd:extension base="CheckboxType">
+												<xsd:attribute name="receivingDFIName" type="String50Type"/>
+											</xsd:extension>
+										</xsd:simpleContent>
+									</xsd:complexType>
+								</xsd:element>
+								<xsd:element name="FullIAT" type="FullIATType"/>
+							</xsd:choice>
+						</xsd:extension>
+					</xsd:complexContent>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+</xsd:schema>

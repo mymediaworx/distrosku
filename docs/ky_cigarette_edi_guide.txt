@@ -1,0 +1,2017 @@
+              EDI Implementation Guide
+              XML Electronic Filing for Cigarette Data
+May 2023
+Version 1.7
+Commonwealth of Kentucky                                                                                                                                                                      XML Electronic Filing for Cigarette Data
+
+
+
+
+Table of Contents
+Version History ......................................................................................................................................................................................................................................... 1
+Introduction to XML Filing for Kentucky Cigarette Tax ............................................................................................................................................................................ 1
+   General................................................................................................................................................................................................................................................. 1
+   State Contact........................................................................................................................................................................................................................................ 1
+   Program Overview ............................................................................................................................................................................................................................... 1
+   Program Benefits ................................................................................................................................................................................................................................. 2
+   Persons Required to File Electronically ................................................................................................................................................................................................ 2
+   Security ................................................................................................................................................................................................................................................ 3
+   Getting Started..................................................................................................................................................................................................................................... 3
+       Registration ...................................................................................................................................................................................................................................... 3
+       Responsibilities ................................................................................................................................................................................................................................ 4
+       Timely Filing ..................................................................................................................................................................................................................................... 4
+       Timing of Transactions ..................................................................................................................................................................................................................... 4
+       Acknowledgments............................................................................................................................................................................................................................ 4
+       Tracking IDs ...................................................................................................................................................................................................................................... 5
+       Original Returns ............................................................................................................................................................................................................................... 5
+       Amended Returns ............................................................................................................................................................................................................................ 5
+       Testing Procedures........................................................................................................................................................................................................................... 5
+       Federal Employer Identification Numbers ....................................................................................................................................................................................... 5
+       Important Tips.................................................................................................................................................................................................................................. 6
+       XML File Processing .......................................................................................................................................................................................................................... 6
+XML Filing ................................................................................................................................................................................................................................................. 6
+   Kentucky Cigarette XML Flow Chart .................................................................................................................................................................................................... 7
+                                                                                                                              i
+Commonwealth of Kentucky                                                                                                                                                  XML Electronic Filing for Cigarette Data
+  Cigarette XSDs not used by Kentucky .................................................................................................................................................................................................. 7
+   Table 1 ‐ Kentucky XPath for Cigarette Tax Return .............................................................................................................................................................................. 8
+   Table 2 ‐ UPCUOM Code List .............................................................................................................................................................................................................. 36
+   Table 3 ‐ Tax Jurisdiction Code List .................................................................................................................................................................................................... 37
+   Table 4 ‐ Schedule Codes ................................................................................................................................................................................................................... 44
+   Table 5 ‐ Transaction Document Types .............................................................................................................................................................................................. 44
+   Table 6 ‐ Type of Customer ................................................................................................................................................................................................................ 46
+   Table 7 ‐ Cigarette MSA Status Types ................................................................................................................................................................................................ 46
+   Table 8 ‐ Federal Description Code List.............................................................................................................................................................................................. 47
+   Table 9 ‐ Type of Adjustments ........................................................................................................................................................................................................... 47
+   Table 10 ‐ Type of Address Codes ...................................................................................................................................................................................................... 47
+
+
+
+
+                                                                                                                       ii
+Commonwealth of Kentucky                                                                                              XML Electronic Filing for Cigarette Data
+
+
+
+
+Version History
+      Date            Author          Version #                                                   Description
+   6/12/2017       Kentucky DOR          1.0       Initial version
+                                                   Element name change to ReportingJurisdictionStickCnt from ReportingJurisdictionStickCount based upon
+   7/13/2017       Kentucky DOR          1.1
+                                                   feedback from the e-standards review group.
+  10/24/2017       Kentucky DOR          1.2       Changes made to explain how amendment tax return data will be submitted in XML file.
+  10/27/2017       Kentucky DOR          1.3       Added version history table to explain changes made to the EDI guides.
+  11/08/2017       Kentucky DOR          1.4       Removed wording from 10/27/2017.
+                                                   Added wording on Optional/Used fields to more clearly define which are required by business rules in
+  10/24/2018       Kentucky DOR          1.5       Kentucky. Also added additional columns to schedule codes table to accurately identify allowed schedules by
+                                                   license type.
+  08/01/2020       Kentucky DOR          1.6       Modifications made to Manufacturer Name and Brand Family to allow 85 characters. Changed to schema
+                                                   version 1.3.
+
+  05/01/2023       Kentucky DOR          1.7       Modifications made to State Jurisdiction codes to added Modified Risk Cigarettes. Changed to schema
+                                                   version 1.4
+
+
+
+Introduction to XML Filing for Kentucky Cigarette Tax
+General
+This guide to Kentucky Department of Revenue's cigarette tax electronic filing program contains the required electronic file format needed to file cigarette
+returns electronically with the Kentucky Department of Revenue, as well as the rules, procedures, and technical requirements needed to file your cigarette
+returns. All areas presented in this guide must be followed for successful participation in the Kentucky e‐filing program.
+
+State Contact
+Questions regarding the e‐filing program should be directed to the Tobacco Tax Section between the hours of 8:00 a.m. and 5:00 p.m., Eastern Time, Monday
+through Friday, except for holidays, by utilizing one of the following options:
+       Phone: (502) 564‐6823; select option 2
+       Internet: http://revenue.ky.gov/Business/Tobacco‐Tax/Pages/default.aspx (select "Send us a message')
+       Mailing: Kentucky Department of Revenue
+                 Tobacco Tax Section
+                 501 High Street, Station 62
+                                                                             3
+Commonwealth of Kentucky                                                                                                     XML Electronic Filing for Cigarette Data
+              Frankfort, KY 40601‐2103
+
+Program Overview
+The Kentucky e‐filing program for cigarette returns is based on an extensible markup language (XML) electronic data interchange (EDI) schema format. The
+group responsible for developing and maintaining this XML schema is the Federation of Tax Administrators (FTA) Tobacco Tax Uniformity Committee. The
+adoption of a national standard for electronic filing enables filers to easily deploy electronic filing in all states in which they do business. The XML schema has
+two main sections; the first is for the account details, and the second is for the transaction details.
+The account detail section contains information that pertains to the entire document, including the filing date, company name, address, filing period, license
+number, contact information, and so forth. The transaction detail section contains information that pertains to purchases and sales of cigarettes, stamp
+purchases and usage, inventory information, and so forth.
+The information contained in this guide is subject to change. If you are an electronic participant (filer) in the e‐filing program, the Kentucky Department of
+Revenue (DOR) will notify you when updates to this guide are available for download. Updates to the guide or the schema will be posted for download on the
+following Web site: http://revenue.ky.gov/Business/Tobacco‐Tax/Pages/default.aspx.
+
+Program Benefits
+The electronic filing of a return is initiated by the uploading of a valid XML file to the Kentucky Excise Tax System, which converts the XML file into the cigarette
+tax return schedule records. Once the schedule details are loaded, the filer can fix issues and review their return online. The advantages of participating in the
+Kentucky e‐filing program include but are not limited to:
+    •   Utilizing national electronic filing standards, which reduces implementation costs for filers.
+    •   Eliminating cost and time of generating, signing, and mailing returns and checks.
+    •   Facilitating rapid and secure movement of cigarette tax return data, allowing for faster processing and response to issues.
+    •   Generating a comprehensive audit trail for both the return and payment.
+    •   Eliminating postal delays and possible late filing/late payment fees.
+    •   Saving money and energy on implementation efforts through a consistent, standard format.
+    •   Implementing a tobacco tracking system, thus enabling the Commonwealth of Kentucky (henceforth referred to as “Kentucky”) to track cigarettes and
+        reduce cigarette tax fraud, which keeps cigarette tax evaders from undercutting honest cigarette marketers.
+
+Persons Required to File Electronically
+Kentucky Revised Statutes (KRS) 138.195(9)(a) states, “The department may by administrative regulation require any person requesting a license or holding a
+license under this section to supply such information concerning his business, sales or any privilege exercised, as is deemed reasonably necessary for the
+regulations of such licensees, and to protect the revenues of the state.” For tax periods beginning on or after January 1, 2018, the report shall be submitted
+electronically in a manner prescribed by the department.
+
+Kentucky Revised Statute (KRS) 131.250 Returns, reports, and statements to be filed electronically ‐‐ Waiver states,
+                                                                                  4
+Commonwealth of Kentucky                                                                                                       XML Electronic Filing for Cigarette Data
+(1) For the purpose of facilitating the administration of the taxes it administers, the department may require any tax return, report, or statement to be
+      electronically filed.
+(2) The following reports, returns, or statements shall be electronically filed:
+      (a) The return required by KRS 136.620;
+      (b) For tax periods beginning on or after January 1, 2007, the report required by KRS 138.240;
+      (c) For tax periods beginning on or after August 1, 2010, the report required by KRS 138.260;
+      (d) For taxable years beginning on or after January 1, 2010, the return filed by a specified tax return preparer reporting the annual tax imposed by KRS
+             141.020, if the specified tax return preparer is required to electronically file the return for federal income tax purposes;
+      (e) The annual withholding statement required by KRS 141.335, if the employer issues one hundred (100) or more statements annually; and
+      (f)    For tax periods beginning on or after July 1, 2005, the return required by KRS 160.615.
+ (3) (a) A person required to electronically file a return, report, or statement may apply for a waiver from the requirement by submitting the request on a
+             form prescribed by the department.
+      (b) The request shall indicate the lack of one (1) or more of the following:
+             1. Compatible computer hardware;
+             2. Internet access; or
+             3. Other technological capabilities determined relevant by the department.
+XML is the filing standard for data transmission defined later in this document. For tax periods beginning on or after January 1, 2018, the payments shall be
+transmitted electronically in a manner prescribed by the department.
+Failure to comply with these statutes may result in the revocation of license(s). The taxpayer must contact the Tobacco Tax Section to be able to begin e‐filing. If
+a person required to pay cigarette taxes has any problems e‐filing cigarette taxes, they should contact the state tax representative listed in this document.
+
+Security
+The e‐filing program uses the Internet to receive cigarette tax returns and reports, and it incorporates the following technological attributes from Kentucky
+Business One Stop to ensure data security: user ID and password, data transfer encryption, and e‐mail confirmation. Each filer must also use security procedures
+that are reasonably sufficient, as well as its best efforts to ensure that all transmissions of cigarette tax returns and reports are authorized. A filer must take the
+necessary precautions to safeguard its technological attributes and notify the Kentucky Business One Stop and the DOR when it has knowledge that its
+technological attributes have been compromised or a change in its authorized representative has occurred.
+
+Getting Started
+Registration
+All tax return and information report filers must register with the Kentucky Business One Stop before they can begin submitting their XML data files. Filers must
+set up users in the Kentucky Business One Stop to participate in the Cigarette Tax e‐file program by registering at http://onestop.ky.gov/Pages/default.aspx. Click
+the “Begin your registration” button to establish your user account and to associate it with your business and cigarette tax licenses. If you are already a Kentucky
+Business One Stop user, you only need to associate your users with the cigarette tax licenses.
+                                                                                  5
+Commonwealth of Kentucky                                                                                                        XML Electronic Filing for Cigarette Data
+
+Responsibilities
+It is the filer's responsibility to ensure the XML file is successfully sent to the Kentucky Excise Tax System, to ensure the XML file is without errors (allowing it to
+be loaded into the system), to fix electronic filing issues detected by the system, to view their returns once electronic filing issues are resolved, to adjust any
+schedule transactions to make the return correct to the best of their knowledge, to submit and sign their return once it is ready, and to pay any tax due to
+Kentucky.
+
+Timely Filing
+Moving from a paper filing to an electronic filing environment means that certain traditional methods of determining what constitutes the timely filing of a
+return and what constitutes proof of filing may change. All monthly returns/reports must be filed on or before the 20th day of the month following the month in
+which the transaction took place, to be considered timely.
+A rejected filing could put the tax filer at risk for having failed to file or failed to file in a timely fashion. Any field that is stated to be "Used" in Kentucky’s EDI
+guide but not provided by the filer will cause a filing to be rejected. Non‐accounting data may be designated as "Used" even if it is not essential for the posting of
+the transaction. Additionally, XML syntax errors, for example, the use of alpha characters in a field designated as strictly numeric can cause an electronic
+transaction to be rejected.
+The DOR requires the following rules be met in order for a filing to be considered timely:
+    •   The electronic document must have enough information to identify the filer.
+    •   The electronic document must be filed in the XML format as designated by Kentucky.
+    •   The electronic document must have sufficient information to identify the tax type, calculate the tax liability, and meet the posting requirements of
+        Kentucky (for example, the user must complete all "Used" fields).
+    •   The electronic document must have sufficient information to permit the mathematical verification of the tax liability.
+    •   The return must be received by Kentucky on or before the due date.
+
+Timing of Transactions
+Kentucky realizes that tax filers cannot be responsible for knowing all local holidays that might affect the transmission or receipt of an electronic return or
+payment transaction. With this understanding, the state has adopted a policy of accepting returns or payments on the next business day should the due date fall
+on a weekend or holiday. All current and future year listings of state holidays can be found on the state’s Web site at https://personnel.ky.gov/pages/leave.aspx.
+
+Acknowledgments
+Acknowledgment of filing is provided immediately upon the filer’s submission of an XML data file. Each file upload receives a unique tracking number verifying
+the successful receipt of data that is specific to the filing attempt. Additionally, the system provides an online acknowledgment when the XML file has data errors
+or the data is loaded into a return.
+
+
+
+
+                                                                                   6
+Commonwealth of Kentucky                                                                                                    XML Electronic Filing for Cigarette Data
+
+
+
+Tracking IDs
+The unique tracking ID assigned by the system is used to locate the return data. If the data associated with the tracking ID is subsequently deleted, the deletion
+is logged and associated with the user that requested the deletion.
+
+Original Returns
+Original returns are to be filed once a month and only contain the schedule details representing the tax period transactions being reported. The XML file has no
+indicator for an original filing. If multiple tax periods need to be reported, a separate XML file must be created for each tax period. Out‐of‐period transactions are
+rejected if submitted.
+
+Amended Returns
+Errors that are identified by the Department are corrected by the Department or directed to the filer to fix. Issues directed to the filer by the Department or
+discovered by the filer should be corrected and submitted in an amendment XML file. An amended return must be marked as an amended filing in the
+"AmendedReturnIndicator" field. XML amendment submissions should provide all schedule details that were included in the previously submitted return.
+Changes can be made by replacing a previously submitted transaction.
+If multiple tax periods need to be amended, a separate XML file must be created for each tax period. Amendment transactions are rejected as errors if submitted
+with an original return data file or combined in a single amendment XML file spanning multiple tax periods.
+
+Testing Procedures
+These are the steps to follow for testing and approval of your XML tax filing by Kentucky:
+        1.   Set a schedule for testing with the state contact (the primary contact).
+        2.   Provide a contact telephone number and e‐mail address.
+        3.   In the TransmissionHeader.xsd file, set the test file "ProcessType" to "T". When approved for production, set the value to "P".
+        4.   E‐mail the test file to the DOR, which processes the file and e‐mails the results back to the contact.
+
+Federal Employer Identification Numbers
+Filers are required to obtain and report the Federal Employer Identification Number (FEIN) or state‐assigned account number of all persons involved in a
+reportable transaction.
+
+
+
+
+                                                                                 7
+Commonwealth of Kentucky                                                                                                     XML Electronic Filing for Cigarette Data
+
+
+
+Important Tips
+Filers should:
+
+    •   Make certain that the information on the tax return is correct before submitting the filing.
+    •   Provide complete information. Do not shorten names or cities unless an abbreviation is required.
+    •   Enter the document number and date on the schedule.
+    •   Enter both the buyer and seller FEIN and name.
+    •   Enter the buyer and seller business address on all schedules.
+    •   Populate any field marked in the XPath section as "Used."
+
+XML File Processing
+The xml file that is uploaded will either be processed offline or in real time, depending on its size. Real‐time processing requires the filer to remain logged on to
+the system for the process to complete. The offline process allows the filer to work on other tasks and notifies the filer when the process is complete.
+
+
+XML Filing
+The xml schema begins with the CigaretteTransmission.xsd file, as depicted in the Kentucky Cigarette XML Flow Chart. The schema is made of 18 xsd files that
+follow the sequence shown in the flow chart, though Kentucky does not use all of the xsd files. Preceding the flow chart is the XPath documentation to assist a
+filer in creating their XML file to send to Kentucky.
+XPath is a language that navigates the tree representation of an XML document. The xsd files tell the user what is required and what is "Used" (secondary but
+still used) by Kentucky. If any required items are missing, the XML file is rejected. If items that are "Used" are not supplied, a business rule error is generated,
+and the user is required to fix the issue. Table 1 – Kentucky XPath for Cigarette Tax Return shows the schema with all of its elements. The elements depicted
+with solid boxes are required, whereas the elements shown as dashed boxes are optional. All elements that are marked "Used" must be supplied as well when
+creating the XML file.
+
+
+
+
+                                                                                  8
+Commonwealth of Kentucky                                                    XML Electronic Filing for Cigarette Data
+
+Kentucky Cigarette XML Flow Chart
+XSD File Name                                          Path
+CigaretteTransmission                                  :\Cigarette\
+     TransmissionHeader                                :\ExtendedCommon\
+           efileTypes                                  :\CommonSO\
+           StateeFileTypes                             :\CommonSO\
+     CigaretteReturn                                   :\Cigarette\
+           CigaretteReturnHeaderState                  :\StateCigarette\
+                  efileTypes                           :\CommonSO\
+                  ReturnHeaderSO                       :\ExtendedCommon\
+           ReturnDataState                             :\Cigarette\
+                  SchPack                              :\Cigarette\Forms\
+                        efileTypes                     :\CommonSO\
+                        StateeFileTypes                :\CommonSO\
+                        CigaretteeFileTypes            :\Cigarette\
+                               efileTypes              :\CommonSO\
+                               StateeFileTypes         :\CommonSO\
+                               CigaretteEnumerations   :\StateCigarette\
+                  SchUnaffixedStampReport              :\Cigarette/Forms\
+                        efileTypes                     :\CommonSO\
+                        StateeFileTypes                :\CommonSO\
+                        CigaretteeFileTypes            :\Cigarette\
+                               efileTypes              :\CommonSO\
+                               StateeFileTypes         :\CommonSO\
+                               CigaretteEnumerations   :\StateCigarette\
+                  SchTransaction                       :\Cigarette/Forms\
+                        efileTypes                     :\CommonSO\
+                        StateeFileTypes                :\CommonSO\
+                        CigaretteeFileTypes            :\Cigarette\
+                               efileTypes              :\CommonSO\
+                               StateeFileTypes         :\CommonSO\
+                               CigaretteEnumerations   :\StateCigarette\
+
+Cigarette XSDs not used by Kentucky
+XSD File Name                                          Path
+Acknowledgment                                         :\ExtendedCommon\
+AckTransmission                                        :\ExtendedCommon\
+ReturnHeader                                           :\CommonSO\
+FinancialTransaction                                   :\CommonSO\
+BinaryAttachment                                       :\CommonSO\
+
+
+                                                                       9
+  Commonwealth of Kentucky                                                                                                             XML Electronic Filing for Cigarette Data
+
+
+
+  Table 1 ‐ Kentucky XPath for Cigarette Tax Return
+Cigarette Schema Diagrams           Elements                     Attribute               Max    Required /    Used /     Expected Value
+                                                                                         Size   Optional /   Not‐used
+                                                                                                 Choice
+                                                                                                                         Beginning of cigarette XML schema. See expanded elements below
+                                    CigaretteTransmission                                           R            U
+                                                                                                                         for required and optional fields.
+                                                                                                                         Attribute value put "1" for record count. Only one RetrunState group
+                                    TransmissionHeader           recordCount                9       R            U       is allowed by Kentucky per XML file. See expanded elements below
+                                                                                                                         for required and optional fields.
+                                                                                                                         Attribute value ‐ For schema version put "KYCigarette2017V1.4"
+                                    ReturnState                  stateSchemaVersion        50       R            U
+                                                                                                                         See expanded elements below for required and optional fields.
+                                                                                                                         [05/01/2023]
+                                    Jurisdiction                                            3       R            U       State for whom the XML file is intended, "KY"
+
+                                                                                                                         A unique identifier for the state to use when talking to the filer about
+                                    TransmissionId                                         30       R            U
+                                                                                                                         specific issues. It is a unique identifier specific to this xml filing.
+
+                                    Timestamp                                              25       R            U       The date and time the xml file was created.
+
+                                                      ETIN                                              C            N
+
+                                    Transmitter       EFIN                                      R       C    U       N
+
+                                                      StateEIN                             20           C            U   The filer’s license number with the Commonwealth of Kentucky.
+
+                                                                                                                         For test put "T"
+                                    ProcessType                                             1       R            U
+                                                                                                                         For production put "P"
+
+                                    AgentIdentifier                                                 O            N
+
+                                    ReportingAgentSignature                                         O            N
+
+                                    AckAddress                                                      O            N
+
+                                                                                                                         Can be same as TransmissionId. A unique identifier for the state to
+                                    SubmissionId                                           20       R            U
+                                                                                                                         use when talking to the filer about specific issues.
+                                                                                                                         Attribute value – "0" (zero). See expanded elements below for
+                                    ReturnHeaderState            binaryAttachmentCount      1       R            U
+                                                                                                                         required and optional fields.
+
+                                    ReturnDataState                                                 R            U       See expanded elements below for required and optional fields.
+
+                                    BinaryAttachment                                                O            N
+
+                                    FinancialTransaction                                            O            N
+
+
+
+                                                                                 10
+  Commonwealth of Kentucky                                                                                          XML Electronic Filing for Cigarette Data
+
+Cigarette Schema Diagrams    Elements                  Attribute        Max    Required /    Used /    Expected Value
+                                                                        Size   Optional /   Not‐used
+                                                                                Choice
+                             Jurisdiction                                  3       R           U       State for whom the XML file is intended, "KY"
+
+                             Timestamp                                    25       R           U       The date and time the xml file was created.
+
+                             TaxPeriodBeginDate                                    O           N
+
+                             TaxPeriodEndDate                             10       O           U       Last day of the tax period (YYYY‐MM‐DD).
+
+                             TaxYear                                               O           N
+
+                             Quarter                                               O           N
+
+                             DisasterRelief                                        O           N
+
+                             ISPNumber                                             O           N
+
+                             PaidPreparerInformation                               O           N
+
+                             Originator                                            O           N
+
+                             SoftwareId                                            O           N
+
+                             SoftwareVersion                                       O           N
+
+                             InternetProtocol                                      O           N
+
+                             SignatureOption                                       O           N
+                                                                                                       Use this element when reporting data for amended return; put an "X"
+                             AmendedReturnIndicator                        1       O           U       in this element. If you are reporting data for an original return; this
+                                                                                                       element is not used.
+                             OriginalSubmissionId                                  O           N
+
+                             OriginalSubmissionDate                                O           N
+
+                             ReturnType                                   10       R           U       Put "CIG"
+
+                             TaxDue                                                O           N
+
+                             PenaltyDue                                            O           N
+
+                             InterestDue                                           O           N
+
+                             TotalDue                                              O           N
+
+                             Filer                                                 R           U       See expanded elements below for required and optional fields.
+
+                             BusinessRepresentative                                R           U       See expanded elements below for required and optional fields.
+
+
+
+
+                                                                   11
+  Commonwealth of Kentucky                                                                                         XML Electronic Filing for Cigarette Data
+
+Cigarette Schema Diagrams    Elements                 Attribute        Max    Required /    Used /     Expected Value
+                                                                       Size   Optional /   Not‐used
+                                                                               Choice
+
+                             DateSigned                                           O            N
+
+                             SelfEmployed                                         O            N
+
+                             SSN                                                      C            N
+
+                             PTIN                                             O       C    N       N
+
+                             StateID                                                  C            N
+
+                             PreparerFirmIDNumber                                     C            N
+                                                                              O            N
+                             StateEIN                                                 C            N
+
+                             PreparerBusinessName                                 O            N
+
+                             PreparerPersonName                                   R            N
+
+                             PreparerUSAddress                                        C            N
+                                                                              O            N
+                             PreparerForeignAddress                                   C            N
+
+                             Phone                                                    C            N
+                                                                              O            N
+                             ForeignPhone                                             C            N
+
+                             EmailAddress                                         O            N
+
+                             BusinessNameLine1Txt                                 R            N
+
+                             BusinessNameLine2Txt                                 O            N
+
+                             AddressLine1Txt                                      R            N
+
+                             AddressLine2Txt                                      O            N
+
+                             CityNm                                               R            N
+
+                             StateAbbreviationCd                                  R            N
+
+                             ZipCd                                                R            N
+
+
+
+
+                                                                  12
+  Commonwealth of Kentucky                                                                                                          XML Electronic Filing for Cigarette Data
+
+Cigarette Schema Diagrams    Elements                      Attribute             Max    Required /       Used /         Expected Value
+                                                                                 Size   Optional /      Not‐used
+                                                                                         Choice
+
+                             AddressLine1Txt                                                R               N
+
+                             AddressLine2Txt                                                O               N
+
+                             CityNm                                                         O               N
+
+                             ProvinceOrStateNm                                              O               N
+
+                             CountryCd                                                      R               N
+
+                             ForeignPostalCd                                                O               N
+
+                             EFIN                                                           C               N
+
+                             AgentIdentifier                                                C               N
+
+                             OriginatorTypeCd                                               R               N
+
+                                             EFIN                                                   R               N
+                                                                                            C               N
+                             Practitioner
+                                             PIN                                        O           R   N           N
+                             PIN
+                                             Reporting
+                                             Agent                                              C               N
+                                             Signature
+
+                             IPAddress                                                      R               N
+
+
+                             IPTimestamp                                                    R               N
+
+                             SignatureDocument             referenceDocumentId     30   C           R       N
+
+                                            Signature                                               R           N
+                                            PrimaryPIN
+                             Signature      EnteredBy
+                                                                                                    R           N
+                             PIN
+                                                                                        C               N
+                                            SecondaryPIN
+                                                                                                    O           N
+                                            EnteredBy
+
+
+
+
+                                                                          13
+  Commonwealth of Kentucky                                                                                               XML Electronic Filing for Cigarette Data
+
+Cigarette Schema Diagrams    Elements                     Attribute        Max    Required /    Used /     Expected Value
+                                                                           Size   Optional /   Not‐used
+                                                                                   Choice
+
+                             EIN                                              9       R            U       Filer’s Federal Employer Identification Number (FEIN)
+                                                                                                           Report the filer’s license number provided in the
+                             StateEIN                                        20       O            U
+                                                                                                           "TransmissionHeader.Transmitter.StateEIN" element above.
+                                          BusinessName                                                     Report the business name associated to the license. If the business
+                                                                             75           R            U
+                                          Line1Txt                                                         name exceeds 75 digits, report the remainder in the next element.
+                             Name                                                 R            U
+                                          BusinessName
+                                                                             75           O            U   Additional business name space if needed, otherwise it is not used.
+                                          Line2Txt
+
+                             InCareOfNm                                               O            N       Filer tax department contact if you choose to use this element.
+
+                                                                                                           First four characters of the company’s legal name if you choose to use
+                             NameControl                                              O            N
+                                                                                                           this element.
+                                        AddressLine                                                        This is the address for licensee associated to the tax return data being
+                                        1Txt
+                                                                             35           R            U
+                                                                                                           submitted in this file.
+                                        AddressLine                                                        If additional address space is required to report the full address,
+                                        2Txt
+                                                                             35           O            U
+                                                                                                           otherwise it is not used.
+                             US                                                                            This is the city for licensee associated to the tax return data being
+                                        CityNm                               22   C       R    U       U
+                             Address                                                                       submitted in this file.
+                                        State                                                              This is the state for licensee associated to the tax return data being
+                                        AbbreviationCd
+                                                                              2           R            U
+                                                                                                           submitted in this file.
+                                                                                                           This is the zip code for licensee associated to the tax return data
+                                        ZipCd                                 9           R            U
+                                                                                                           being submitted in this file.
+                                        AddressLine                                                        This is the address for licensee associated to the tax return data being
+                                        1Txt
+                                                                                          R            U
+                                                                                                           submitted in this file.
+                                        AddressLine                                                        If additional address space is required to report the full address,
+                                        2Txt
+                                                                                          O            U
+                                                                                                           otherwise it is not used.
+                                                                                                           This is the city for licensee associated to the tax return data being
+                                        CityNm                                            O            U
+                             Foreign                                                                       submitted in this file.
+                                                                                  C            U
+                             Address    ProvinceOr                                                         This is the province or state for licensee associated to the tax return
+                                        StateNm
+                                                                                          O            U
+                                                                                                           data being submitted in this file.
+                                                                                                           This is the country code for licensee associated to the tax return data
+                                        CountryCd                                         R            U
+                                                                                                           being submitted in this file.
+                                                                                                           This is the foreign postal code for licensee associated to the tax
+                                        ForeignPostalCd                                   O            U
+                                                                                                           return data being submitted in this file.
+
+
+
+
+                                                                      14
+  Commonwealth of Kentucky                                                                                             XML Electronic Filing for Cigarette Data
+
+Cigarette Schema Diagrams    Elements                   Attribute        Max    Required /    Used /     Expected Value
+                                                                         Size   Optional /   Not‐used
+                                                                                 Choice
+
+                                        FirstName                          16           R            U   Contact’s first name for tax return questions.
+
+                                        MiddleInitial                       1           O            N
+                             Person
+                                                                                R            U
+                             Name
+                                        LastName                           32           R            U   Contact’s last name for tax return questions.
+
+                                        NameSuffix                          4           O            N
+
+                             PersonTitleTxt                                35       R            U       Contact’s job title for tax return questions.
+
+                             TaxpayerPIN                                            O            N
+
+                             PhoneNum                                      10       C            U       Contact’s direct phone number for tax return questions.
+
+                             ForeignPhoneNum                               30       C            U       Contact’s direct phone number for tax return questions.
+
+                             EmailAddressTxt                               75       O            U       Contact’s email address for tax return questions.
+
+                             SignatureDt                                            O            N
+
+                             SchTransaction                                         R            U       See expanded elements below for required and optional fields.
+
+                                                                                                         Required if you had any unaffixed stamps during the reporting period.
+                             SchUnaffixedStampReport                                O            U
+                                                                                                         See expanded elements below for required and optional fields.
+
+                                                                                                         Required if you had any affixed stamps during the reporting period.
+                             SchPack                                                O            U
+                                                                                                         See expanded elements below for required and optional fields.
+
+                                                                                                         If you have activity, this element is required. You can report as many
+                             Schedule                                               C            U
+                                                                                                         schedules as needed to complete your return.
+
+                             NoTransactions                                 1       C            U       If no schedule activity, put an "X" in this element.
+
+                                                                                                         Receipt and disbursement schedules are found in Table 4 of this
+                             TypeOfSchedule                                21       R            U
+                                                                                                         document. See FAQ document for additional instructions.
+
+                             TransactionDocument                                    R            U       See expanded elements below for required and optional fields.
+
+
+
+
+                                                                    15
+  Commonwealth of Kentucky                                                                                        XML Electronic Filing for Cigarette Data
+
+Cigarette Schema Diagrams    Elements               Attribute        Max    Required /    Used /    Expected Value
+                                                                     Size   Optional /   Not‐used
+                                                                             Choice
+                                                                                                    This is the document date, i.e. invoice, manifest, BOL etc. Formatted
+                             Date                                      10       R           U
+                                                                                                    YYYY‐MM‐DD
+
+                                                                                                    Transaction document types can be found in Table 5 of this
+                             TypeOfTransDoc                            35       O           U
+                                                                                                    document. REQUIRED by Kentucky
+
+                             DocNumber                                 20       R           U       This is the document number.
+
+                                                                                                    Types of entity sold to or purchased from can be found in Table 6 of
+                             TypeOfCustomer                            20       O           U
+                                                                                                    this document. REQUIRED by Kentucky
+
+                             Name                                               R           U       See expanded elements below for required and optional fields.
+
+
+                             Address                                            R           U       See expanded elements below for required and optional fields.
+
+                                                                                                    If the cigarette transaction is to an end consumer, put 999999999. In
+                             EIN                                        9       R           U       all other cases, you must obtain the FEIN from the supplier or
+                                                                                                    customer.
+                                                                                                    If the cigarette transaction is to a licensee, put their Kentucky license
+                             StateEIN                                  20       O           U       number. In all other cases, enter 999999999. REQUIRED by Kentucky
+
+
+                             CustomerID                                35       O           N
+
+
+                             Transactions                                       R           U       See expanded elements below for required and optional fields.
+
+                                                                                                    This section is only required when you use a delivery service to
+                             DeliveryService                                    O           U       deliver the product otherwise it is not required. See expanded
+                                                                                                    elements below for required and optional fields.
+                                                                                                    Name of entity sold to or purchased from based on the schedule
+                             BusinessNameLine1Txt                      75       R           U
+                                                                                                    being reported.
+                                                                                                    DBA Name of entity sold to or purchased from based on the schedule
+                             BusinessNameLine2Txt                      75       O           U
+                                                                                                    being reported.
+
+
+
+
+                                                                16
+  Commonwealth of Kentucky                                                                                            XML Electronic Filing for Cigarette Data
+
+Cigarette Schema Diagrams    Elements                  Attribute        Max    Required /    Used /     Expected Value
+                                                                        Size   Optional /   Not‐used
+                                                                                Choice
+                                        AddressLine                                                     Address of entity sold to or purchased from based on the schedule
+                                        1Txt
+                                                                          35           R            U
+                                                                                                        being reported.
+                                        AddressLine                                                     If additional address space is required to report the full address,
+                                        2Txt
+                                                                          35           O            U
+                                                                                                        otherwise it is not used.
+                                                                                                        City of entity sold to or purchased from based on the schedule being
+                                        CityNm                            22           R            U
+                             US
+                                                                                                        reported.
+                                        State                                  C            U
+                             Address                                                                    State abbreviation of entity sold to or purchased from can be found in
+                                        Abbreviation                       2           R            U
+                                                                                                        Table 3 of this document.
+                                        CD
+                                                                                                        Zip code of entity sold to or purchased from based on the schedule
+                                        ZipCD                              9           R            U
+                                                                                                        being reported.
+
+                                        InCareOfNm                                     O            N
+
+                                        AddressLine                                                     Address of entity sold to or purchased from based on the schedule
+                                        1Txt
+                                                                          35           R            U
+                                                                                                        being reported.
+                                        AddressLine                                                     If additional address space is required to report the full address,
+                                        2Txt
+                                                                          35           O            U
+                                                                                                        otherwise it is not used.
+                                                                                                        City of entity sold to or purchased from based on the schedule being
+                                        CityNm                            50           O            U
+                                                                                                        reported.
+                             Foreign    ProvinceOr                                                      Province or state abbreviation of entity sold to or purchased from can
+                             Address                                      50   C       O    U       U
+                                        StateNm                                                         be found in Table 3 of this document.
+                                                                                                        Country of entity sold to or purchased from based on the schedule
+                                        CountryCd                          2           R            U
+                                                                                                        being reported.
+                                        Foreign                                                         Zip code of entity sold to or purchased from based on the schedule
+                                                                          16           O            U
+                                        PostalCd                                                        being reported.
+                                        InCareOfNm                                     O            N
+
+                                                                                                        The address type must be the physical Location address shown in
+                             TypeOfAddress                                20       R            U       Table 10 where the product was sold to or purchased from based on
+                                                                                                        the schedule being reported.
+
+
+
+
+                                                                   17
+  Commonwealth of Kentucky                                                                                                XML Electronic Filing for Cigarette Data
+
+Cigarette Schema Diagrams    Elements                      Attribute        Max    Required /    Used /     Expected Value
+                                                                            Size   Optional /   Not‐used
+                                                                                    Choice
+                                                                                                            Federal description of product can be found in Table 8 of this
+                             FedDesc                                          20       O            U
+                                                                                                            document. REQUIRED by Kentucky
+                                                                                                            MSA status of product can be found in Table 7 of this document.
+                             MSAStatus                                        10       O            U
+                                                                                                            REQUIRED by Kentucky
+                                                                                                            Taxing jurisdiction associated to stamp type can be found in Table 3
+                             TaxJurisdiction                                   5       O            U
+                                                                                                            of this document. REQUIRED by Kentucky
+                             UPCNumber                                        25       R            U       Universal product code for the brand.
+                                                                                                            Unit of Measure for the universal product code for the brand being
+                             UPCUOM                                           10       O            U       reported can be found in Table 2 of this document. REQUIRED by
+                                                                                                            Kentucky
+
+                             Manufacturer                                     85       R            U       Manufacturer name of product. [08/01/2020]
+
+                             ManufacturerEIN                                   9       O            U       Manufacturer’s FEIN. REQUIRED by Kentucky
+
+                             BrandFamily                                      85       R            U       Brand name of product sold or received. [08/01/2020]
+
+                             Quantity                                         16       O            U       Number of units. REQUIRED by Kentucky
+
+                             SticksPerPack                                    16       O            U       Number of cigarette sticks per pack. REQUIRED by Kentucky
+
+                             Total Sticks                                     16       R            U       Total number of cigarette sticks.
+
+
+                             Price                                            17       O            U       The price of the cigarettes. REQUIRED by Kentucky
+
+                                            BusinessName
+                                                                              75           R            U   Name of the delivery service.
+                                            Line1Txt
+                             Name                                                  R            U
+                                            BusinessName
+                                                                              75           O            U   DBA Name of the delivery service.
+                                            Line2Txt
+
+                             EIN                                               9       O            U       FEIN of the delivery service.
+
+                             Address                                                   R            U       See expanded elements below for required and optional fields.
+
+                             Phone                                            10       R            U       Phone number of the delivery service.
+
+
+
+
+                                                                       18
+  Commonwealth of Kentucky                                                                                             XML Electronic Filing for Cigarette Data
+
+Cigarette Schema Diagrams    Elements                  Attribute        Max    Required /    Used /     Expected Value
+                                                                        Size   Optional /   Not‐used
+                                                                                Choice
+                                        AddressLine                                                     Address of entity sold to or purchased from based on the schedule
+                                        1Txt
+                                                                          35           R            U
+                                                                                                        being reported.
+                                        AddressLine                                                     If additional address space is required to report the full address,
+                                        2Txt
+                                                                          35           O            U
+                                                                                                        otherwise it is not used.
+                                        CityNm                            22           R            U   City of entity sold to.
+                             US
+                                        State                                  C            U
+                             Address                                                                    State abbreviation of entity sold to or purchased from can be found in
+                                        Abbreviation                       2           R            U
+                                                                                                        Table 3 of this document.
+                                        CD
+
+                                        ZipCD                              9           R            U   Zip code of entity sold to.
+
+                                        InCareOfNm                        50           O            U   Name of the person sold to.
+
+                                        AddressLine                                                     Address of entity sold to or purchased from based on the schedule
+                                        1Txt
+                                                                          35           R            U
+                                                                                                        being reported.
+                                        AddressLine                                                     If additional address space is required to report the full address,
+                                        2Txt
+                                                                          35           O            U
+                                                                                                        otherwise it is not used.
+                                        CityNm                                         O            N
+
+                             Foreign    ProvinceOr                                                      Province or state abbreviation of entity sold to or purchased from can
+                             Address
+                                                                          50   C       O    U       U
+                                        StateNm                                                         be found in Table 3 of this document.
+                                                                                                        Country of entity sold to or purchased from based on the schedule
+                                        CountryCd                          2           R            U
+                                                                                                        being reported.
+                                        Foreign                                                         Zip code of entity sold to or purchased from based on the schedule
+                                                                          16           O            U
+                                        PostalCd                                                        being reported.
+                                        InCareOfNm                        50           O            U   Name of the person sold to.
+
+                                                                                                        The address type must be the physical Location address shown in
+                             TypeOfAddress                                20       R            U       Table 10 where the product was sold to or purchased from based on
+                                                                                                        the schedule being reported.
+
+
+
+
+                                                                   19
+  Commonwealth of Kentucky                                                                                             XML Electronic Filing for Cigarette Data
+
+Cigarette Schema Diagrams    Elements                   Attribute        Max    Required /    Used /     Expected Value
+                                                                         Size   Optional /   Not‐used
+                                                                                 Choice
+
+                             BegInventory                                           R            U       See expanded elements below for required and optional fields.
+
+                             TotalPurchaseCount                            16           R        U       This is the total stamps purchased for the reporting period.
+
+                                                                                                         This is the total value of the stamps purchased for the reporting
+                             TotalPurchaseGrossValue                       17   C       R        U
+                                                                                                         period.
+
+                             Purchases                                                  R        U       See expanded elements below for required and optional fields.
+
+                             NoPurchases                                    1   C       R        U       If no stamp purchased activity, put an "X" in this element.
+
+                             TotalAdjustmentCount                          16           R        U       This is the total stamps adjusted for the reporting period.
+
+                             TotalAdjustment
+                                                                           17   C       R        U       This is the total value of the stamps adjusted for the reporting period.
+                             GrossValue
+
+                             Adjustments                                                R        U       See expanded elements below for required and optional fields.
+
+                             NoAdjustments                                  1   C       R        U       If no stamp adjustment activity, put an "X" in this element.
+
+                             EndInventory                                           R            U       See expanded elements below for required and optional fields.
+
+
+                             StampsAffixed                                          O            U       See expanded elements below for required and optional fields.
+
+                                                                                                         This is the total beginning inventory of stamps for the reporting
+                             TotalInventoryCount                           16       R            U
+                                                                                                         period.
+                             TotalInventory                                                              This is the total beginning inventory value of the stamps for the
+                                                                           17       R            U
+                             GrossValue                                                                  reporting period.
+                                         Tax                                                             Taxing jurisdiction associated to stamp type can be found in Table 3
+                                                                            5           R            U
+                                         Jurisdiction                                                    of this document.
+
+                                         Attribute                                      O            N
+
+                             Details     StampUOM                          35   R       R    U       U   This is the stamp’s unit of measure. It is either 20 or 25 for Kentucky.
+
+                                                                                                         Number of stamps on hand at the beginning of the month for the
+                                         Count                             16           R            U
+                                                                                                         specific taxing jurisdiction associated to stamp type.
+
+                                         GrossValue                        17           R            U   The gross value of the stamps reported in the ‘Count’ element.
+
+
+
+
+                                                                    20
+  Commonwealth of Kentucky                                                                                               XML Electronic Filing for Cigarette Data
+
+Cigarette Schema Diagrams    Elements                     Attribute        Max    Required /    Used /     Expected Value
+                                                                           Size   Optional /   Not‐used
+                                                                                   Choice
+
+                             DateReceived                                    10       R            U       Date stamps were physically received. Formatted YYYY‐MM‐DD
+
+
+                             PurchaseOrderNumber                             35       R            U       Purchase order number of stamps received.
+
+
+                             PurchaseOrderDetails                                     R            U       See expanded elements below for required and optional fields.
+
+
+                             RollID                                          35       R            U       Roll ID number for stamps received.
+
+                                           Tax                                                             Taxing jurisdiction associated to stamp type can be found in Table 3
+                                                                              5           R            U
+                                           Jurisdiction                                                    of this document.
+
+                                           Attribute                                      O            N
+
+                             Stamps        StampUOM                          35   R       R    U       U   This is the stamp’s unit of measure. It is either 20 or 25 for Kentucky.
+
+                                                                                                           Number of stamps on the roll/pad for the specific taxing jurisdiction
+                                           Count                             16           R            U
+                                                                                                           associated to stamp type.
+
+                                           GrossValue                        17           R            U   The gross value of the stamps reported in the ‘Count’ element.
+
+                             Date                                            10       R            U       Date of the adjustment.
+
+                                                                                                           The type of adjustment reported can be found in Table 9 of this
+                             TypeOfAdjustment                                20       R            U
+                                                                                                           document.
+
+                             Explanation                                    100       O            N
+
+                                           Tax                                                             Taxing jurisdiction associated to stamp type can be found in Table 3
+                                                                              5           R            U
+                                           Jurisdiction                                                    of this document.
+
+                                           Attribute                                      O            N
+
+
+                             Stamps        StampUOM                          35   R       R    U       U   This is the stamp’s unit of measure. It is either 20 or 25 for Kentucky.
+
+                                                                                                           Number of stamps being adjusted for the specific taxing jurisdiction
+                                           Count                             16           R            U
+                                                                                                           associated to stamp type.
+
+                                           GrossValue                        17           R            U   The gross value of the stamps reported in the ‘Count’ element.
+
+
+
+
+                                                                      21
+  Commonwealth of Kentucky                                                                                                 XML Electronic Filing for Cigarette Data
+
+Cigarette Schema Diagrams    Elements                       Attribute        Max    Required /    Used /     Expected Value
+                                                                             Size   Optional /   Not‐used
+                                                                                     Choice
+                                                                                                             This is the total ending physical inventory of stamps for the reporting
+                             TotalInventoryCount                               16       R            U
+                                                                                                             period.
+                                                                                                             This is the total ending physical inventory value of the stamps for the
+                             TotalInventoryGrossValue                          17       R            U
+                                                                                                             reporting period.
+                                                                                                             Taxing jurisdiction associated to stamp type can be found in Table 3
+                                          TaxJurisdiction                       5           R            U
+                                                                                                             of this document.
+
+                                          Attribute                                         O            N
+
+                             Details      StampUOM                             35   R       R    U       U   This is the stamp’s unit of measure. It is either 20 or 25 for Kentucky.
+
+                                                                                                             Number of stamps on hand at the end of the month for the specific
+                                          Count                                16           R            U
+                                                                                                             taxing jurisdiction associated to stamp type.
+
+                                          GrossValue                           17           R            U   The gross value of the stamps reported in the ‘Count’ element.
+
+                                                                                                             The total count of stamps affixed during the reporting period for a
+                             TotalInventoryCount                               16       R            U
+                                                                                                             specific unit of measure (either 20 or 25 for Kentucky).
+                                                                                                             Total value of stamps affixed during the reporting period for a specific
+                             TotalInventoryGrossValue                          17       R            U
+                                                                                                             unit of measure (either 20 or 25 for Kentucky).
+                                                                                                             Taxing jurisdiction associated to stamp type can be found in Table 3
+                                          TaxJurisdiction                       5           R        U
+                                                                                                             of this document.
+
+                                          Attribute                                         O        N
+
+                             Details      StampUOM                             35   R       R        U       This is the stamp’s unit of measure. It is either 20 or 25 for Kentucky.
+
+                                                                                                             Number of stamps on hand at the end of the month for the specific
+                                          Count                                16           R        U
+                                                                                                             taxing jurisdiction associated to stamp type.
+
+                                          GrossValue                           17           R        U       The gross value of the stamps reported in the ‘Count’ element.
+
+                             BeginningInventory                                         R            U       See expanded elements below for required and optional fields.
+
+                             InventoryAdj                                                   R        U       See expanded elements below for required and optional fields.
+                                                                                    C
+                                                                                                             If no stamped cigarette adjustment activity, put an "X" in this
+                             NoAdjustments                                      1           R        U
+                                                                                                             element.
+
+                             EndingInventory                                            R            U       See expanded elements below for required and optional fields.
+
+
+
+
+                                                                        22
+  Commonwealth of Kentucky                                                                                                XML Electronic Filing for Cigarette Data
+
+Cigarette Schema Diagrams    Elements                      Attribute        Max    Required /    Used /     Expected Value
+                                                                            Size   Optional /   Not‐used
+                                                                                    Choice
+                                                                                                            This is the beginning inventory of sticks. It is reported by taxing
+                             ReportingJurisdiction                                                          jurisdiction associated to stamp type affixed. If no stamp is affixed,
+                                                                              16       R            U
+                             StickCnt                                                                       use the appropriate code for unstamped cigarettes. See FAQ
+                                                                                                            document for additional instructions.
+                             OtherJurisdiction
+                                                                                       O            N
+                             StickCount
+
+                                                                                                            Federal description of product can be found in Table 8 of this
+                                         FedDesc                              20           O            U
+                                                                                                            document. REQUIRED by Kentucky
+
+                                                                                                            MSA status of product can be found in Table 7 of this document.
+                                         MSAStatus                            10           O            U
+                                                                                                            REQUIRED by Kentucky
+
+
+                                                                                                            Taxing jurisdiction associated to stamp type can be found in Table 3
+                                         TaxJurisdiction                       5           O            U
+                                                                                                            of this document. REQUIRED by Kentucky
+
+
+                                         UPCNumber                            25           R            U   Universal product code for the brand.
+
+                                                                                                            Unit of Measure for the universal product code for the brand being
+                                         UPCUOM                               10           O            U   reported can be found in Table 2 of this document. REQUIRED by
+                                                                                                            Kentucky
+
+                                         Manufacturer                         35           R            U   Manufacturer name of product.
+                             Details                                               O            U
+
+                                         Manufacturer
+                                         EIN
+                                                                               9           O            U   Manufacturer’s FEIN. REQUIRED by Kentucky
+
+
+
+                                         BrandFamily                          35           R            U   Brand family of product sold or received.
+
+
+                                         Quantity                             16           O            U   Number of units. REQUIRED by Kentucky
+
+
+
+                                         SticksPerPack                        16           O            U   Number of cigarette sticks per pack. REQUIRED by Kentucky
+
+
+
+                                         TotalSticks                          16           R            U   Total number of cigarette sticks.
+
+
+
+
+                                                                       23
+  Commonwealth of Kentucky                                                                                               XML Electronic Filing for Cigarette Data
+
+Cigarette Schema Diagrams    Elements                      Attribute        Max    Required /    Used /    Expected Value
+                                                                            Size   Optional /   Not‐used
+                                                                                    Choice
+                                                                                                           This is the inventory adjustment of sticks. It is reported by taxing
+                             ReportingJurisdiction                                                         jurisdiction associated to stamp type affixed. If no stamp is affixed,
+                                                                              16       R           U
+                             StickCnt                                                                      use the appropriate code for unstamped cigarettes. See FAQ
+                                                                                                           document for additional instructions.
+
+                             OtherJurisdiction
+                                                                                       O           N
+                             StickCount
+
+                                                                                                           Federal description of product can be found in Table 8 of this
+                                         FedDesc                              20           O           U
+                                                                                                           document. REQUIRED by Kentucky
+
+                                                                                                           MSA status of product can be found in Table 7 of this document.
+                                         MSAStatus                            10           O           U
+                                                                                                           REQUIRED by Kentucky
+
+                                                                                                           Taxing jurisdiction associated to stamp type can be found in Table 3
+                                         TaxJurisdiction                       5           O           U
+                                                                                                           of this document. REQUIRED by Kentucky
+
+
+                                         UPCNumber                            25           R           U   Universal product code for the brand.
+
+                                                                                                           Unit of Measure for the universal product code for the brand being
+                                         UPCUOM                               10           O           U   reported can be found in Table 2 of this document. REQUIRED by
+                                                                                                           Kentucky
+
+                                         Manufacturer                         35           R           U   Manufacturer name of product.
+                             Details                                               O
+                                         Manufacturer
+                                                                               9           O           U   Manufacturer’s FEIN. REQUIRED by Kentucky
+                                         EIN
+
+
+                                         BrandFamily                          35           R           U   Brand name of product sold or received.
+
+
+                                         Quantity                             16           O           U   Number of units. REQUIRED by Kentucky
+
+
+                                         SticksPerPack                        16           O           U   Number of cigarette sticks per pack. REQUIRED by Kentucky
+
+
+                                         TotalSticks                          16           R           U   Total number of cigarette sticks.
+
+
+                                                                                                           The type of adjustment reported can be found in Table 9 of this
+                                         TypeOfAdj                            20           R           U
+                                                                                                           document.
+
+
+
+
+                                                                       24
+  Commonwealth of Kentucky                                                                                                        XML Electronic Filing for Cigarette Data
+
+Cigarette Schema Diagrams    Elements                      Attribute                Max    Required /    Used /     Expected Value
+                                                                                    Size   Optional /   Not‐used
+                                                                                            Choice
+                                                                                                                    This is the ending inventory of sticks. It is reported by taxing
+                             ReportingJurisdiction                                                                  jurisdiction associated to stamp type. If no stamp is affixed, use the
+                                                                                      16       R            U
+                             StickCnt                                                                               appropriate code for unstamped cigarettes. See FAQ document for
+                                                                                                                    additional instructions.
+
+                             OtherJurisdiction
+                                                                                               O            N
+                             StickCount
+
+                                                                                                                    Federal description of product can be found in Table 8 of this
+                                         FedDesc                                      20           O            U
+                                                                                                                    document. REQUIRED by Kentucky
+
+                                                                                                                    MSA status of product can be found in Table 7 of this document.
+                                         MSAStatus                                    10           O            U
+                                                                                                                    REQUIRED by Kentucky
+
+                                                                                                                    Taxing jurisdiction associated to stamp type can be found in Table 3
+                                         TaxJurisdiction                               5           O            U
+                                                                                                                    of this document. REQUIRED by Kentucky
+
+
+                                         UPCNumber                                    25           R            U   Universal product code for the brand.
+
+                                                                                                                    Unit of Measure for the universal product code for the brand being
+                                         UPCUOM                                       10           O            U   reported can be found in Table 2 of this document. REQUIRED by
+                                                                                                                    Kentucky
+
+                             Details     Manufacturer                                 35   O       R    U       U   Manufacturer name of product.
+
+
+                                         Manufacturer
+                                                                                       9           O            U   Manufacturer’s FEIN. REQUIRED by Kentucky
+                                         EIN
+
+
+                                         BrandFamily                                  35           R            U   Brand name of product sold or received.
+
+
+                                         Quantity                                     16           O            U   Number of units. REQUIRED by Kentucky
+
+
+                                         SticksPerPack                                16           O            U   Number of cigarette sticks per pack. REQUIRED by Kentucky
+
+
+
+                                         TotalSticks                                  16           R            U   Total number of cigarette sticks.
+
+                                                                  documentId          30
+                                                               documentName           20
+                             BinaryAttachment                                                  O            N
+                                                                       softwareId     10
+                                                              softwareVersion         20
+
+
+
+                                                                             25
+  Commonwealth of Kentucky                                                                                       XML Electronic Filing for Cigarette Data
+
+Cigarette Schema Diagrams    Elements                Attribute        Max    Required /    Used /    Expected Value
+                                                                      Size   Optional /   Not‐used
+                                                                              Choice
+
+                             FinancialTransaction                                O           N
+
+
+                             Reference                                           O           N
+
+
+                             DocumentTypeCd                                      O           N
+
+
+                             Desc                                                O           N
+
+
+                             AttachmentLocationTxt                               R           N
+
+
+                             StatePayment                                            R       N
+
+
+                             RefundDirectDeposit                             C       R       N
+
+
+                             ACHCreditInfo                                           R       N
+
+
+                             EstimatedPayments                                   O           N
+
+
+
+
+                                                                 26
+  Commonwealth of Kentucky                                                                                        XML Electronic Filing for Cigarette Data
+
+Cigarette Schema Diagrams    Elements               Attribute          Max    Required /    Used /    Expected Value
+                                                                       Size   Optional /   Not‐used
+                                                                               Choice
+
+                             Checking                                                 R       N
+                                                                              C
+                             Savings                                                  R       N
+
+
+                             RoutingTransitNumber                                 R           N
+
+
+                             BankAccountNumber                                    R           N
+
+
+                             PaymentAmount                                        R           N
+
+
+                             IdentificationNumber                                 O           N
+
+
+                             AccountHolderName                                    O           N
+
+
+                             AccountHolderType                                    O           N
+
+
+                             RequestedPaymentDate                                 O           N
+
+
+                             AddendaRecord                                        O           N
+
+
+                             NotIATTransaction                                        R       N
+
+
+                             IsIATTransaction       receivingDFIName     50   C       R       N
+
+
+                             FullIAT                                                  R       N
+
+
+
+
+                                                                 27
+  Commonwealth of Kentucky                                                                                         XML Electronic Filing for Cigarette Data
+
+Cigarette Schema Diagrams    Elements                  Attribute        Max    Required /    Used /    Expected Value
+                                                                        Size   Optional /   Not‐used
+                                                                                Choice
+
+                             TaxpayerIdentification                                O           N
+
+
+                                          FTACode                                      R       N
+                             TaxType
+                                                                               O
+                             Code         StateTax
+                                                                                       R       N
+                                          TypeCode
+
+                             TaxPeriodEndDate                                      O           N
+
+                                          SubAmount
+                                                                                       R       N
+                                          Type
+                             TXPAmount                                         O
+                                          SubAmount                                    R       N
+
+
+                             ForeignCurrency                                       O           N
+
+
+                             PaymentDetail                                         R           N
+
+
+                             ForeignDFI                                            R           N
+
+
+                             Receiver                                              R           N
+
+                             ForeignExchange
+                                                                                   O           N
+                             Indicator
+                             ForeignExchange
+                                                                                   O           N
+                             Refindicator
+                             ForeignExchange
+                                                                                   O           N
+                             Reference
+
+                             OriginatingCurrencyCode                               R           N
+
+
+                             DestinationCurrencyCode                               R           N
+
+
+                             ForeignPaymentAmount                                  R           N
+
+
+
+
+                                                                   28
+  Commonwealth of Kentucky                                                                                       XML Electronic Filing for Cigarette Data
+
+Cigarette Schema Diagrams    Elements                Attribute        Max    Required /    Used /    Expected Value
+                                                                      Size   Optional /   Not‐used
+                                                                              Choice
+
+                             DestinationCountry                                  R           N
+
+
+                             ForeighDFIName                                      R           N
+
+
+                             ForeignDFIIdentifier                                R           N
+
+
+                             ForeignDFICountryCode                               R           N
+
+
+                             ReceiverName                                        R           N
+
+
+                             ReceiverID                                          O           N
+
+
+                             ReceiverAddress                                     R           N
+
+
+
+
+                                                                 29
+  Commonwealth of Kentucky                                                                                         XML Electronic Filing for Cigarette Data
+
+Cigarette Schema Diagrams    Elements                  Attribute        Max    Required /    Used /    Expected Value
+                                                                        Size   Optional /   Not‐used
+                                                                                Choice
+                                        AddressLine
+                                        1Txt
+                                                                                      R        N
+
+                                        AddressLine
+                                        2Txt
+                                                                                      O        N
+
+                                        CityNm                                        R        N
+                             US
+                                        State                                  C
+                             Address
+                                        Abbreviation                                  R        N
+                                        CD
+
+                                        ZipCD                                         R        N
+
+                                        InCareOfNm                                    O        N
+
+                                        AddressLine
+                                        1Txt
+                                                                                      R        N
+
+                                        AddressLine
+                                        2Txt
+                                                                                      O        N
+
+                                        CityNm                                        O        N
+
+                             Foreign    ProvinceOr
+                                                                               C      O        N
+                             Address    StateNm
+
+                                        CountryCd                                     R        N
+
+                                        Foreign
+                                                                                      O        N
+                                        PostalCd
+
+                                        InCareOfNm                                    O        N
+
+
+
+
+                                                                   30
+  Commonwealth of Kentucky                                                                                        XML Electronic Filing for Cigarette Data
+
+Cigarette Schema Diagrams    Elements               Attribute          Max    Required /    Used /    Expected Value
+                                                                       Size   Optional /   Not‐used
+                                                                               Choice
+
+                             TelephoneNumber                                      O           N
+
+
+                             RoutingTransitNumber                                 R           N
+
+
+                             BankAccountNumber                                    R           N
+
+
+                             Amount                                               O           N
+
+
+                             Checking                                             R           N
+
+
+                             Savings                                              R           N
+
+
+                             NotIATTransaction                                    R           N
+
+
+                             IsIATTransaction       receivingDFIName     50       R           N
+
+
+                             FullIAT                                              R           N
+
+
+                             ForeignCurrency                                      O           N
+
+
+                             PaymentDetail                                        R           N
+
+
+                             ForeignDFI                                           R           N
+
+
+                             Receiver                                             R           N
+
+
+
+
+                                                                 31
+  Commonwealth of Kentucky                                                                                         XML Electronic Filing for Cigarette Data
+
+Cigarette Schema Diagrams    Elements                  Attribute        Max    Required /    Used /    Expected Value
+                                                                        Size   Optional /   Not‐used
+                                                                                Choice
+                             ForeignExchange
+                                                                                   O           N
+                             Indicator
+                             ForeignExchange
+                                                                                   O           N
+                             Refindicator
+                             ForeignExchange
+                                                                                   O           N
+                             Reference
+
+                             OriginatingCurrencyCode                               R           N
+
+
+                             DestinationCurrencyCode                               R           N
+
+
+                             ForeignPaymentAmount                                  R           N
+
+
+                             DestinationCountry                                    R           N
+
+
+                             ForeighDFIName                                        R           N
+
+
+                             ForeignDFIIdentifier                                  R           N
+
+
+                             ForeignDFICountryCode                                 R           N
+
+
+                             ReceiverName                                          R           N
+
+
+                             ReceiverID                                            O           N
+
+
+                             ReceiverAddress                                       R           N
+
+
+
+
+                                                                   32
+  Commonwealth of Kentucky                                                                                             XML Electronic Filing for Cigarette Data
+
+Cigarette Schema Diagrams    Elements                    Attribute          Max    Required /    Used /    Expected Value
+                                                                            Size   Optional /   Not‐used
+                                                                                    Choice
+                                          AddressLine
+                                          1Txt
+                                                                                           R       N
+
+                                          AddressLine
+                                          2Txt
+                                                                                           O       N
+
+                                          CityNm                                           R       N
+                             US
+                                          State                                    C
+                             Address
+                                          Abbreviation                                     R       N
+                                          CD
+
+                                          ZipCD                                            R       N
+
+                                          InCareOfNm                                       O       N
+
+                                          AddressLine
+                                          1Txt
+                                                                                           R       N
+
+                                          AddressLine
+                                          2Txt
+                                                                                           O       N
+
+                                          CityNm                                           O       N
+
+                             Foreign      ProvinceOr
+                                                                                   C       O       N
+                             Address      StateNm
+
+                                          CountryCd                                        R       N
+
+                                          Foreign
+                                                                                           O       N
+                                          PostalCd
+
+                                          InCareOfNm                                       O       N
+
+
+                             PaymentAmount                                             R           N
+
+
+                             IdentificationNumber                                      O           N
+
+
+                             RequestedPaymentDate                                      O           N
+
+
+                             AddendaRecord                                             O           N
+
+
+                             NotIATTransaction                                         R           N
+
+
+                             IsIATTransaction            receivingDFIName     50       R           N
+
+
+
+
+                                                                      33
+  Commonwealth of Kentucky                                                                                        XML Electronic Filing for Cigarette Data
+
+Cigarette Schema Diagrams    Elements                 Attribute        Max    Required /    Used /    Expected Value
+                                                                       Size   Optional /   Not‐used
+                                                                               Choice
+
+                             TaxpayerIdentification                               O           N
+
+
+                             TaxTypeCode                                          O           N
+
+
+                             TaxPeriodEndDate                                     O           N
+
+
+                             TXPAmount                                            O           N
+
+
+                             FTACode                                              R           N
+
+
+
+                             StateTaxTypeCode                                     R           N
+
+
+                             SubAmountType                                        R           N
+
+
+                             SubAmount                                            R           N
+
+
+
+
+                                                                  34
+  Commonwealth of Kentucky                                                                                          XML Electronic Filing for Cigarette Data
+
+Cigarette Schema Diagrams    Elements                 Attribute          Max    Required /    Used /    Expected Value
+                                                                         Size   Optional /   Not‐used
+                                                                                 Choice
+
+                             Checking                                               R           N
+
+
+                             Savings                                                R           N
+
+
+                             RoutingTransitNumber                                   R           N
+
+
+                             BankAccountNumber                                      R           N
+
+
+                             PaymentAmount                                          R           N
+
+
+                             IdentificationNumber                                   O           N
+
+
+                             AccountHolderName                                      O           N
+
+
+                             AccountHolderType                                      O           N
+
+
+                             RequestedPaymentDate                                   O           N
+
+
+                             AddendaRecord                                          O           N
+
+
+                             NotIATTransaction                                      R           N
+
+
+                             IsIATTTransaction        receivingDFIName     50       R           N
+
+
+                             FullIAT                                                R           N
+
+
+                             TaxpayerIdentification                                 O           N
+
+
+                             TaxTypeCode                                            O           N
+
+
+                             TaxPeriodEndDate                                       O           N
+
+
+                             TXPAmount                                              O           N
+
+
+
+
+                                                                   35
+  Commonwealth of Kentucky                                                                                         XML Electronic Filing for Cigarette Data
+
+Cigarette Schema Diagrams    Elements                  Attribute        Max    Required /    Used /    Expected Value
+                                                                        Size   Optional /   Not‐used
+                                                                                Choice
+
+                             FTACode                                               R           N
+
+
+
+                             StateTaxTypeCode                                      R           N
+
+
+                             SubAmountType                                         R           N
+
+
+                             SubAmount                                             R           N
+
+
+                             ForeignCurrency                                       O           N
+
+
+                             PaymentDetail                                         R           N
+
+
+                             ForeignDFI                                            R           N
+
+
+                             Receiver                                              R           N
+
+                             ForeignExchange
+                                                                                   O           N
+                             Indicator
+                             ForeignExchange
+                                                                                   O           N
+                             Refindicator
+                             ForeignExchange
+                                                                                   O           N
+                             Reference
+
+                             OriginatingCurrencyCode                               R           N
+
+
+                             DestinationCurrencyCode                               R           N
+
+
+                             ForeignPaymentAmount                                  R           N
+
+
+                             DestinationCountry                                    R           N
+
+
+
+
+                                                                   36
+  Commonwealth of Kentucky                                                                                           XML Electronic Filing for Cigarette Data
+
+Cigarette Schema Diagrams    Elements                    Attribute        Max    Required /    Used /    Expected Value
+                                                                          Size   Optional /   Not‐used
+                                                                                  Choice
+
+                             ForeighDFIName                                          R           N
+
+
+                             ForeignDFIIdentifier                                    R           N
+
+
+                             ForeignDFICountryCode                                   R           N
+
+
+                             ReceiverName                                            R           N
+
+
+                             ReceiverID                                              O           N
+
+
+                             ReceiverAddress                                         R           N
+
+                                          AddressLine
+                                          1Txt
+                                                                                         R       N
+
+                                          AddressLine
+                                          2Txt
+                                                                                         O       N
+
+                                          CityNm                                         R       N
+                             US
+                                          State                                  C
+                             Address
+                                          Abbreviation                                   R       N
+                                          CD
+
+                                          ZipCD                                          R       N
+
+                                          InCareOfNm                                     O       N
+
+                                          AddressLine
+                                          1Txt
+                                                                                         R       N
+
+                                          AddressLine
+                                          2Txt
+                                                                                         O       N
+
+                                          CityNm                                         O       N
+
+                             Foreign      ProvinceOr
+                                                                                 C       O       N
+                             Address      StateNm
+
+                                          CountryCd                                      R       N
+
+                                          Foreign
+                                                                                         O       N
+                                          PostalCd
+
+                                          InCareOfNm                                     O       N
+
+
+
+
+                                                                     37
+Commonwealth of Kentucky                                                                                             XML Electronic Filing for Cigarette Data
+
+Table 2 ‐ UPCUOM Code List
+The FTA Tobacco Tax Section Uniformity Committee has adopted the following codes for the uniform forms. Kentucky has also adopted these codes for filing
+cigarette returns with the Department of Revenue. The following table provides the codes for the cigarette UPC Unit of Measure.
+
+Unit of Measure Codes    Description
+CAR                      Carton
+CSE                      Case
+PAK                      Pack
+STK                      Stick
+
+
+
+
+                                                                            38
+Commonwealth of Kentucky                                                                                                XML Electronic Filing for Cigarette Data
+
+
+
+Table 3 ‐ Tax Jurisdiction Code List
+The following table is used to report the correct tax jurisdiction code for the receipt and disbursement of stamped and unstamped cigarettes.
+
+
+
+
+                                                                               39
+Commonwealth of Kentucky        XML Electronic Filing for Cigarette Data
+
+
+
+
+                           40
+Commonwealth of Kentucky        XML Electronic Filing for Cigarette Data
+
+
+
+
+                           41
+Commonwealth of Kentucky        XML Electronic Filing for Cigarette Data
+
+
+
+
+                           42
+Commonwealth of Kentucky        XML Electronic Filing for Cigarette Data
+
+
+
+
+                           43
+Commonwealth of Kentucky        XML Electronic Filing for Cigarette Data
+
+
+
+
+                           44
+Commonwealth of Kentucky                                                              XML Electronic Filing for Cigarette Data
+
+
+
+
+   05/01/2023 – NEW KY MODIFIED RISK CIGARETTE CODES: KYMRT1 = 50% and KYMRT2 = 25%
+
+
+
+
+                                                             45
+Commonwealth of Kentucky                                                                                                XML Electronic Filing for Cigarette Data
+
+
+
+Table 4 ‐ Schedule Codes
+The following table provides codes for reporting schedules for receipt and disbursement of cigarettes.
+Code         Description                                                                                             Allowed to be used when reporting by:
+                                                                                                                  Resident and Non          Manufacturers
+                                                                                                                  Resident Wholesalers
+                                                                                                                  and Subjobbers
+1A           Cigarettes received from a manufacturer or first importer                                                      YES                      NO
+1B           Cigarettes received from a person other than a manufacturer or first importer, (e.g., a                        YES                      NO
+             wholesaler, distributor, or other licensee)
+1C           Cigarettes received from a retailer or end user                                                               YES                       NO
+1D           Cigarettes received by a manufacturer or first importer from a person other than a manufacturer               YES                       YES
+             or first importer
+2A           Cigarettes disbursed by a manufacturer or first importer                                                      YES                       YES
+2B           Cigarettes disbursed to a person other than a manufacturer or first importer, (e.g., a wholesaler,            YES                       NO
+             distributor, or other licensee)
+2C           Cigarettes disbursed to a retailer or end user                                                                YES                       NO
+2D           Cigarettes returned to the manufacturer                                                                       YES                       NO
+
+
+
+Table 5 ‐ Transaction Document Types
+When reporting receipts and disbursements, a filer must indicate the type of document in which the information is obtained. The following table provides codes
+for these document types.
+Type
+Invoice
+Purchase Order
+Credit Memo
+Affidavit
+Returned Goods Authorization
+Confirmation
+Bill of Lading
+Other
+
+
+
+                                                                               46
+Commonwealth of Kentucky                                                                               XML Electronic Filing for Cigarette Data
+
+
+
+
+Table 6 ‐ Type of Customer
+The following table provides the codes for the type of company with which a filer is doing business.
+Code                     Description
+Distributor              Distributor
+Manufacturer             Manufacturer
+Retailer                 Retailer
+Subjobber                Subjobber
+Employee                 Employee
+Customer                 Customer
+Wholesaler               Wholesaler
+Delivery Seller          Delivery Seller
+Native                   Native
+Military                 Military
+Government               Government
+InterBranch Transfer     Inter‐branch Transfer
+Distribution Center      Distribution Center Deployment
+
+Table 7 ‐ Cigarette MSA Status Types
+The following table provides the manufacturer codes for MSA status.
+Code        Description
+OPM         Original Participating Manufacturer
+SPM         Subsequent Participating Manufacturer
+NPM         Non‐Participating Manufacturer
+N/A         Not Applicable
+PM          Participating Manufacturer
+NPM1        Non‐Participating Manufacturer 1
+NPM2        Non‐Participating Manufacturer 2
+NSM         Texas
+
+
+
+
+                                                                                47
+Commonwealth of Kentucky                                                                                           XML Electronic Filing for Cigarette Data
+
+
+
+Table 8 ‐ Federal Description Code List
+The following table provides codes for federal descriptions of types of products received and disbursed.
+Code
+Cigarette
+Small Cigar
+
+Table 9 ‐ Type of Adjustments
+The following table provides codes for describing inventory adjustments.
+Code
+Damaged
+Destroyed
+Floor Stock
+Small Cigar
+Counting Error
+Returned
+Shipment Error
+Stolen
+Transfer
+Shrinkage
+Timing
+
+Table 10 ‐ Type of Address Codes
+The following table provides codes for the origin and destination of products.
+Code                        Description                                               Used by Kentucky/ Not Used
+Mailing                     Mailing Address Type                                      Not used by Kentucky
+Location                    Physical Location Address Type                            Used by Kentucky
+Billing                     Billing Address Type                                      Not used by Kentucky
+Delivery                    Delivery Address Type                                     Not used by Kentucky
+
+
+
+
+                                                                                 48
+

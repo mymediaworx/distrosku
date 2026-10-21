@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.06">
+	<xsd:include schemaLocation="../CommonSO/efileTypes.xsd"/>
+	<xsd:include schemaLocation="../ExtendedCommon/ReturnHeaderSO.xsd"/>
+	<xsd:include schemaLocation="CigaretteEnumerations.xsd"/>
+	<xsd:element name="ReturnHeaderState" type="CigaretteReturnHeaderStateType"/>
+	<xsd:complexType name="CigaretteReturnHeaderStateType">
+		<xsd:complexContent>
+			<xsd:extension base="ReturnHeaderType">
+				<xsd:sequence>
+					<!-- Return Type -->
+					<xsd:element name="ReturnType" type="ReturnTypeType"/>
+					<xsd:element name="TaxDue" type="ACHAmountType" minOccurs="0"/>
+					<xsd:element name="PenaltyDue" type="ACHAmountType" minOccurs="0"/>
+					<xsd:element name="InterestDue" type="ACHAmountType" minOccurs="0"/>
+					<xsd:element name="TotalDue" type="ACHAmountType" minOccurs="0"/>
+					<!-- Filer -->
+					<xsd:element name="Filer">
+						<xsd:complexType>
+							<xsd:sequence>
+								<xsd:element name="EIN" type="EINType"/>
+								<xsd:element name="StateEIN" type="String20Type" minOccurs="0"/>
+								<xsd:element name="Name" type="BusinessNameType"/>
+								<xsd:element name="InCareOfNm" type="InCareOfNameType" minOccurs="0"/>
+								<xsd:element name="NameControl" type="BusinessNameControlType" minOccurs="0"/>
+								<xsd:choice>
+									<xsd:element name="USAddress" type="USAddressType"/>
+									<xsd:element name="ForeignAddress" type="ForeignAddressType"/>
+								</xsd:choice>
+							</xsd:sequence>
+						</xsd:complexType>
+					</xsd:element>
+					<!-- Responsible party or person signing the filing -->
+					<xsd:element name="BusinessRepresentative">
+						<xsd:complexType>
+							<xsd:sequence>
+								<xsd:element name="PersonName" type="IndividualNameType"/>
+								<xsd:element name="PersonTitleTxt" type="PersonTitleType"/>
+								<xsd:element name="TaxpayerPIN" type="PINType" minOccurs="0"/>
+								<xsd:choice minOccurs="0">
+									<xsd:element name="PhoneNum" type="PhoneNumberType"/>
+									<xsd:element name="ForeignPhoneNum" type="ForeignPhoneNumberType"/>
+								</xsd:choice>
+								<xsd:element name="EmailAddressTxt" type="EmailAddressType" minOccurs="0"/>
+								<xsd:element name="SignatureDt" type="DateType" minOccurs="0"/>
+							</xsd:sequence>
+						</xsd:complexType>
+					</xsd:element>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+</xsd:schema>

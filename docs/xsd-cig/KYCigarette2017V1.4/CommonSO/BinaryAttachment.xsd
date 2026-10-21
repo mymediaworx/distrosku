@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0">
+	<xsd:annotation>
+		<xsd:documentation>
+			<Description>State Binary Attachment</Description>
+		</xsd:documentation>
+	</xsd:annotation>
+	<xsd:include schemaLocation="efileTypes.xsd"/>
+	<xsd:include schemaLocation="StateeFileTypes.xsd"/>
+	<!-- ===================================================== -->
+	<!-- ================= Binary Attachment ================= -->
+	<!-- ===================================================== -->
+	<xsd:element name="BinaryAttachment">
+		<xsd:annotation>
+			<xsd:documentation>Binary Attachment</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:complexContent>
+				<xsd:extension base="BinaryAttachmentType">
+					<xsd:attributeGroup ref="StateDocumentAttributes">
+						<xsd:annotation>
+							<xsd:documentation>Common return document attributes</xsd:documentation>
+						</xsd:annotation>
+					</xsd:attributeGroup>
+				</xsd:extension>
+			</xsd:complexContent>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:complexType name="BinaryAttachmentType">
+		<xsd:annotation>
+			<xsd:documentation>Content model for Binary Attachment</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<!-- Document Type -->
+			<xsd:element name="Reference" type="String20Type" minOccurs="0"/>
+			<xsd:element name="DocumentTypeCd" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Document Type</Description>
+					</xsd:documentation>
+				</xsd:annotation>
+				<xsd:simpleType>
+					<xsd:restriction base="StringType">
+						<xsd:enumeration value="PDF"/>
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:element>
+			<!-- Description -->
+			<xsd:element name="Desc" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Description</Description>
+					</xsd:documentation>
+				</xsd:annotation>
+				<xsd:simpleType>
+					<xsd:restriction base="TextType">
+						<xsd:maxLength value="128"/>
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:element>
+			<!-- Attachment Location - short filename without path (required) -->
+			<xsd:element name="AttachmentLocationTxt">
+				<xsd:annotation>
+					<xsd:documentation>
+						<Description>Attachment Location - short filename without path</Description>
+					</xsd:documentation>
+				</xsd:annotation>
+				<xsd:simpleType>
+					<xsd:restriction base="TextType">
+						<xsd:maxLength value="64"/>
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+</xsd:schema>

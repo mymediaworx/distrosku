@@ -1,0 +1,12 @@
+UPDATE 2/23/2018 - 
+	*Added 'Customer' and 'Employee' to tobaccoenumerations.xsd file to match available options in cigarette
+	*Updated stateSchemaVersion to '1.3' in TobaccoReturn.xsd
+	*Updated Version to '1.3' and ReleaseDate to 'February 2018' in TobaccoTransmission.xsd
+
+
+ 
+The latest tobacco EDI guide can also be found on the Kentucky Department of Revenue Tobacco Tax website.
+
+The FAQ document and versions of the tax return are available at the Kentucky DOR website.
+
+If you have questions, please call 1-502-564-6823, press Option 2.

@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2009 sp1 (http://www.altova.com) by ASC X12 (ASC X12) -->
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0">
+	<xsd:include schemaLocation="../CigaretteeFileTypes.xsd"/>
+	<xsd:include schemaLocation="../../CommonSO/StateeFileTypes.xsd"/>
+	<xsd:include schemaLocation="../../CommonSO/efileTypes.xsd"/>
+	<xsd:annotation>
+		<xsd:documentation>
+			<Description>Unaffixed Stamp Report</Description>
+			<MaturityLevel>Draft Release</MaturityLevel>
+			<ReleaseDate>May 1, 2013</ReleaseDate>
+		</xsd:documentation>
+	</xsd:annotation>
+	<xsd:element name="SchUnaffixedStampReport" type="UnaffixedStampReportType">
+		<xsd:annotation>
+			<xsd:documentation>Unaffixed Stamp Report</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType name="UnaffixedStampReportType">
+		<xsd:sequence>
+			<xsd:element name="BegInventory" type="StampInvType">
+				<xsd:annotation>
+					<xsd:documentation>Beginning inventory of unaffixed stamps (from last month's ending inventory)</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:choice>
+				<xsd:sequence>
+					<xsd:element name="TotalPurchaseCount" type="IntegerType" minOccurs="0"/>
+					<xsd:element name="TotalPurchaseGrossValue" type="USDecimalAmountType" minOccurs="0"/>
+					<xsd:element name="Purchases" type="PurchasesType" maxOccurs="unbounded"/>
+				</xsd:sequence>
+				<xsd:element name="NoPurchases" type="CheckboxType"/>
+			</xsd:choice>
+			<xsd:choice>
+				<xsd:sequence>
+					<xsd:element name="TotalAdjustmentCount" type="IntegerType" minOccurs="0"/>
+					<xsd:element name="TotalAdjustmentGrossValue" type="USDecimalAmountType" minOccurs="0"/>
+					<xsd:element name="Adjustments" type="AdjustmentType" maxOccurs="unbounded"/>
+				</xsd:sequence>
+				<xsd:element name="NoAdjustments" type="CheckboxType"/>
+			</xsd:choice>
+			<xsd:element name="EndInventory" type="StampInvType">
+				<xsd:annotation>
+					<xsd:documentation>Ending inventory of unaffixed stamps</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="StampsAffixed" type="StampInvType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Stamps affixed</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<!--Adjustments by type-->
+	<xsd:complexType name="AdjustmentType">
+		<xsd:sequence>
+			<xsd:element name="Date" type="DateType"/>
+			<xsd:element name="TypeOfAdjustment" type="CigAdjustmentType">
+				<xsd:annotation>
+					<xsd:documentation>Adjustments for lost, stolen or destroyed stamps</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Explanation" type="LineExplanationType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Explanation to support adjustment</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Stamps" type="CigDenomGVType">
+				<xsd:annotation>
+					<xsd:documentation>Number of stamps being adjusted</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<!--Stamp purchases-->
+	<xsd:complexType name="PurchasesType">
+		<xsd:sequence>
+			<xsd:element name="DateReceived" type="DateType">
+				<xsd:annotation>
+					<xsd:documentation>Date stamps were received</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="PurchaseOrderNumber" type="String35Type">
+				<xsd:annotation>
+					<xsd:documentation>Purchase Order number of stamps received</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="PurchaseOrderDetails" maxOccurs="unbounded">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="RollID" type="String35Type">
+							<xsd:annotation>
+								<xsd:documentation>Roll identification number for stamps received</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						<xsd:element name="Stamps" type="CigDenomGVType"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="StampInvType">
+		<xsd:sequence>
+			<xsd:element name="TotalInventoryCount" type="IntegerType" minOccurs="0"/>
+			<xsd:element name="TotalInventoryGrossValue" type="USDecimalAmountType" minOccurs="0"/>
+			<xsd:element name="Details" type="CigDenomGVType" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+</xsd:schema>

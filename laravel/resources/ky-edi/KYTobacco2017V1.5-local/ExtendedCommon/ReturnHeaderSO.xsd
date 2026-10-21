@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0">
+	<xsd:include schemaLocation="../CommonSO/efileTypes.xsd"/>
+	<xsd:include schemaLocation="../CommonSO/StateeFileTypes.xsd"/>
+	<xsd:element name="ReturnHeader" type="ReturnHeaderType"/>
+	<xsd:complexType name="ReturnHeaderType">
+		<xsd:annotation>
+			<xsd:documentation>Content model for the base tax return header</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<!-- Jurisdiction for which return is being filed -->
+			<xsd:element name="Jurisdiction">
+				<xsd:simpleType>
+					<xsd:restriction base="xsd:string">
+						<xsd:minLength value="2"/>
+						<xsd:maxLength value="3"/>
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:element>
+			<!-- Date and Time Stamp -->
+			<xsd:element name="Timestamp" type="TimestampType">
+				<xsd:annotation>
+					<xsd:documentation>The date and time when the return was created</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<!-- Tax Period Begin Date -->
+			<xsd:element name="TaxPeriodBeginDate" type="DateType" minOccurs="0"/>
+			<!-- Tax Period End Date -->
+			<xsd:element name="TaxPeriodEndDate" type="DateType" minOccurs="0"/>
+			<!-- Tax Year -->
+			<xsd:element name="TaxYear" type="YearType" minOccurs="0"/>
+			<!-- Reporting Quarter -->
+			<xsd:element name="Quarter" minOccurs="0">
+				<xsd:simpleType>
+					<xsd:restriction base="xsd:string">
+						<xsd:enumeration value="1"/>
+						<xsd:enumeration value="2"/>
+						<xsd:enumeration value="3"/>
+						<xsd:enumeration value="4"/>
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:element>
+			<!-- Disaster Relief -->
+			<xsd:element name="DisasterRelief" type="LineExplanationType" minOccurs="0"/>
+			<!-- Intermediate Service Provider Number -->
+			<xsd:element name="ISPNumber" type="ISPType" minOccurs="0"/>
+			<!-- Paid Preparer Information -->
+			<xsd:element name="PaidPreparerInformation" minOccurs="0">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="DateSigned" type="DateType" minOccurs="0"/>
+						<xsd:element name="SelfEmployed" type="CheckboxType" minOccurs="0"/>
+						<xsd:choice minOccurs="0">
+							<xsd:element name="SSN" type="SSNType"/>
+							<xsd:element name="PTIN" type="PTINType"/>
+							<xsd:element name="StateID" type="String20Type"/>
+						</xsd:choice>
+						<xsd:choice minOccurs="0">
+							<xsd:element name="PreparerFirmIDNumber" type="EINType"/>
+							<xsd:element name="StateEIN" type="String20Type"/>
+						</xsd:choice>
+						<xsd:element name="PreparerBusinessName" type="BusinessNameType" minOccurs="0"/>
+						<xsd:element name="PreparerPersonName" type="PersonNameType"/>
+						<xsd:choice minOccurs="0">
+							<xsd:element name="PreparerUSAddress" type="USAddressType"/>
+							<xsd:element name="PreparerForeignAddress" type="ForeignAddressType"/>
+						</xsd:choice>
+						<xsd:choice minOccurs="0">
+							<xsd:element name="Phone" type="PhoneNumberType"/>
+							<xsd:element name="ForeignPhone" type="ForeignPhoneNumberType"/>
+						</xsd:choice>
+						<xsd:element name="EmailAddress" type="EmailAddressType" minOccurs="0"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<!-- Originator -->
+			<!-- Software Identification -->
+			<xsd:element name="Originator" minOccurs="0">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:choice>
+							<xsd:element name="EFIN" type="EFINType"/>
+							<xsd:element name="AgentIdentifier" type="String20Type"/>
+						</xsd:choice>
+						<xsd:element name="OriginatorTypeCd" type="OriginatorType"/>
+						<!-- Practitioner PIN -->
+						<xsd:element name="PractitionerPIN" minOccurs="0">
+							<xsd:complexType>
+								<xsd:choice>
+									<xsd:sequence>
+										<xsd:element name="EFIN" type="EFINType"/>
+										<xsd:element name="PIN" type="PINType"/>
+									</xsd:sequence>
+									<xsd:element name="ReportingAgentSignature" type="PINTypeState">
+										<xsd:annotation>
+											<xsd:documentation>Use only if you are approved by the state to sign for all the Returns included in this Transmission.</xsd:documentation>
+										</xsd:annotation>
+									</xsd:element>
+								</xsd:choice>
+							</xsd:complexType>
+						</xsd:element>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="SoftwareId" type="String10Type" minOccurs="0"/>
+			<!-- Software Version -->
+			<xsd:element name="SoftwareVersion" type="SoftwareVersionType" minOccurs="0"/>
+			<!-- IP Address and Related Information -->
+			<xsd:element name="InternetProtocol" type="InternetProtocolType" minOccurs="0"/>
+			<!-- Signature Option -->
+			<xsd:element name="SignatureOption" minOccurs="0">
+				<xsd:complexType>
+					<xsd:choice>
+						<xsd:element name="SignatureDocument" type="SignatureDocumentType"/>
+						<xsd:element name="SignaturePIN">
+							<xsd:complexType>
+								<xsd:sequence>
+									<xsd:element name="Signature" type="PINCodeType"/>
+									<xsd:element name="PrimaryPINEnteredBy" type="PINEnteredByType"/>
+									<xsd:element name="SecondaryPINEnteredBy" type="PINEnteredByType" minOccurs="0"/>
+								</xsd:sequence>
+							</xsd:complexType>
+						</xsd:element>
+					</xsd:choice>
+				</xsd:complexType>
+			</xsd:element>
+			<!-- Indicator whether this is an amended return -->
+			<xsd:element name="AmendedReturnIndicator" type="CheckboxType" minOccurs="0"/>
+			<!--Submission ID of original submission to IRS, if return has been previously submitted -->
+			<xsd:element name="OriginalSubmissionId" type="SubmissionIdType" minOccurs="0"/>
+			<!-- Date of original submission to IRS, if return has been previously submitted -->
+			<xsd:element name="OriginalSubmissionDate" type="DateType" minOccurs="0"/>
+		</xsd:sequence>
+		<xsd:attribute name="binaryAttachmentCount" type="IntegerNNType" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>The number of binary attachments in the return</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<!-- Binary Attachment Count -->
+	</xsd:complexType>
+</xsd:schema>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xsd:annotation>
+		<xsd:documentation>
+			<Description>Transmission Header for Kentucky Cigarette</Description>
+			<Version>1.000</Version>
+			<ReleaseDate>June 1, 2017</ReleaseDate>
+		</xsd:documentation>
+	</xsd:annotation>
+	<xsd:include schemaLocation="../ExtendedCommon/TransmissionHeader.xsd"/>
+	<xsd:include schemaLocation="CigaretteReturn.xsd"/>
+	<xsd:element name="CigaretteTransmission">
+		<xsd:annotation>
+			<xsd:documentation>Integrated Transmission schema for inclusion in SOAP body</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element ref="TransmissionHeader"/>
+				<xsd:element ref="ReturnState" maxOccurs="unbounded"/>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+</xsd:schema>

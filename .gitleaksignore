@@ -1,0 +1,4 @@
+# reviewed false positives (rule key names, not secrets)
+laravel/database/migrations/2026_11_08_000001_phase18_eligibility.php:generic-api-key:114
+laravel/tests/Feature/Phase18EligibilityTest.php:generic-api-key:233
+laravel/tests/Feature/Phase18EligibilityTest.php:generic-api-key:234

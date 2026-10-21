@@ -1,0 +1,1073 @@
+                                                                           EFFECTIVE JANUARY 3, 2016
+                                                                           UPDATED OCTOBER 26, 2020
+
+
+
+
+                                                                          Exhibit B
+
+
+Altria
+AltriaGroup
+       GroupDistribution
+             DistributionCompany l Forl Trade
+                           Company            Use Only
+                                        For Trade      l 10/26/2020
+                                                  Use Only   l 10/13/20                                11
+    MSA DISTRIBUTOR SUPPORT CENTER (DSC)
+    CONTACT INFORMATION
+
+
+                                                                      MANAGEMENT SCIENCE
+                                                                      ASSOCIATES
+                                                                      6565 PENN AVENUE
+                                                                      PITTSBURGH, PA 15206-4490
+
+
+
+                                                                      DSC@MSA.COM
+
+
+
+
+                                                                      PHONE: 1-877-544-4429
+                                                                      FAX: 412-515-8737
+
+
+                                       Service Hours: 8:00 a.m. to 7:00 p.m. Eastern, Monday-Friday
+
+
+
+
+Altria Group Distribution Company l For Trade Use Only l 10/26/2020                                   2
+    TABLE OF CONTENTS
+                                                                                                              PAGE
+    MULTICAT™ DATA FILE SUBMISSION
+    MULTICAT™ DATA FILE SPECIAL NOTES                                                                         5-10
+    MULTICAT™ DATA FILE FORMAT                                                                                11-17
+
+
+    MULTICAT™ DATA FILE RECORD DETAILS
+    HEADER IDENTIFICATION RECORD (HID)                                                                         19
+    BRAND IDENTIFICATION RECORD (BID)                                                                         20-26
+    SHIP TO IDENTIFICATION RECORD (SID)                                                                       27-30
+    PURCHASE RECORD (PUR)                                                                                     31-35
+    TOTAL RECORD (TOT)                                                                                         36
+
+
+
+
+                                                  Revisions to the STARS Reporting Package are highlighted.
+                                                           (Pages 6, 9-10, 15, 25-26, 31-32, 34-35)
+Altria Group Distribution Company l For Trade Use Only l 10/26/2020                                                   3
+                           MULTICAT™
+                      DATA FILE SUBMISSION
+
+
+
+Altria Group
+Altria GroupDistribution Company
+              Distribution       l For Trade
+                            Company     l ForUse Only Use
+                                              Trade   l 10/26/2020
+                                                           Only l 10/13/20   44
+    MULTICAT™ DATA FILE SPECIAL NOTES
+
+     1. A separate data file is required for each Site by week.
+     2. Each Non-Direct Distributor (“NDD”) that submits data through a Participant must provide the
+        Participant with a separate data file each week or submit a weekly data file directly to MSA.
+     3. With respect to each data file that is submitted, MSA will fax or email to Participant and/or NDD, as the
+        case may be, a confirmation document confirming receipt of the data and detailing any data errors.
+     4. Files are to be submitted utilizing a secure file transfer protocol
+          ▪ Please work with your Distributor Support Center representative to get set up using the current
+            approved platform.
+     5. All data is to be recorded in ASCII (American Standard Code for Information Interchange).
+
+
+
+
+Altria Group Distribution Company l For Trade Use Only l 10/26/2020                                                 5
+    MULTICAT™ DATA FILE SPECIAL NOTES
+
+     6. The MULTICAT™ file must contain data for the following Tobacco Products: Cigarettes, Moist Snuff
+        (loose/pouches), SNUS (Spit-Free Tobacco Pouch Products), Hard Snuff (CTP), Cigars, Little/Filtered
+        Cigars, Dry Snuff (Nasal), Loose Leaf (Chewing Tobacco), Roll Your Own Tobacco,
+        Tubes/Papers/Wraps, Kits (includes RYO Tobacco, Paper, and Machine), Pipe Tobacco,
+        Twist/Rope/Plug, E-Vapor (e.g., Cartridges/Sticks (rechargeable/disposable)/Kits/Liquids), Tobacco
+        Derived Nicotine Products (not including E-Vapor), Accessories and Heated Tobacco.
+          ▪ ACCESSORIES: non-consumable products used for electronic devices
+              – Any IQOS tobacco heating system device or related devices, kits, carrying cases, chargers,
+                batteries, blank cartridges, or other related accessories should be reported within the Accessories
+                category. This includes accessories for E-Vapor.
+              – This category should be reported as category 003262 in columns 145 – 150 of the BID record.
+          ▪ HEATED TOBACCO: non-combustible dry tobacco wrapped in paper requiring a heating element
+            for use
+              – Heated Tobacco Category is new. It will include Marlboro HeatSticks, which will be used in
+                conjunction with the IQOS tobacco heating system.
+              – This category should be reported as category 003232 in columns 145 – 150 of the BID record.
+
+
+
+
+Altria Group Distribution Company l For Trade Use Only l 10/26/2020                                                   6
+    MULTICAT™ DATA FILE SPECIAL NOTES
+
+     7. The State Tax Jurisdiction MULTICAT™ field must be completed for all shipments of Tobacco Products
+        and for each customer the Distributor supplies.
+          ▪ RETAILER: For shipments of Tobacco Products to retailers, the State Tax Jurisdiction field must
+            contain the state in which the product is intended for sale to ATCs.*
+          ▪ NDD: For shipments of Tobacco Products to NDDs, the State Tax Jurisdiction field must contain the
+            state(s) into which the Distributor expects the Tobacco Product ultimately to be sold to a retailer for
+            resale to ATCs.
+          ▪ The State Tax Jurisdiction must be reported using the United States Postal Service (“USPS”)
+            two-character state code abbreviations for the 50 states and the District of Columbia.
+          ▪ Locations below the state level should not be reported (e.g., city tax jurisdictions).
+          ▪ Report the State Tax Jurisdiction, in either the SID Record or the BID Record, but not both.
+
+
+
+
+                                   *State Tax Jurisdiction should be reported even if the product is not subject to state tax (i.e., shipments to military) and even if the Distributor is not the tax-payer.
+
+Altria Group Distribution Company l For Trade Use Only l 10/26/2020                                                                                                                                             7
+    MULTICAT™ DATA FILE SPECIAL NOTES
+
+     8. Three measures are required for the detailed reporting of product returns, including Floor Returns,
+        Saleable Returns and Unsaleable Returns.
+          ▪ FLOOR RETURNS (Returns from wholesaler to manufacturer, its reclamation center or the original
+            supplier, where the product never shipped to any retailer, sub-jobber or non-direct distributor) must
+            be reported in Measure Code 006 of the BID Record.
+          ▪ SALEABLE RETURNS (Returns from retailer to wholesaler, where the product may be re-sold)
+            must be reported in Measure Code 004 of the PUR Record.
+          ▪ UNSALEABLE RETURNS (Returns from retailer to wholesaler, where the product is expired,
+            damaged or otherwise non-saleable) must be reported in Measure Code 005 of the PUR Record.
+
+
+
+
+Altria Group Distribution Company l For Trade Use Only l 10/26/2020                                                 8
+    MULTICAT™ DATA FILE SPECIAL NOTES
+
+     9. All purchase records must have a valid Transaction Date*
+                                                      TRANSACTION DATE - PURCHASES                                                           TRANSACTION DATE - RETURNS
+                 DELIVERY SERVICES
+                                               Date product arrives at your customer’s location                                  Date product departs from your customer’s location
+                   DISTRIBUTOR
+                    CASH & CARRY
+                                                   Date product is picked up by your customer                                         Date product is dropped off by your customer
+                     DISTRIBUTOR
+
+
+
+     ▪ TRANSACTION DATE may differ from industry terms such as:
+         – Order Date: Date customer places order
+         – Billing Date: Date customer is billed for order
+         – Ship Date: Date product leaves warehouse
+     ▪ TRANSACTION DATE is likely to differ from the Week Ending Date field within HID and TOT records,
+       which is the date of the last day of the STARS reporting week
+         If multiple deliveries are made to the same customer within the same Week Ending Date, then report in separate records
+         for each unique combination of Transaction Date, UPC, and SKU as shown in the example below.
+
+                                                     TYPE           DISTRIBUTOR ID#                      PROJECT ID                   WEEK ENDING DATE
+
+                                                       HID                12345678                            TOB                              20201024
+
+
+                                                                                                                               TRANSACTION
+                                           TYPE          CUST#           SHIP TO #                     SKU                                                     QUANTITY
+                                                                                                                                  DATE
+
+                                           PUR           102345             432100              0055336055301                       20201020                         10
+
+                                           PUR           102345             432100              0055336055301                       20201022                          4
+
+                                                  * Please refer to each Altria Tobacco Operating Company's Wholesale Program for specific Transaction Date requirements
+
+Altria Group Distribution Company l For Trade Use Only l 10/26/2020                                                                                                                   9
+    MULTICAT™ DATA FILE SPECIAL NOTES
+
+    10. Program data compliance reports are available for review online at the following location:
+        https://dataservices.msa.com/
+    ▪ Contact MSA DSC (1-877-544-4429) for access to data compliance reports.
+    ▪ MSA DSC provides assistance with questions regarding data within the data compliance reports.
+    ▪ Detail report provides specific data compliance areas needing attention.
+
+
+
+
+                                   Helix Innovations, LLC is replacing Nat Sherman in the Altria Tobacco Operating Companies Data Compliance reports.
+
+
+
+
+Altria Group Distribution Company l For Trade Use Only l 10/26/2020                                                                                     10
+    MULTICAT™ DATA FILE FORMAT
+    DESCRIPTION OF FILE STRUCTURE
+
+
+     The MULTICAT™ data file consists of five types of records:
+     1. Header Identification record (HID)
+     2. Brand Identification records (BID)
+     3. Ship To Identification records (SID)
+     4. Purchase records (PUR)
+     5. Total record (TOT)
+     ✓ Participants reporting on their own behalf and for NDDs must provide one complete Data
+       file for each Site and NDD.
+
+
+
+
+Altria Group Distribution Company l For Trade Use Only l 10/26/2020                             11
+    MULTICAT™ DATA FILE FORMAT
+    RECORD FIELD LAYOUT (HID)
+
+
+    VARIABLE                                           COLUMNS        # OF CHARACTERS     CHARACTER TYPE        SPECIAL INSTRUCTIONS / FYI
+    Header Identification Record                                            337
+    Record type (=HID)                                       1-3             3             Alphabetic Literal
+    Distributor Shipping Site ID number                     4-11             8              Alphanumeric        Assigned by MSA
+    Project ID                                             12-15             4             Alphabetic Literal   TOB
+    Test or Live Indicator                                   16              1             Alphabetic Literal   T = Test, <blank>= Live
+    Time Interval                                            17              1             Alphabetic Literal   Week = W
+    Week Ending Date                                       18-25             8            Date (YYYYMMDD)       Date of last day in reporting week
+    Distributor Name                                       26-57            32              Alphanumeric
+    Distributor Address                                   58-147            90              Alphanumeric
+    Distributor City                                     148-172            25              Alphanumeric
+    Distributor State                                    173-174             2              Alphanumeric
+    Distributor ZIP Code                                 175-183             9              Alphanumeric        Distributor Zip plus 4 digit code
+    Distributor Country                                  184-186             3              Alphanumeric
+    Distributor Contact Person Last Name                 187-206            20              Alphanumeric
+    Distributor Contact Person First Name                207-226            20              Alphanumeric
+    Country/City Dialing Code                            227-231             5                  Numeric         Reserved Special
+    Distributor Contact Telephone Number                 232-241            10          Numeric (XXXYYYZZZZ)
+    Country/City Dialing Code                            242-246             5                  Numeric         Reserved Special
+    Distributor Contact Fax Number                       247-256            10          Numeric (AAABBBCCCC)
+    Distributor Contact Email Address                    257-316            60              Alphanumeric
+    # of Measures Reported on BID record                 317-320             4                  Numeric         0002
+    # of Measures Reported on SID record                 321-324             4                  Numeric         0000
+    # of Measures Reported on PUR record                 325-328             4                  Numeric         0003 (0004 if reporting dollars)
+    Distributor File Creation Date                       329-336             8            Date (YYYYMMDD)
+    Inventory Resubmission Flag                             337              1              Numeric Literal     1 = Process resubmitted inventory
+                                                                                                                0 or Blank = Do Not Process INV
+
+
+
+
+Altria Group Distribution Company l For Trade Use Only l 10/26/2020                                                                                  12
+    MULTICAT™ DATA FILE FORMAT
+    RECORD FIELD LAYOUT (BID)
+
+
+    VARIABLE                                          COLUMNS         # OF CHARACTERS   CHARACTER TYPE        SPECIAL INSTRUCTIONS / FYI
+    Brand Identification Record                                             261
+    Record type (=BID)                                     1-3                3          Alphabetic Literal
+    UPC                                                   4-17               14              Numeric          Selling Unit UPC (i.e., carton or roll)
+    Distributor SKU*                                     18-31               14           Alphanumeric
+    Product Description                                  32-81               50           Alphanumeric
+    Promotion Description                               82-131               50           Alphanumeric
+    Items per selling unit                             132-137                6              Numeric          refer to Reporting Procedures on page 27
+    Promotion Indicator                                   138                 1          Alphabetic Literal   “Y” or “N”
+    NACS Standard Category Code                        139-144                6           Alphanumeric
+    MSA Category Code                                  145-150                6           Numeric Literal     refer to Category Codes on page 25
+    Project Identification                             151-160               10             Alphabetic        For future use
+    Distributor Product Unit Size                      161-166                6              Numeric          Size of unit purchased by consumer
+    Distributor Product Unit Size Description          167-176               10           Alphanumeric        Description of unit size (e.g., ounce)
+    Distributor Component Shipper Flag                    177                 1          Alphabetic Literal   S = Shipper, C = Component
+    Manufacturer Promotion Code                        178-187               10           Alphanumeric        MFR assigned 5-digit promo code
+    Manufacturer Product Identification Code           188-201               14           Alphanumeric
+    UPC Extension                                      202-203                2           Alphanumeric
+    UPC year/issue extension                           204-207                4           Alphanumeric
+    State Tax Jurisdiction                             208-209                2             Alphabetic        Utilize USPS-compliant abbreviations
+    Alternate UPC Code 1                               210-225               16              Numeric
+    Alternate UPC Code 2                               226-241               16              Numeric
+    MSA Reserved Field                                 242-247                6           Blank Spaces
+    Measure Code 1                                     248-250                3           Numeric Literal     Inventory = 003
+    Measure Value 1                                    251-261               11              Numeric          Real Number w/ floating decimal
+    Measure Code 2                                     262-264                3           Numeric Literal     Floor Returns = 006
+    Measure Value 2                                    265-275               11              Numeric          Real Number w/ floating decimal
+
+    *Distributor Unique Item Code to cross reference/link Purchase records to this description
+    Report the State Tax Jurisdiction, in either the SID Record or the BID Record, but not both.
+
+
+
+
+Altria Group Distribution Company l For Trade Use Only l 10/26/2020                                                                                      13
+    MULTICAT™ DATA FILE FORMAT
+    RECORD FIELD LAYOUT (SID)
+
+    VARIABLE                                            COLUMNS       # OF CHARACTERS      CHARACTER TYPE          SPECIAL INSTRUCTIONS / FYI
+    Ship to Identification Record                                           551
+    Record type (=SID)                                        1-3             3               Alphabetic Literal
+    Ship To Customer Number                                  4-11             8                 Alphanumeric       ID # of customer
+    Ship To Customer Shipping Number                        12-19             8                 Alphanumeric       ID # of customer shipping location
+    Ship To Customer Shipping Number Ext                    20-27             8                 Alphanumeric
+    Ship To Customer Name                                   28-59            32                 Alphanumeric
+    Ship To Customer Store Number                           60-67             8                 Alphanumeric       (e.g., #123)
+    Ship To Customer Address                               68-157            90                 Alphanumeric       Customer ship to address
+    Ship To Customer City                                 158-182            25                 Alphanumeric       Customer City
+    Ship To Customer State                                183-184             2                   Alphabetic
+    Ship To Customer ZIP Code+4                           185-193             9                 Alphanumeric       Customer ZIP plus 4 digit code
+    Ship To Customer Country                              194-196             3                   Alphabetic
+    State Tax Jurisdiction                                197-198             2                   Alphabetic       Utilize USPS-compliant abbreviations
+    MSA Reserved Field                                    199-201             3                 Blank spaces
+    Ship To Customer Telephone Number                     202-211            10            Numeric (XXXYYYZZZZ)
+    Ship To Customer Class of Trade                       212-231            20                 Alphanumeric       “Retailer”, “Distributor”, or “Other”
+    Ship To Customer TDLinx™ Number                       232-238             7                    Numeric         Trade Dimensions assigned
+    Ship To Customer Cash And Carry Indicator                239              1               Alphabetic Literal   “Y” or “N”
+    Location Number / Machine Type (2 fields)             240-257            18                 Alphanumeric
+    MSA Reserved Field                                       258              1                  Blank space
+    Bill To Customer Number                               259-282            24                 Alphanumeric
+    Bill To Customer Group Number                         283-306            24                 Alphanumeric
+    Bill To Customer Name                                 307-338            32                 Alphanumeric
+    Bill To Customer Address                              339-428            90                 Alphanumeric
+    Bill To Customer City                                 429-453            25                 Alphanumeric
+    Bill To Customer State                                454-455             2                   Alphabetic
+    Bill To Customer ZIP Code + 4                         456-464             9                 Alphanumeric
+    Bill To Customer Country                              465-467             3                   Alphabetic
+    MSA Reserved Field                                    468-472             5                 Blank spaces
+    Bill To Customer Telephone Number                     473-482            10                    Numeric
+    Retailer Product Category Footage (3 fields)          483-497            15                    Numeric
+    Customer Product Promotion Acceptance Identifier         498              1                   Alphabetic       “Y” or “N”
+    Distributor Sales Rep ID#                             499-508            10                 Alphanumeric
+    MSA Reserved Field                                    509-537            39                 Blank spaces
+    Measure Code 1                                        539-540             2                Numeric Literal     MSA Reserved
+    Measure Value 1                                       541-551            11                    Numeric         MSA Reserved
+
+    Report the State Tax Jurisdiction, in either the SID Record or the BID Record, but not both.
+
+
+
+
+Altria Group Distribution Company l For Trade Use Only l 10/26/2020                                                                                        14
+    MULTICAT™ DATA FILE FORMAT
+    RECORD FIELD LAYOUT (PUR)
+
+
+    VARIABLE                                         COLUMNS          # OF CHARACTERS    CHARACTER TYPE         SPECIAL INSTRUCTIONS / FYI
+    Purchase Record                                                         130
+    Record type (=PUR)                                     1-3                3           Alphabetic Literal
+    Ship To Customer Number                               4-11                8            Alphanumeric         ID # of customer
+    Ship To Customer Shipping Number                     12-19                8            Alphanumeric         ID # of customer shipping location
+    Ship To Customer Shipping Number Ext                 20-27                8            Alphanumeric
+    Distributor SKU*                                     28-41               14            Alphanumeric
+    MSA Reserved Field                                   42-44                3             Blank spaces        3 blank spaces
+    Invoice Number                                       45-74               30            Alphanumeric
+    Transaction Date                                     75-82                8          Date (YYYYMMDD)        Also known as Delivery Date
+    MSA Reserved Field                                  83-102               20             Blank spaces
+    Measure Code 1                                     103-105                3            Numeric Literal      Quantity Shipped = 001
+    Measure Value 1                                    106-116               11          Numeric (float dec.)   # of selling units shipped
+    Measure Code 2                                     117-119                3            Numeric Literal      ** Dollars Sold = 002
+    Measure Value 2                                    120-130               11          Numeric (float dec.)   Dollar amt. charged to customer (if applicable)
+    Measure Code 3                                     131-133                3           Numeric Literal       ** Saleable Returns = 004
+    Measure Value 3                                    134-144               11          Numeric (float dec.)   # of Saleable units returned
+    Measure Code 4                                     145-147                3            Numeric Literal      Unsaleable Returns = 005
+    Measure Value 4                                    148-158               11          Numeric (float dec.)   # of Unsaleable selling units returned
+
+    * Distributor Unique Item Code to cross reference / link Purchase records to this description
+    ** If not reporting “dollars sold”, begin reporting Saleable Returns in column 117
+
+
+
+
+Altria Group Distribution Company l For Trade Use Only l 10/26/2020                                                                                         15
+    MULTICAT™ DATA FILE FORMAT
+    RECORD FIELD LAYOUT (TOT)
+
+
+    VARIABLE                                    COLUMNS          # OF CHARACTERS   CHARACTER TYPE         SPECIAL INSTRUCTIONS / FYI
+    Total Record                                                       11
+    Record type (=TOT)                                1-3               3           Alphabetic Literal
+    Distributor ID Number                            4-11               8            Alphanumeric         Assigned by MSA
+    Week Ending Date (YYYYMMDD)                     12-19               8               Numeric           Date of last date of reporting week
+    Number of BID Records                           20-28               9               Numeric           Right Justify w/ Leading Zero Fill
+    Number of SID Records                           29-37               9               Numeric           Right Justify w/ Leading Zero Fill
+    Number of PUR Records                           38-46               9               Numeric           Right Justify w/ Leading Zero Fill
+    MSA Reserved Field                              47-86              40             Blank spaces
+    Measure Code 1                                  87-89               3            Numeric Literal      Quantity Shipped = 001
+    Measure Value 1                                90-104              15          Numeric (float dec.)   Sum of Measure Value 1 from PUR
+    Measure Code 2                                105-107               3            Numeric Literal      * Dollars Sold = 002
+    Measure Value 2                               108-122              15          Numeric (float dec.)   Sum of Measure Value 2 from PUR
+    Measure Code 3                                123-125               3            Numeric Literal      * Inventory = 003
+    Measure Value 3                               126-140              15          Numeric (float dec.)   Sum of Measure Value 1 from BID
+    Measure Code 4                                141-143               3            Numeric Literal      Floor Returns = 004
+    Measure Value 4                               144-158              15               Numeric           Sum of Floor Returns from BID
+    Measure Code 5                                159-161               3            Numeric Literal      Saleable Returns = 005
+    Measure Value 5                               162-176              15               Numeric           Sum of Saleable Returns from PUR
+    Measure Code 6                                177-179               3            Numeric Literal      Unsaleable Returns = 006
+    Measure Value 6                               180-194              15               Numeric           Sum of Unsaleable Returns from PUR
+    * If not reporting “dollars sold”, begin reporting inventory in column 105
+
+
+
+
+Altria Group Distribution Company l For Trade Use Only l 10/26/2020                                                                             16
+    MULTICAT™ DATA FILE FORMAT
+    EXAMPLE OF FILE STRUCTURE
+
+
+            BELOW IS AN EXAMPLE OF A SIMPLE DATA FILE WITHOUT THE DETAIL OF EACH RECORD.
+                              Record               Code               Contents
+                                1                   HID               Distributor Shipping Site Identification Record, Week ending date
+
+                                  2                 BID               Descriptor, UPC code, Promo. Info., Inventory …for SKU entry 1
+                                  3                 BID               Descriptor, UPC code, Promo. Info., Inventory …for SKU entry 2
+                                  4                 BID               Descriptor, UPC code, Promo. Info., Inventory …for SKU entry 3
+
+                                  5                SID                Ship To Identification for ABC Mart #1
+                                  6                PUR                ABC Mart #1 purchases for unique SKU entry 2
+                                  7                PUR                ABC Mart #1 purchases for unique SKU entry 3
+
+
+                                 8                 SID                Ship To Identification for ABC Mart #8
+                                 9                 PUR                ABC Mart #8 purchases for unique SKU entry 1
+                                 10                PUR                ABC Mart #8 purchases for unique SKU entry 3
+
+                                 11                SID                Ship To Identification for ABC Mart #9
+                                 12                PUR                ABC Mart #9 purchases for unique SKU entry 1
+                                 13                PUR                ABC Mart #9 purchases for unique SKU entry 2
+
+                                 14                SID                Ship To Identification for ABC Mart #10
+                                 15                PUR                ABC Mart #10 purchases for unique SKU entry 1
+                                 16                PUR                ABC Mart #10 purchases for unique SKU entry 2
+                                 17                PUR                ABC Mart #10 purchases for unique SKU entry 3
+
+                                 18                TOT                Total Record
+
+                                            Record expansions for each record type are on the following pages.
+
+Altria Group Distribution Company l For Trade Use Only l 10/26/2020                                                                       17
+                        MULTICAT™
+                 DATA FILE RECORD DETAILS
+
+
+
+
+Altria Group
+Altria GroupDistribution Company
+              Distribution       l For Trade
+                            Company     l ForUse Only Use
+                                              Trade   l 10/26/2020
+                                                           Only l 10/13/20   18
+                                                                             18
+    MULTICAT™ DATA FILE RECORD DETAILS
+    HEADER IDENTIFICATION RECORD (HID)
+
+
+    The HEADER IDENTIFICATION RECORD (HID) section consists of a single record that identifies the
+    source (i.e., Site or NDD) providing the Data and a contact person for any follow-up communication.
+
+                                                                                                             CONTACT   CONTACT
+              DISTRIBUTOR                     WEEK ENDING
+      TYPE                     PROJECT ID                        NAME   ADDRESS   CITY   STATE     ZIP+4       LAST     FIRST    TELEPHONE #     FAX #
+                   ID#                           DATE
+                                                                                                              NAME      NAME
+
+       HID       12345678          TOB           20201024        JENS   12 MAIN   REN     MA     021250000    DOE        JIM      6172920512   6172920513
+
+
+
+
+    New returns measures: The HID Record must be changed to reflect the new Number of Measures
+    Reported on BID Record. The value in columns 317-320 must be set to 0002.
+    The HID Record must be changed to reflect the new Number of Measures Reported on PUR Record. The
+    value in columns 325-328 must be set to 0003 for three measures or set to 0004 for four measures. For
+    example, enter 0004 if you submit Quantity Shipped, Dollars, Saleable Returns and Unsaleable Returns.
+
+
+
+
+Altria Group Distribution Company l For Trade Use Only l 10/26/2020                                                                                         19
+    MULTICAT™ DATA FILE RECORD DETAILS
+    BRAND IDENTIFICATION RECORD (BID)
+
+    The BRAND IDENTIFICATION RECORD (BID) section consists of a single record for each unique combination of UPC and SKU shipped
+    by the Site or NDD. In addition to the unique combination of UPC and SKU information, each record also contains an item
+    description, items per selling unit, certain information relating to promotions (including the five digit descriptor), MSA Category Code,
+    Shipper/Component Flag, the Site’s on-hand inventory of each UPC and SKU combination, Floor Returns, and the State Tax
+    Jurisdiction as of the closing of the Reporting Week. The section containing the BID records should immediately follow the HID record
+    in the Data file. As a reminder, the State Tax Jurisdiction can be reported in either the BID or SID.
+    Below is an example of information contained in a BID record:
+                                                                                 ITEMS
+                                                                                                                                            SHIPPER /    INVENTORY                 STATE TAX
+                                                                                  PER       PROMO        PROMO       MFG PROMO   MSA CAT                                 FLOOR
+     TYPE     UPC           SKU           DISTRIBUTOR ITEM NAME                                                                            COMPONENT     QUANTITY IN              JURISDICTION
+                                                                                SELLING   IDENTIFIER   DESCRIPTION     CODE       CODE                                  RETURNS
+                                                                                                                                              FLAG      SELLING UNITS               (208-209)
+                                                                                  UNIT
+
+      BID   2820000939   000000111111   Marlboro Gold Pk King Box                000200       N                                   003231                  0000000327                  MA
+      BID   2820000938   000000111112   Marlboro Gold Pk 100 Box                 000200       N                                   003231                  0000000250                  RI
+      BID   2820000948   000000234567   Marlboro Spcl Select Gold Pk King Box    000200       N                                   003231                  0000000125                  NY
+      BID   2820000264   000000234568   Marlboro Spcl Select Gold Pk 100 Box     000200       N                                   003231                  0000000220                  VT
+
+
+
+
+    FLOOR RETURNS DETAILS IN THE BID:
+    – The BID Record must be changed to include the value of 006 in the second measure code field for the reporting of Floor Returns.
+       Columns 262-264 should be set to 006.
+    – The BID Record will be utilized to report Floor Return volume for each UPC or SKU within columns 265-275 (Real Number with
+       floating decimal). The volume should be reported as a negative value.
+    STATE TAX JURISDICTION DETAILS IN BID:
+    – State Tax Jurisdiction must be reported in columns 208-209 (in the BID on the MULTICAT™ All Tobacco File Format).
+    – Every BID record on a weekly data file must contain a unique SKU (no duplicates). Inventory must be reported
+       accurately for each SKU reported.
+    – If products are shipped to an NDD and those products are ultimately shipped to retailers in multiple states,
+       the products must be reported using separate BID records for each respective State Tax Jurisdiction.
+
+
+
+
+Altria Group Distribution Company l For Trade Use Only l 10/26/2020                                                                                                                              20
+    MULTICAT™ DATA FILE RECORD DETAILS
+    BRAND IDENTIFICATION RECORD (BID)
+    Item Descriptions: The following order of attributes and abbreviations should be used for all Item Descriptions contained in Brand Identification records. If certain
+    attributes are not identified, a default value will be used.
+                                                                                                                                      E-CIG/E-CIGAR TOBACCO
+                                                                                                                                                                    PREFERRED
+         ATTRIBUTE                                EXAMPLE                                CIGARS        CIGARETTES         MOIST          DERIVED NICOTINE
+                                                                                                                                             PRODUCTS              ABBREVIATION
+
+                          Black & Mild, Marlboro, Parliament, Basic, Marlboro Snus,
+            Brand                                                                          N/A              N/A             N/A                 N/A             NO ABBREVIATIONS
+                                      Al Capone, Hav A Tampa, SKOAL
+
+                                                                                                                                                                ORIG, SWEET, VNLLA,
+         Flavor/Blend           Original, Sweet, Vanilla, Wintergreen ,Cherry              N/A              N/A         ORIGINAL                N/A
+                                                                                                                                                                 WNTRGRN, CHRY
+                                      Long Cut, Fine Cut, Portion Pack,
+          Cut/Form                                                                         N/A              N/A            FINE                 N/A                  LC, FC, PP
+                                               Disc, Lozenge
+                                                                                                                                                               GNT, LRG, SML, LTTL,
+                             Giant, Large, Small, Little, Cigarillo Thick, Thin, 72,
+             Size                                                                          N/A              N/A             N/A                 N/A           THCK, THIN, 70, KSF, 100,
+                                     80/85 Kings, 100, 120, 10ml, 30ml
+                                                                                                                                                                        120
+                                                                                                                                                              PK, TUBE, INDV WRPD, SP,
+                           Pack, Tube, Individually Wrapped, Soft Pack, Box, Tin,
+           Package                                                                         N/A              N/A             N/A                 N/A           BX, TIN, SHPPR, PCH, SLD
+                                    Shipper, Pouch, Slide Box, Flip Box
+                                                                                                                                                                      BX, FLP BX
+                                          # Of Units Per Selling Unit
+            Count                                                                          N/A              N/A             N/A                 N/A                      CT
+                                         (e.g., 12ct, 15ct, 25ct, 50ct)
+                                        Box, Red Label Box, Blue Pack,
+        Other Package                  Gold Pack, Silver Pack, Cartridges                                                                                        BX, RDLBL, BLUPK,
+                                                                                           N/A              N/A             N/A                 N/A
+         Descriptions         Kits, Liquids, Chewable, Dissolvable, Accessories                                                                                   GLDPK, SILVPK
+                                          (Chargers, Carrying Cases)
+      Menthol Vs. Non-
+                                               Men Or Non-Men                              N/A          NONMENTH            N/A                 N/A                    M, NM
+          Menthol
+
+       Tip Vs. Non-Tip                          Tip Or Non-Tip                           NONTIP             N/A             N/A                 N/A                   TIP, NTIP
+
+           Wrapper                            HTL, Natural Leaf                            HTL              N/A             N/A                 N/A               HTL, NTRL LEAF
+             Filter                            Filter, Non-Filter                          N/A            FILTER            N/A                 N/A                 FLTR, NFLTR
+
+       Cartridge Type*                  Disposable, Refillable, Empty                      N/A              N/A             N/A                 N/A                    REFILL
+
+         Puff Count*                     100 Puff, 400 Puff, 500 Puff                      N/A              N/A             N/A                 N/A
+        Nicotine Level*                       06mg, 10mg, 24mg                             N/A              N/A             N/A                 N/A
+          Strength*                           High, Medium, Low                            N/A              N/A             N/A                 N/A
+
+        Battery Type*                     Disposable, Rechargeable                         N/A              N/A             N/A                 N/A
+                                                    *For this attribute, report only when the information is listed on the product packaging.
+Altria Group Distribution Company l For Trade Use Only l 10/26/2020                                                                                                                       21
+    MULTICAT™ DATA FILE RECORD DETAILS
+    BRAND IDENTIFICATION RECORD (BID)
+
+
+    BRAND ATTRIBUTE CODING: When MSA processes the BID records in a data file, a matching process is
+    performed that attempts to link the item description reported in each BID to a single brand packing on the
+    MSA master list. This list contains all known Brands and packings of tobacco.
+    SEARCHING FOR MATCHING WORDS
+    The STARS matching process identifies words by finding spaces between entries. Spaces must be entered
+    between each word.
+         Good reporting example: COPENHAGEN FC 5 CAN ROLL
+         Poor reporting example: CPN FC
+    In the poor reporting example above, the attributes in the item description do not break down into individual
+    words that correspond to known attributes. This type of attribute reporting results in shipments being
+    categorized as unclassified volume. Neither the reporting entity nor its customers will receive credit for
+    such shipments. Data for a Reporting Week will be considered to have errors if the number of unclassified
+    shipments exceeds certain tolerance levels.
+         Good promotion reporting example: B&M B2G $1.00 OFF 21091
+         Poor promotion reporting example: BM COMBO
+    The item description in the poor promotion reporting example above will not be matched to any
+    brand/packing by MSA. The assigned 5-digit promo code is not reported and therefore any volume
+    associated will not be assigned to the proper 5-digit code. This type of promotion description will not be
+    properly classified.
+
+
+
+
+Altria Group Distribution Company l For Trade Use Only l 10/26/2020                                                 22
+    MULTICAT™ DATA FILE RECORD DETAILS
+    BRAND IDENTIFICATION RECORD (BID)
+
+                                  ATTRIBUTE - BLEND                        ATTRIBUTE - CUT
+                                      DESCRIPTION           ABBREVIATION   DESCRIPTION      ABBREVIATION
+                                            Apple               APPLE         Fine Cut          FC
+                                     Arctic Wintergreen    ARCTIC WNTGRN      Long Cut           LC
+                                            Berry                 BRY      Extra Long Cut       XLC
+                                            Black                 BLK
+                                       Black Cherry            BLKCHRY
+                                     Bold Wintergreen       BOLD WNTGRN
+                                          Bourbon             BOURBON
+                                           Cherry                CHRY
+                                       Cinnamon Ice           CNMN ICE
+                                        Citrus Blend        CITRUS BLEND
+                                           Classic             CLASSIC
+                                           Coffee              COFFEE
+                                     Cool Wintergreen      COOL WNTRGRN
+                                            Crisp                CRISP
+                                             Dark                  DK
+                                            Frost               FROST
+                                            Grape                 GRP
+                                           Hickory             HICKORY
+                                             Mint                MINT
+                                      Mountain Cider         MNTN CIDER
+                                           Natural             NATURL
+                                           Original              ORIG
+                                            Peach               PEACH
+                                             Rich                RICH
+                                            Select              SELECT
+                                        Smooth Mint           SMTH MINT
+                                         Spearmint             SPRMNT
+                                           Straight           STRAIGHT
+                                           Vanilla                VAN
+                                          Whiskey              WHISKEY
+                                         Wild Berry            WILD BRY
+                                        Wild Cherry          WILD CHRY
+                                       Winter Blend           WNTRBLD
+                                        Wintergreen           WNTRGRN
+
+
+
+Altria Group Distribution Company l For Trade Use Only l 10/26/2020                                        23
+    MULTICAT™ DATA FILE RECORD DETAILS
+    BRAND IDENTIFICATION RECORD (BID)
+
+
+    MSA CATEGORY CODES: The MSA Category Code on the Brand Identification record (BID) is a predefined category
+    code to classify the SKU by product type. An MSA Category Code must be supplied for all BID records reported to MSA
+    on the combined tobacco data file. This information is supplied during the enrollment process.
+
+    The MSA Category Code should be reported as in the example listed below:
+                                                                                          ITEMS
+                                                                                                                MFR       MSA    SHIPPER /    INVENTORY
+                                                                           PROMOTION       PER       PROMO                                                    FLOOR
+      TYPE       UPC         SKU             PRODUCT DESCRIPTION                                               PROMO   CATEGORY COMPONENT     QUANTITY IN
+                                                                           DESCRIPTION   SELLING   INDICATOR                                                 RETURNS
+                                                                                                                CODE     CODE      FLAG      SELLING UNITS
+                                                                                           UNIT
+
+
+       BID    2820019720   00000013      MARLBORO VA BLEND KING BOX                      000200       N                 003231                00000000007
+
+
+       BID    2820000384   00001111      MARLBORO GOLD PK KING BOX                       000200       N                 003231                00000000032
+
+
+       BID   7310001461    00000003     COPENHAGEN LC NAT 5 CAN ROLL                     000005       N                 003211                00000000033
+
+
+       BID   7310002351    00000004    SKOAL FC WINTERGREEN 5 CAN ROLL                   000005       N                 003211                00000000245
+
+
+       BID    7013700012   00000012     COPENHAGEN FC NAT 5 CAN ROLL                     000005       N                 003211                00000000022
+
+
+       BID    7013750018   00001111    BLACK & MILD PLASTIC TIP ORIGINAL                 000050       N                 003251                00000000232
+
+
+
+
+Altria Group Distribution Company l For Trade Use Only l 10/26/2020                                                                                                    24
+    MULTICAT™ DATA FILE RECORD DETAILS
+    BRAND IDENTIFICATION RECORD (BID)
+
+
+       MSA CATEGORY CODE                                         CATEGORY                                                   SELLING UNIT                    ITEMS PER SELLING UNIT
+                                                                                                                     Roll/Sleeve containing 5 cans                         5
+               003211                                    Moist Snuff (Loose/Pouches)
+                                                                                                                    Display Unit, containing 45 cans                      45
+                                                                                                                          Box of 6 pouches                                 6
+               003212                                   Loose Leaf (Chewing Tobacco)
+                                                                                                                          Box of 12 pouches                               12
+               003213                                          Dry Snuff (Nasal)                                           12 Units per Box                               12
+                                                                                                                                                                   12 (Twist/Rope)
+               003214                                          Twist/Rope/Plug                                             12 Units per Box
+                                                                                                                                                                     15 (Plugs)
+                                                                                                               5 Packs per Carton, 5 Cans per Roll/Sleeve                  5
+               003217                             Snus (Spit-Free Tobacco Pouch Products)
+                                                                                                              10 Packs per Carton, 5 Cans per Roll/Sleeve                 10
+               003218                                             Hard Snuff                                               5 Packs per Box                                5
+                                                                                                                          Tin, Canister or Bag                 1 (Tin / Canister / Bag)
+               003221                                           RYO Tobacco
+                                                                                                                             Sleeve or Boat                    6 (Pouches / Packages)
+               003231                                             Cigarettes                                                    Carton                               200 (Sticks)
+               003232                                          Heated Tobacco                                                   Carton                               200 (Sticks)
+                                                                                                                          Tin, Canister or Bag                 1 (Tin / Canister / Bag)
+               003241                                           Pipe Tobacco
+                                                                                                                             Sleeve or Boat                    6 (Pouches / Packages)
+                                                                                                                         Carton (of packages)                     50 or 100 (Cigars)
+               003251                         Cigar (Machine-Made Large, Premium Hand Rolled)
+                                                                                                                         Box (of single cigars)                   25 or 50 (Cigars)
+                                                                                                                         Carton (of packages)
+               003252                                        Little/Cigars Filtered                                                                           200 (Little Cigars Sticks)
+                                                                                                                         Box (of single cigars)
+                                                                                                                                                                 100 or 200 (Tubes)
+               003261                                       Tubes / Papers/Wraps                                         Tubes/Papers/Wraps
+                                                                                                                                                             10 or 15 (Paper Packages)
+                                                                                                                                                            Number of kits per selling unit
+               003262                                            Accessories                                  Number of Packages or Kits per selling unit
+                                                                                                                                                            (e.g., Selling Unit = Package)
+               003281                            Kits (includes RYO Tobacco, Paper, Machine)                                      Kit                                   1 (Kit)
+                                                                                                                                                            Number of kits per selling unit
+               003292                   E-Vapor (Cartridges, Sticks (disposable/rechargeable), Liquids)       Number of Packages or Kits per selling unit
+                                                                                                                                                              (e.g., Selling Unit = Box)
+                                                                                                                                                                      10 (tubes)
+               003293               Tobacco Derived Nicotine Products (not including E-Cigarettes/E-Cigars)                   Box/Carton
+                                                                                                                                                                       5 (packs)
+
+
+
+
+Altria Group Distribution Company l For Trade Use Only l 10/26/2020                                                                                                                           25
+    MULTICAT™ DATA FILE RECORD DETAILS
+    BRAND IDENTIFICATION RECORD (BID)
+
+    Each Altria Tobacco Operating Company (ATOC) will provide specific detail for every ATOC PROMOTIONAL PRODUCT.
+       When creating a Brand Identification record for each promotion, your program must:
+    ▪         Utilize the Promotional Product UPC for the ATOC Promotional Product.
+    ▪         Provide a unique SKU for the promotion supplied by the ATOC.
+    ▪         Use the values for your revenue product as contained in your Item Master File for the following fields:
+              –    MSA CATEGORY CODE field
+              –    DISTRIBUTOR ITEM NAME field
+              –    ITEMS PER SELLING UNIT field
+    ▪         For the PROMO INDICATOR field: This field should identify whether the product is promotional (Y) or regular stock
+              product (N).
+    ▪         For the PROMO DESCRIPTION field: Your program must use the item description value provided by the ATOC for that
+              specific promotion. This EXACT item description must appear in the Brand Identification record.
+    ▪         For the MFR PROMO CODE field: You should input the 5 digit Manufacturer Promotion Code
+    ▪         For the SHIPPER/COMPONENT FLAG field: This field should indicate “S” for multi-item shippers
+    ▪         For the INVENTORY QUANTITY IN SELLING UNITS field: The on-hand inventory quantities for each unique promotion
+              must be reported on your weekly Data file.
+                                                                                  ITEMS PER                                                             SHIPPER /    INVENTORY
+                                                                                                PROMO        PROMO          MFR PROMO                                                FLOOR
+      TYPE           UPC           SKU         DISTRIBUTOR ITEM NAME               SELLING                                              MSA CAT CODE   COMPONENT     QUANTITY IN
+                                                                                              IDENTIFIER   DESCRIPTION        CODE                                                  RETURNS
+                                                                                     UNIT                                                                 FLAG      SELLING UNITS
+
+        BID       7013702208   000000111111   Black & Mild Plastic Tip Original       50          Y        B&M B1T1 21900     21900        003251          S         0000000250     -000000020
+        BID       2820000939   000000234567      Marlboro Gold Pk King Box           200          N                                        003231                    0000000125     -000000005
+        BID       2820000938   000000345987       Marlboro Gold Pk 100 Box           200          N                                        003231                    0000000080     -000000000
+
+
+
+
+Altria Group Distribution Company l For Trade Use Only l 10/26/2020                                                                                                                              26
+    MULTICAT™ DATA FILE RECORD DETAILS
+    SHIP TO IDENTIFICATION RECORD (SID)
+
+
+    The SHIP TO IDENTIFICATION (SID) RECORD identifies the shipment location associated with the Purchase records. The
+    address contained in the Ship To Identification record is used to determine the State credited with the shipment. The Ship To
+    Identification record must have the following characteristics:
+     ▪   CUSTOMER NUMBERS: There must be a unique Customer Number for each outlet serviced by a Distributor. There are
+         three fields to accommodate Customer Numbers: Customer Number, Customer Shipping Number and Shipping Number
+         Extension. These three fields should be treated as one Customer Number field divided into three eight-character fields
+         and should be populated as follows:
+         1. Customer Number: Characters 1 - 8
+         2. Customer Shipping Number: Characters 9 - 16
+         3. Shipping Number Extension: Characters 17 - 24
+     ▪   Using the convention described above, a retail chain store that has both a chain Customer Number and a store-specific
+         shipping number should be reported as one continuous Customer Number. The Customer Number, as described above,
+         will be used to populate future Promotional Retail Ship Lists.
+     ▪   STATE TAX JURISDICTION: Use this field to identify the state in which the product is intended for sale to Adult Tobacco
+         Consumers. See page 12 for more details. As a reminder, the State Tax Jurisdiction can be reported in either BID or SID.
+     ▪   CLASS OF TRADE: Use this field to classify your customers as MSA Retailer, MSA Distributor or MSA Other. See page
+         13 for more details.
+     ▪   PROMOTION ACCEPTANCE IDENTIFIER: Use this field to identify those accounts that you choose to ship any
+         promotional tobacco product. (‘N’ indicates No and ‘Y’ indicates Yes) See page 14 for more details.
+
+
+
+
+Altria Group Distribution Company l For Trade Use Only l 10/26/2020                                                                 27
+    MULTICAT™ DATA FILE RECORD DETAILS
+    SHIP TO IDENTIFICATION RECORD (SID)
+
+
+    ▪     STATE TAX JURISDICTION IS A REQUIRED MULTICAT™ FIELD.
+          – State Tax Jurisdiction must be reported in columns 197-198 [in the SID on the MULTICAT™ All Tobacco File Format].
+          – Customer Number / Customer Shipping Number / Customer Number Extension combination must be unique and
+            not duplicated for every SID record on a weekly data file. Any one of the three fields could be used to make the
+            record unique.
+          – If products are shipped to an NDD and those products are ultimately shipped to retailers in multiple states, the
+            products must be reported using separate SID records for each respective State Tax Jurisdiction.
+    ▪     A SID record should be followed immediately by one or more corresponding Purchase records.
+
+
+          Below is an example of information contained in a SID record:
+          3 × 8 character fields = 24 character combination
+
+                                                                                                                                                                                        PROMOTION
+                                             SHIPPING #                                                                                                      STATE TAX      CLASS OF
+        TYPE   CUSTOMER #     SHIPPING #                           NAME                    ADDRESS                  CITY          STATE             ZIP+4                              ACCEPTANCE
+                                                EXT                                                                                                         JURISDICTION*    TRADE
+                                                                                                                                                                                        IDENTIFIER
+
+        SID     00000123       12345678       91234222        ABC MART #2                123 MAIN ST             BOSTON              MA         021250000        MA            R           Y
+
+        SID     00000111       23456789       87654321      XYZ WHOLESALE                555 MAIN ST             BOSTON              MA         021250000        MA            D           Y
+
+        SID     00000111       23456789       87654322      XYZ WHOLESALE                555 MAIN ST             BOSTON              MA         021250000        RI            D           Y
+
+
+
+
+                                                           *Report the State Tax Jurisdiction, in either the SID Record or the BID Record, but not both.
+
+
+Altria Group Distribution Company l For Trade Use Only l 10/26/2020                                                                                                                                  28
+    MULTICAT™ DATA FILE RECORD DETAILS
+    SHIP TO IDENTIFICATION RECORD (SID)
+
+
+    The CLASS OF TRADE field is a required MULTICAT™ field. This field is used to classify the type of
+    ship-to customer you are servicing. Each of your customers should have one of the following
+    classifications on your weekly MULTICAT™ data file submission:
+    “MSA RETAILER” means a Person that operates a business within a permanent commercial structure,
+    that is (i) open to the public, for the purpose of face-to-face retail sales of a wide variety of consumer
+    products, and (ii) reported to MSA with a valid physical address for such permanent commercial structure.
+    “MSA DISTRIBUTOR” means a Person that buys Tobacco Products from Manufacturers or other
+    Distributors and is in the business of re-selling those Tobacco Products to retailers or other Distributors.
+    “MSA OTHER” means a person that is classified neither as MSA Retailer nor MSA Distributor.
+    The classification for each customer should be placed in the “Class of Trade” field on the SID. “MSA
+    Retailer” or “R”, “MSA Distributor” or “D”, “MSA Other” or “O”.
+                                                                                                                                                   PROMOTION
+                                              SHIPPING #                                                                 STATE TAX     CLASS OF
+      TYPE     CUSTOMER #       SHIPPING #                        NAME        ADDRESS       CITY    STATE     ZIP+4                               ACCEPTANCE
+                                                 EXT                                                                    JURISDICTION    TRADE
+                                                                                                                                                   IDENTIFIER
+
+       SID       00000123        12355678      91234222       ABC MART #2    123 MAIN ST   BOSTON    MA     021250000       MA            R           Y
+
+
+       SID       00000111        23456789      87654321      XYZ WHOLESALE   555 MAIN ST   BOSTON    MA     021250000       MA            D           Y
+
+
+       SID       00000111        23456789      87654322      XYZ WHOLESALE   555 MAIN ST   BOSTON    MA     021250000        RI           D           Y
+
+
+
+
+Altria Group Distribution Company l For Trade Use Only l 10/26/2020                                                                                             29
+    MULTICAT™ DATA FILE RECORD DETAILS
+    SHIP TO IDENTIFICATION RECORD (SID)
+
+
+    The PROMOTION ACCEPTANCE IDENTIFIER field is a required MULTICAT™ field. This field is used to
+    identify whether you choose to ship any promotional tobacco product to that outlet. The Promotion
+    Acceptance Identifier will improve the quality of your data and the accuracy of Retail Ship Lists.
+    Each SID that you supply on your weekly MULTICAT™ data file submission must indicate whether you
+    ship any promotional tobacco product to that customer. This is indicated as follows and should be reported
+    in column 498 of your SID record:
+         N = No, I choose not to ship any promotional tobacco products.
+         Y = Yes, I choose to ship promotional tobacco products.
+    If this field is left blank, MSA will default it to Y (Yes).
+
+                                                                                                                                              PROMOTION
+                                            SHIPPING #                                                                STATE TAX   CLASS OF
+       TYPE   CUSTOMER # SHIPPING #                             NAME      ADDRESS 1      CITY    STATE     ZIP+4                             ACCEPTANCE
+                                               EXT                                                                   JURISDICTION  TRADE
+                                                                                                                                              IDENTIFIER
+
+        SID      00000123      12355678      91234222       ABC MART #2   123 MAIN ST   BOSTON    MA     021250000       MA          R           Y
+
+        SID      00000111      23456789      87654321     XYZ WHOLESALE   555 MAIN ST   BOSTON    MA     021250000       MA          D           Y
+
+        SID      00000111      23456789      87654322     XYZ WHOLESALE   555 MAIN ST   BOSTON    MA     021250000       RI          D           Y
+
+
+
+
+Altria Group Distribution Company l For Trade Use Only l 10/26/2020                                                                                        30
+    MULTICAT™ DATA FILE RECORD DETAILS
+    PURCHASE RECORD (PUR)
+
+
+    The PURCHASE RECORD (PUR) contains the purchase quantity information for each unique combination
+    of Transaction Date, UPC and SKU purchased from or returned to the distributor by a customer, chain or
+    location (including Site or NDD).
+    All purchase records must have a valid TRANSACTION DATE as defined on page 9.*
+    Saleable and Unsaleable Returns quantities should be reported for each unique combination of
+    Transaction Date, UPC and SKU where applicable. If a separate SKU is used for sales versus returns
+    (saleable or unsaleable), then report in separate records for each unique SKU. There should be a SID
+    record and accompanying PUR records for each location supplied during the Reporting Week or from
+    which the distributor accepted returns.
+
+    BELOW IS AN EXAMPLE OF INFORMATION CONTAINED IN A PUR:
+                                                                                                                           TRANSACTION                   QUANTITY        SALEABLE      UNSALEABLE
+        TYPE       CUSTOMER #         SHIPPING #         CUST. SHIPPING # EXT.                         SKU
+                                                                                                                              DATE                        SHIPPED        RETURNS        RETURNS
+
+        PUR           00000345          00009823                   00009823                      789010000000                  20201021                00000000099       -0000000002   -0000000005
+
+
+
+
+                                                * Please refer to each Altria Tobacco Operating Company's Wholesale Program for specific Transaction Date requirements
+
+Altria Group Distribution Company l For Trade Use Only l 10/26/2020                                                                                                                                  31
+    MULTICAT™ DATA FILE RECORD DETAILS
+    PURCHASE RECORD (PUR)
+
+
+    Returned product (saleable or non-saleable) must be reported as a NEGATIVE sales quantity on a
+    separate PUR record from outbound sales of the same UPC/SKU(s). Returns may not be netted against
+    outbound shipments of the same UPC/SKU combination. There must be a separate PUR record for each
+    return and each shipment of a particular UPC/SKU combination even if both the return and shipment occur
+    on the same Transaction Date. For example, if 10 5-can sleeves of Copenhagen Long Cut Natural were
+    shipped to a customer and the same customer returned 2 Out-of-Date (Unsaleable) 5-can sleeves of
+    Copenhagen Long Cut Natural to the distributor on the same day, then the data file must contain two
+    separate PUR records. The first record would contain a quantity of 10 5-can sleeves and the second PUR
+    record would contain a quantity of –2 5-can sleeves. The negative sign must precede the quantity in the
+    PUR record indicating that this is a returns record.
+
+                                                                                              TRANSACTION   QUANTITY    SALEABLE    UNSALEABLE
+       CODE       CUSTOMER #          SHIPPING #       CUST. SHIPPING # EXT.       SKU
+                                                                                                 DATE       SHIPPED     RETURNS      RETURNS
+
+        PUR          00000345          00000345                00000345        000000111111     20201021    000000010   000000000    000000000
+
+        PUR          00000345          00000345                00000345        000000111111     20201021    -00000002   000000000    -000000002
+
+
+
+
+Altria Group Distribution Company l For Trade Use Only l 10/26/2020                                                                               32
+    MULTICAT™ DATA FILE RECORD DETAILS
+    PURCHASE RECORD (PUR)
+
+
+    SALEABLE & UNSALEABLE RETURNS DETAILS IN THE PUR:
+    The PUR Record must include the value of 004 in the third measure code field for the reporting of
+    SALEABLE RETURNS. Columns 131-133 should be set to 004.
+    The PUR Records will be utilized to report SALEABLE RETURN volume for each UPC or SKU within
+    columns 134-144 (Real Number with floating decimal). The volume should be reported as a negative value.
+    The PUR Record must include the value of 005 in the fourth measure code field for the reporting of
+    UNSALEABLE RETURNS. Columns 145-147 should be set to 005.
+    The PUR Records will be utilized to report UNSALEABLE RETURN volume for each UPC or SKU within
+    columns 148-158 (Real Number with floating decimal). The volume should be reported as a negative value.
+
+
+
+
+Altria Group Distribution Company l For Trade Use Only l 10/26/2020                                           33
+    MULTICAT™ DATA FILE RECORD DETAILS
+    PURCHASE RECORD (PUR)
+
+
+     Returns must continue to be reported within the Quantity Shipped field on the PUR record. This is in
+     addition to reporting the return measure fields.
+     All saleable returns must be reported by the UPC and SKU under which it was originally shipped to the
+     customer using whole values to indicate the quantity returned.
+     NON-SALEABLE returns of ATOC products must be reported by the UPC and SKU using both whole and
+     decimal values, as shown below. In very limited circumstances, returns of non-ATOC products may be
+     reported at the Brand Family level. All non-saleable returns to a distributor must be reported using one of
+     the following four methods:
+    1. Partial selling units of non-saleable returns may be reported with a decimal point. The example below
+       reflects the return of two cans with the ITEMS set to a full 5-can sleeve:
+      TYPE        UPC             SKU                  ITEM DESC        ITEMS   TYPE CUST# SHIP TO #             SKU          TRANSACTION DATE   QUANTITY
+
+       BID     7310000150    0055336055301    COPENHAGEN FINE CUT 5CT    0005   PUR    102345    432100      0055336055301        20201021       -000000.4
+
+    2. If partial selling units of non-saleable returns cannot be reported with a decimal point, then a UPC and a
+       SKU with the ITEM count adjusted to reflect individual sub-units (e.g., pack, can) should be used. In the
+       example below, please note the ITEMS per sell unit have been adjusted to 1 can with the
+       corresponding adjustment to the QUANTITY field to reflect a total of two cans being returned:
+     TYPE       UPC              SKU                  ITEM DESC         ITEMS   TYPE    CUST#    SHIP TO #        SKU         TRANSACTION DATE   QUANTITY
+
+      BID    7310000150     0055336055301    COPENHAGEN FINE CUT 5CT    0001    PUR     102345    432100      0055336055301        20201021       -0000002
+
+
+
+
+Altria Group Distribution Company l For Trade Use Only l 10/26/2020                                                                                          34
+    MULTICAT™ DATA FILE RECORD DETAILS
+    PURCHASE RECORD (PUR)
+
+
+    3. In limited circumstances, an alternative method is available for reporting either whole values or decimal
+       values in the QUANTITY field on the PUR records. However, this method is not available for reporting
+       non-saleable returns of ATOC products.
+    4. If full or partial non-saleable selling units of returns of non-ATOC products cannot be reported by the
+       UPC/SKU(s), then you can identify these non-saleable returns at the Brand Family level. For this
+       option, the word “RETURNS” must be entered following the Brand Family in the ITEM DESC field on the
+       associated BID record.
+
+                                          TYPE           UPC                SKU                ITEM DESC          ITEMS
+
+                                           BID       7310000000        789010088888       BRAND A RETURNS         0050
+
+                                           BID       7310100000        888880078901       BRAND B RETURNS         0005
+
+
+                                                                                  TRANSACTION                SALEABLE     UNSALEABLE
+                        TYPE        CUST#        SHIP TO #            SKU                       QUANTITY
+                                                                                     DATE                    RETURNS       RETURNS
+                         PUR        102345        432100        789010088888        20201021     -00000002   -00000001     -00000001
+
+                         PUR        102345        432100        888880078901        20201021     -00000002   -00000002     -00000000
+
+
+
+
+Altria Group Distribution Company l For Trade Use Only l 10/26/2020                                                                    35
+    MULTICAT™ DATA FILE RECORD DETAILS
+    TOTAL RECORD (TOT)
+
+
+    The TOTAL RECORD (TOT) section consists of a single record that provides the Distributor
+    Identification Number, the Week Ending Day, and the total number of BID, SID and PUR records
+    contained in the Data file.
+    Below is an example of information contained in a TOT:
+                                                                                                                                                            UNSALEABLE
+                                                                                                                             QUANTITY         SALEABLE       RETURNS
+                          WEEK                                                   INVENTORY SUM OF    FLOOR RETURNS SUM
+                                      # OF BID       # OF SID         # OF PUR                                            SHIPPED SUM OF   RETURNS SUM OF     SUM OF
+      CODE      DID#     ENDING                                                  MEASURE VALUE ON   OF MEASURE VALUE ON
+                                     RECORDS        RECORDS           RECORDS                                             MEASURE VALUE    MEASURE VALUE     MEASURE
+                          DATE                                                          BID                 BID
+                                                                                                                              ON PUR           ON PUR        VALUE ON
+                                                                                                                                                               PUR
+
+      TOT    12345678 20201024       00000918       00000089      000005693      000000000009627      000000000000056       -00000002        -00000002      000000000
+
+
+
+    Floor, Saleable & Unsaleable Return sums must be included in the TOT:
+    The TOT Record will need to be expanded to include the sum of each new measure value in the PUR
+    and BID Records as follows:
+     ▪ The sum of Floor Returns will be in columns 141-143
+     ▪ The sum of Saleable Returns will be in columns 159-161
+     ▪ The sum of Unsaleable Returns will be in columns 162-176
+     See Record Field Layout for complete details, including Measure Code Values
+
+
+
+
+Altria Group Distribution Company l For Trade Use Only l 10/26/2020                                                                                                      36
+2021 STARS Calendar
+
+
+
+
+                                                        All Reporting weeks are Sunday through Saturday.
+
+Altria Group Distribution Company l For Trade Use Only l 10/26/2020                                        37
+

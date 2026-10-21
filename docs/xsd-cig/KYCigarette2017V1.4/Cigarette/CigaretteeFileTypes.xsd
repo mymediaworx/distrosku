@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0">
+	<xsd:annotation>
+		<xsd:documentation>
+			<Description>Uniformity Project Cigarette Package</Description>
+			<MaturityLevel>CigaretteV2.1</MaturityLevel>
+			<ReleaseDate>September 12, 2019</ReleaseDate>
+		</xsd:documentation>
+	</xsd:annotation>
+	<xsd:include schemaLocation="../CommonSO/StateeFileTypes.xsd"/>
+	<xsd:include schemaLocation="../StateCigarette/CigaretteEnumerations.xsd"/>
+	<xsd:complexType name="CigInventoryType">
+		<xsd:sequence>
+			<xsd:element name="FedDesc" type="CigFedDescType" minOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Federal description of product (cigarette, small cigar, etc.)</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="MSAStatus" type="CigMSAStatusType" minOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>MSA status of product (OPM, SPM, NPM, etc.)</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="TaxJurisdiction" type="CigTaxJurisdictionType" maxOccurs="10" minOccurs="1" >
+				<xsd:annotation>
+					<xsd:documentation>Taxing jurisidiction where cigarettes are sold to or received from</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="UPCNumber" type="CigAlphaNumeric25Type" minOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Universal Product Code for brand</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="UPCUOM" type="CigUPCUOMType" minOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Unit of Measure for UPC (case, carton, or pack)</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Manufacturer" type="CigString85Type">
+				<xsd:annotation>
+					<xsd:documentation>Manfacturer name of product</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="ManufacturerEIN" type="EINType" minOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Federal Employer Identification Number for manufacturer</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="BrandFamily" type="CigString85Type">
+				<xsd:annotation>
+					<xsd:documentation>Brand family name of product</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Quantity" type="IntegerType" minOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Number of units</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="SticksPerPack" type="IntegerType" minOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Number of cigarette sticks per pack</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="TotalSticks" type="IntegerType">
+				<xsd:annotation>
+					<xsd:documentation>Total number of cigarette sticks</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<!--CigAlphaNumericType25Type-->
+	<xsd:simpleType name="CigAlphaNumeric25Type">
+		<xsd:restriction base="AlphaNumericType">
+			<xsd:maxLength value="25"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!--CigAlphaNumericType85Type-->
+	<xsd:simpleType name="CigString85Type">
+		<xsd:restriction base="StringType">
+			<xsd:maxLength value="85"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!--Stamps by denomination-->
+	<xsd:complexType name="CigDenomGVType">
+		<xsd:sequence>
+			<xsd:element name="TaxJurisdiction" type="CigTaxJurisdictionType">
+				<xsd:annotation>
+					<xsd:documentation>Tax jurisdiction of stamp</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Attribute" type="CigAttributeType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Special identifiers (red, blue, etc.)</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="StampUOM" type="CigStampUOMType">
+				<xsd:annotation>
+					<xsd:documentation>Unit of measure (10s, 20s, 25s, etc.)</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Count" type="IntegerType">
+				<xsd:annotation>
+					<xsd:documentation>Total number of stamps</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="GrossValue" type="USDecimalAmountType">
+				<xsd:annotation>
+					<xsd:documentation>Gross value of stamps at time of reporting</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="CigAddressType">
+		<xsd:complexContent>
+			<xsd:extension base="AddressType">
+				<xsd:sequence>
+					<xsd:element name="TypeOfAddress" type="CigTypeOfAddressType"/>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+</xsd:schema>

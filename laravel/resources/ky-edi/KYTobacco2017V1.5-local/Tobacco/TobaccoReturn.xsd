@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0">
+	<xsd:annotation>
+		<xsd:documentation>
+			<Description>e-file Tobacco Tax Schema</Description>
+		</xsd:documentation>
+	</xsd:annotation>
+	<xsd:include schemaLocation="../CommonSO/BinaryAttachment.xsd"/>
+	<xsd:include schemaLocation="../CommonSO/FinancialTransaction.xsd"/>
+	<xsd:include schemaLocation="../StateTobacco/TobaccoReturnHeaderState.xsd"/>
+	<xsd:include schemaLocation="ReturnDataState.xsd"/>
+	<xsd:include schemaLocation="TobaccoeFileTypes.xsd"/>
+	<xsd:element name="ReturnState">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="SubmissionId" type="String20Type"/>
+				<xsd:element ref="ReturnHeaderState"/>
+				<!--ReturnDataState to be built by each state -->
+				<xsd:element ref="ReturnDataState"/>
+				<xsd:element ref="BinaryAttachment" minOccurs="0" maxOccurs="unbounded"/>
+				<xsd:element ref="FinancialTransaction" minOccurs="0"/>
+			</xsd:sequence>
+			<xsd:attribute name="stateSchemaVersion" type="String50Type" fixed="KYTobacco2017V1.5"/>
+			<!-- Version of the state schema set used for the filing Last Updated Feb2018-->
+		</xsd:complexType>
+	</xsd:element>
+</xsd:schema>

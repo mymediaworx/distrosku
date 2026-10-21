@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2017 (x64) (http://www.altova.com) by State of Nebraska - Department of Revenue (WSCA-NE Dept of Revenue) -->
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0">
+	<xsd:include schemaLocation="../CommonSO/StateeFileTypes.xsd"/>
+	<xsd:include schemaLocation="../StateTobacco/TobaccoEnumerations.xsd"/>
+	<xsd:complexType name="TobInventoryType">
+		<xsd:sequence>
+			<xsd:element name="FedDesc" type="TobFedDescType">
+				<xsd:annotation>
+					<xsd:documentation>Federal description of product (small cigar, smokeless, RYO, etc.)</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="StateDesc" type="TobStateDescType">
+				<xsd:annotation>
+					<xsd:documentation>State description of product </xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="MSAStatus" type="TobMSAStatusType">
+				<xsd:annotation>
+					<xsd:documentation>MSA status of product (OPM, SPM, NPM, etc.)</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Price" type="USDecimalAmountType">
+				<xsd:annotation>
+					<xsd:documentation>Price of product</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="TaxJurisdiction" type="TobTaxJurisdIctionType" maxOccurs="10">
+				<xsd:annotation>
+					<xsd:documentation>Taxing jurisdiction where tobacco product is sold to or received from</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="ProductDescription" type="TobAlphaNumeric85Type">
+				<xsd:annotation>
+					<xsd:documentation>Narrative description of product</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Manufacturer" type="TobAlphaNumeric85Type">
+				<xsd:annotation>
+					<xsd:documentation>Manfacturer name of product</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="ManufacturerEIN" type="EINType">
+				<xsd:annotation>
+					<xsd:documentation>Federal Employer Identification Number for manufacturer</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="BrandFamily" type="TobAlphaNumeric85Type">
+				<xsd:annotation>
+					<xsd:documentation>Brand family name of product</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Unit" type="IntegerType">
+				<xsd:annotation>
+					<xsd:documentation>Lowest number of consumable units in retail package</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="UnitDescription" type="TobUnitDescriptionType">
+				<xsd:annotation>
+					<xsd:documentation>Description of unit in retail package</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="WeightVolume" type="DecimalType">
+				<xsd:annotation>
+					<xsd:documentation>Weight or volume of product</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Value" type="USDecimalAmountType">
+				<xsd:annotation>
+					<xsd:documentation>Value of product</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Quantity" type="IntegerType">
+				<xsd:annotation>
+					<xsd:documentation>Number of units</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="StickCount" type="IntegerType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Total number of tobacco product sticks</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="ExtendedTaxableAmount" type="USDecimalAmountType">
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:simpleType name="TobAlphaNumeric25Type">
+		<xsd:restriction base="AlphaNumericType">
+			<xsd:maxLength value="25"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="TobAlphaNumeric85Type">
+		<xsd:restriction base="xsd:string"><xsd:maxLength value="85"/></xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="TobAlphaNumeric35Type">
+		<xsd:restriction base="String35Type"/>
+	</xsd:simpleType>
+	<!--Stamps by denomination-->
+	<xsd:complexType name="TobDenomGVType">
+		<xsd:sequence>
+			<xsd:element name="TaxJurisdiction" type="TobTaxJurisdIctionType">
+				<xsd:annotation>
+					<xsd:documentation>Stamp's Type within Tax Jurisdiction</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Attribute" type="TobAttributeType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Special Identifiers (Red, Blue, etc)</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="StampUOM" type="TobStampUOMType">
+				<xsd:annotation>
+					<xsd:documentation>Unit of Measure (10, 20, 25, etc.)</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Count" type="IntegerType">
+				<xsd:annotation>
+					<xsd:documentation>Count</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="GrossValue" type="USDecimalAmountType">
+				<xsd:annotation>
+					<xsd:documentation>Gross Value of stamps at time of reporting</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="TobPurchaseOrderNumberType">
+		<xsd:sequence>
+			<xsd:element name="PurchaseOrderDetails" type="TobRollIDType" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="TobRollIDType">
+		<xsd:sequence>
+			<xsd:element name="RollID">
+				<xsd:annotation>
+					<xsd:documentation>Roll ID number for stamps received</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Stamps" type="TobDenomGVType"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="TobAddressType">
+		<xsd:complexContent>
+			<xsd:extension base="AddressType">
+				<xsd:sequence>
+					<xsd:element name="TypeOfAddress" type="TobTypeOfAddressType"/>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+</xsd:schema>

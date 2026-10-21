@@ -1,0 +1,2121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSPY v5 rel. 4 U (http://www.xmlspy.com) by Anita Connors (Sate of Wisconsin) -->
+<!-- edited with XMLSpy v2006 rel. 3 sp2 (http://www.altova.com) by Terry Garber (SC DEPT OF REVENUE & TAXATION) -->
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0">
+	<xsd:include schemaLocation="efileTypes.xsd"/>
+	<!-- <xsd:include schemaLocation="State1120efileTypes.xsd"/> -->
+	<xsd:annotation>
+		<xsd:documentation>
+			<Description>State Corporate and Partnership Tax Schema - Base types commonly used across schema files</Description>
+			<TaxYear>2006</TaxYear>
+			<MaturityLevel>Release 1.5</MaturityLevel>
+			<ReleaseDate>June 29, 2007</ReleaseDate>
+		</xsd:documentation>
+	</xsd:annotation>
+	<!--************    Corporate and Partership Simple Types    **************-->
+	<!-- Type for an amount-->
+	<xsd:simpleType name="AmountType">
+		<xsd:annotation>
+			<xsd:documentation>Type for a U.S. amount field with 2 decimal places</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:decimal">
+			<xsd:totalDigits value="18"/>
+			<xsd:fractionDigits value="2"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- Type for Bank Account Holder-->
+	<xsd:simpleType name="BankAccountHolderType">
+		<xsd:annotation>
+			<xsd:documentation>Type of Bank Account - 1 for Business, 2 for Personal</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="1">
+				<xsd:annotation>
+					<xsd:documentation>Business</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="2">
+				<xsd:annotation>
+					<xsd:documentation>Personal</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- Type for Decimal 999-->
+	<xsd:simpleType name="Dec999Type">
+		<xsd:restriction base="xsd:decimal">
+			<xsd:totalDigits value="11"/>
+			<xsd:fractionDigits value="8"/>
+			<xsd:minInclusive value="0.00"/>
+			<xsd:maxInclusive value="999.99999999"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- Type for Decimal 99-->
+	<xsd:simpleType name="Decimal99Type">
+		<xsd:restriction base="xsd:decimal">
+			<xsd:totalDigits value="10"/>
+			<xsd:fractionDigits value="8"/>
+			<xsd:minInclusive value="0.00"/>
+			<xsd:maxInclusive value="99.99999999"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- Attributes for a Return Document -->
+	<xsd:attributeGroup name="StateDocumentAttributes">
+		<xsd:annotation>
+			<xsd:documentation>Attribute to be applied for each return document</xsd:documentation>
+		</xsd:annotation>
+		<xsd:attribute name="documentId" type="IdType" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Must be unique within the return</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="documentName" type="String20Type" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Must be unique within the return</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="softwareId" type="String10Type" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Software ID</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="softwareVersion" type="SoftwareVersionType" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Software Version</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:attributeGroup>
+	<!-- Type for SignatureDocument Enumeration List -->
+	<xsd:simpleType name="SignatureDocumentEnumType">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="Retain"/>
+			<xsd:enumeration value="Attach"/>
+			<xsd:enumeration value="Mail"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="SignatureDocumentType">
+		<xsd:simpleContent>
+			<xsd:extension base="SignatureDocumentEnumType">
+				<xsd:attribute name="referenceDocumentId" type="IdListType" use="optional"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<!-- Type for Filing Status -->
+	<xsd:simpleType name="FilingStatusType">
+		<xsd:restriction base="xsd:string"/>
+	</xsd:simpleType>
+	<!-- Filing Entity Type -->
+	<xsd:simpleType name="FilingEntityType">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="General partnership"/>
+			<xsd:enumeration value="Limited partnership"/>
+			<xsd:enumeration value="LLC"/>
+			<xsd:enumeration value="LLP"/>
+			<xsd:enumeration value="Other"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- Type for GenerationalNameSuffix-->
+	<xsd:simpleType name="GenerationalNameSuffixType">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="JR"/>
+			<xsd:enumeration value="SR"/>
+			<xsd:enumeration value="I"/>
+			<xsd:enumeration value="II"/>
+			<xsd:enumeration value="III"/>
+			<xsd:enumeration value="IV"/>
+			<xsd:enumeration value="V"/>
+			<xsd:enumeration value="VI"/>
+			<xsd:enumeration value="VII"/>
+			<xsd:enumeration value="VIII"/>
+			<xsd:enumeration value="IX"/>
+			<xsd:enumeration value="X"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- Type for parsed individual name -->
+	<xsd:complexType name="IndividualNameType">
+		<xsd:sequence>
+			<xsd:element name="FirstName">
+				<xsd:simpleType>
+					<xsd:restriction base="xsd:string">
+						<xsd:maxLength value="16"/>
+						<xsd:pattern value="([A-Za-z0-9'\-] ?)*[A-Za-z0-9'\-]"/>
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:element>
+			<xsd:element name="MiddleInitial" minOccurs="0">
+				<xsd:simpleType>
+					<xsd:restriction base="xsd:string">
+						<xsd:maxLength value="1"/>
+						<xsd:pattern value="[A-Za-z]"/>
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:element>
+			<xsd:element name="LastName">
+				<xsd:simpleType>
+					<xsd:restriction base="xsd:string">
+						<xsd:maxLength value="32"/>
+						<xsd:pattern value="([A-Za-z0-9'\-] ?)*[A-Za-z0-9'\-]"/>
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:element>
+			<xsd:element name="NameSuffix" type="GenerationalNameSuffixType" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<!-- Type for Integer 18 Non Negative-->
+	<xsd:simpleType name="Integer18NNType">
+		<xsd:annotation>
+			<xsd:documentation>non-negative integer with 18 places</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:decimal">
+			<xsd:totalDigits value="18"/>
+			<xsd:fractionDigits value="0"/>
+			<xsd:minInclusive value="0.00"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- Type for Integer 18-->
+	<xsd:simpleType name="Integer18Type">
+		<xsd:annotation>
+			<xsd:documentation>integer with up to 18 places</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:decimal">
+			<xsd:totalDigits value="18"/>
+			<xsd:fractionDigits value="0"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- Type for a Joint Indicator-->
+	<xsd:simpleType name="JointIndType">
+		<xsd:annotation>
+			<xsd:documentation>Type for a U.S. amount field with 2 decimal places</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="Taxpayer"/>
+			<xsd:enumeration value="Spouse"/>
+			<xsd:enumeration value="Joint"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!--Period Days Type -->
+	<xsd:simpleType name="PeriodDaysType">
+		<xsd:restriction base="xsd:nonNegativeInteger">
+			<xsd:minInclusive value="1"/>
+			<xsd:maxInclusive value="365"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- Type for Phone -->
+	<xsd:simpleType name="PhoneNumType">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="Home"/>
+			<xsd:enumeration value="Work"/>
+			<xsd:enumeration value="Cell"/>
+			<xsd:enumeration value="Other"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- Type for Shareholder Entity -->
+	<xsd:simpleType name="ShareholderEntityType">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="Corporate"/>
+			<xsd:enumeration value="Individual active"/>
+			<xsd:enumeration value="Individual passive"/>
+			<xsd:enumeration value="Partnership"/>
+			<xsd:enumeration value="Exempt org"/>
+			<xsd:enumeration value="Nominee"/>
+			<xsd:enumeration value="LLP"/>
+			<xsd:enumeration value="Domestic Corp"/>
+			<xsd:enumeration value="Foreign Corp"/>
+			<xsd:enumeration value="Estate"/>
+			<xsd:enumeration value="Trust"/>
+			<xsd:enumeration value="SMLLC"/>
+			<xsd:enumeration value="S Corp"/>
+			<xsd:enumeration value="LLC"/>
+			<xsd:enumeration value="General partnership"/>
+			<xsd:enumeration value="Limited partnership"/>
+			<xsd:enumeration value="Other"/>
+			<xsd:enumeration value="Disregarded Entity"/>
+			<xsd:enumeration value="Individual"/>
+			<xsd:enumeration value="Fiduciary"/>
+			<xsd:enumeration value="PTE"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- Type for State 9 EIN-->
+	<xsd:simpleType name="State9EINType">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="9"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- Type for String 10-->
+	<xsd:simpleType name="String10Type">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="10"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- Type for String 20-->
+	<xsd:simpleType name="String20Type">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="20"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- Type for String 255-->
+	<xsd:simpleType name="String255Type">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="255"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- Type for String 50-->
+	<xsd:simpleType name="String50Type">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="50"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- Type for String 64-->
+	<xsd:simpleType name="String64Type">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="64"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- Type for Submission ID - 20 digits (EFIN + ccyyddd + 7-digit seq#) -->
+	<xsd:simpleType name="SubmissionIdType">
+		<xsd:restriction base="xsd:string">
+			<xsd:pattern value="[0-9]{13}[0-9a-z]{7}"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!--************    Corporate and Partership Complex Types    **************-->
+	<!-- Type for a U.S. or Foreign Address -->
+	<xsd:complexType name="AddressType">
+		<xsd:choice>
+			<xsd:element name="USAddress">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="AddressLine1Txt" type="StreetAddressType">
+							<xsd:annotation>
+								<xsd:documentation>Address line 1</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						<xsd:element name="AddressLine2Txt" type="StreetAddressType" minOccurs="0">
+							<xsd:annotation>
+								<xsd:documentation>Address line 2</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						<xsd:element name="CityNm" type="CityType">
+							<xsd:annotation>
+								<xsd:documentation>City</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						<xsd:element name="StateAbbreviationCd" type="StateType">
+							<xsd:annotation>
+								<xsd:documentation>State</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						<xsd:element name="ZIPCd" type="ZIPCodeType">
+							<xsd:annotation>
+								<xsd:documentation>ZIP code</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						<xsd:element name="InCareOfNm" type="String50Type" minOccurs="0">
+							<xsd:annotation>
+								<xsd:documentation>InCareOfName</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="ForeignAddress">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="AddressLine1Txt" type="StreetAddressType">
+							<xsd:annotation>
+								<xsd:documentation>Address line 1</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						<xsd:element name="AddressLine2Txt" type="StreetAddressType" minOccurs="0">
+							<xsd:annotation>
+								<xsd:documentation>Address line 2</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						<xsd:element name="CityNm" minOccurs="0">
+							<xsd:annotation>
+								<xsd:documentation>
+									<Description>City</Description>
+								</xsd:documentation>
+							</xsd:annotation>
+							<xsd:simpleType>
+								<xsd:restriction base="TextType">
+									<xsd:maxLength value="50"/>
+								</xsd:restriction>
+							</xsd:simpleType>
+						</xsd:element>
+						<xsd:element name="ProvinceOrStateNm" minOccurs="0">
+							<xsd:annotation>
+								<xsd:documentation>
+									<Description>Province or state</Description>
+								</xsd:documentation>
+							</xsd:annotation>
+							<xsd:simpleType>
+								<xsd:restriction base="TextType">
+									<xsd:maxLength value="50"/>
+								</xsd:restriction>
+							</xsd:simpleType>
+						</xsd:element>
+						<xsd:element name="CountryCd" type="CountryType">
+							<xsd:annotation>
+								<xsd:documentation>
+									<Description>Country</Description>
+								</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						<xsd:element name="ForeignPostalCd" minOccurs="0">
+							<xsd:annotation>
+								<xsd:documentation>
+									<Description>Postal code</Description>
+								</xsd:documentation>
+							</xsd:annotation>
+							<xsd:simpleType>
+								<xsd:restriction base="TextType">
+									<xsd:maxLength value="50"/>
+								</xsd:restriction>
+							</xsd:simpleType>
+						</xsd:element>
+						<xsd:element name="InCareOfNm" type="String50Type" minOccurs="0">
+							<xsd:annotation>
+								<xsd:documentation>InCareOfName</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:choice>
+	</xsd:complexType>
+	<!-- Type for Attachment-->
+	<xsd:complexType name="AttachmentType">
+		<xsd:annotation>
+			<xsd:documentation>Used to link an attachment to a filing</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="Reference" type="String20Type" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Form and line number to which attachment is linked</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Description" type="ExplanationType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Description of contents of attached document</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="TypeAttachment" minOccurs="0">
+				<xsd:simpleType>
+					<xsd:restriction base="xsd:string">
+						<xsd:enumeration value="ZIP"/>
+						<xsd:enumeration value="PDF"/>
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:element>
+			<xsd:element name="LinkToAttachment" type="String64Type" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>File name of attached document</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<!--  Business Type -->
+	<xsd:complexType name="BusinessType">
+		<xsd:sequence>
+			<xsd:element name="Name" type="BusinessNameType" minOccurs="0"/>
+			<xsd:element name="Address" type="AddressType" minOccurs="0"/>
+			<xsd:element name="FEIN" type="EINType" minOccurs="0"/>
+			<xsd:element name="StateID" type="String20Type" minOccurs="0"/>
+			<xsd:element name="DateBegin" type="DateType" minOccurs="0"/>
+			<xsd:element name="DateEnd" type="DateType" minOccurs="0"/>
+			<xsd:element name="PhoneNumber" type="PhoneNumberType" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<!-- Type for Charitable Contribution Table -->
+	<xsd:complexType name="CharitableContributionType">
+		<xsd:annotation>
+			<xsd:documentation>8.) Charitable Conribution Table  (Minor changes made in Columbia)</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="CharitableDonationAmount" type="AmountType" minOccurs="0"/>
+			<xsd:element name="CharityOrgCode" type="String50Type" minOccurs="0"/>
+			<xsd:element name="CharityOrgName" type="String50Type" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<!-- Type for Direct Deposit-->
+	<xsd:complexType name="DirectDepositType">
+		<xsd:sequence>
+			<xsd:element name="DirectDepositAmount" type="AmountType">
+				<xsd:annotation>
+					<xsd:documentation>Amount to be deposited in this account</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="RoutingTransitNumber" type="RoutingTransitNumberType">
+				<xsd:annotation>
+					<xsd:documentation>Bank ABA Routing Number</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="BankAccountNumber" type="BankAccountNumberType">
+				<xsd:annotation>
+					<xsd:documentation>Bank Account Number</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="AccountType" type="BankAccountType">
+				<xsd:annotation>
+					<xsd:documentation>"1" for Checking or "2" forSaving</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<!-- Type for Developer Transmitter-->
+	<xsd:complexType name="DeveloperTransmitterType">
+		<xsd:sequence>
+			<xsd:element name="DeveloperName" type="BusinessNameType" minOccurs="0"/>
+			<xsd:element name="DeveloperID" type="String20Type" minOccurs="0"/>
+			<xsd:element name="TransmitterName" type="BusinessNameType" minOccurs="0"/>
+			<xsd:element name="TransmitterID" type="String20Type" minOccurs="0"/>
+			<xsd:element name="ContactName" type="PersonNameType" minOccurs="0"/>
+			<xsd:element name="Address" type="AddressType" minOccurs="0"/>
+			<xsd:element name="EmailAddress" type="EmailAddressType" minOccurs="0"/>
+			<xsd:element name="PhoneNumber" type="PhoneNumberType" minOccurs="0"/>
+			<xsd:element name="FaxNumber" type="PhoneNumberType" minOccurs="0"/>
+			<xsd:element name="EFIN" type="EFINType" minOccurs="0"/>
+			<xsd:element name="ETIN" type="ETINType" minOccurs="0"/>
+			<xsd:element name="FEIN" type="EINType" minOccurs="0"/>
+			<xsd:element name="VersionID" type="String20Type" minOccurs="0"/>
+			<xsd:element name="TestProductionIndicator" type="String20Type" minOccurs="0"/>
+			<xsd:element name="ProductType" type="String50Type" minOccurs="0"/>
+			<xsd:element name="Date" type="DateType" minOccurs="0"/>
+			<xsd:element name="FreeFileCode" type="String20Type" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<!-- Type for Entity Detail from 1120 plus changes for 1065-->
+	<xsd:complexType name="EntityDetailType">
+		<xsd:sequence>
+			<xsd:choice>
+				<xsd:element name="Date" type="DateType" minOccurs="0"/>
+				<xsd:element name="YearMonth" type="YearMonthType" minOccurs="0"/>
+				<xsd:element name="Year" type="YearType" minOccurs="0"/>
+			</xsd:choice>
+			<xsd:element name="Description" type="ExplanationType" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="TransactionIdCode" type="String50Type" minOccurs="0"/>
+			<xsd:element name="Amount" type="AmountType" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<!-- Type for Internet Protocol-->
+	<xsd:complexType name="InternetProtocolType">
+		<xsd:sequence>
+			<xsd:element name="IPAddress">
+				<xsd:simpleType>
+					<xsd:restriction base="xsd:string">
+						<xsd:pattern value="([0-9A-Fa-f]{1,4}:){7}[0-9A-Fa-f]{1,4}|0*([1-9]?\d|1\d\d|2[0-4]\d|25[0-5])\.0*([1-9]?\d|1\d\d|2[0-4]\d|25[0-5])\.0*([1-9]?\d|1\d\d|2[0-4]\d|25[0-5])\.0*([1-9]?\d|1\d\d|2[0-4]\d|25[0-5])"/>
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:element>
+			<xsd:element name="IPTimestamp" type="TimestampType"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<!-- Type for Person -->
+	<xsd:complexType name="PersonType">
+		<xsd:sequence>
+			<xsd:element name="Title" type="PersonTitleType" minOccurs="0"/>
+			<xsd:element name="FirstName" type="PersonNameType" minOccurs="0"/>
+			<xsd:element name="MiddleInitial" type="PersonNameType" minOccurs="0"/>
+			<xsd:element name="LastName" type="PersonNameType" minOccurs="0"/>
+			<xsd:element name="Address" type="AddressType" minOccurs="0"/>
+			<xsd:element name="EmailAddress" type="EmailAddressType" minOccurs="0"/>
+			<xsd:element name="BusinessPhoneNumber" type="PhoneNumberType" minOccurs="0"/>
+			<xsd:element name="HomePhoneNumber" type="PhoneNumberType" minOccurs="0"/>
+			<xsd:element name="FaxNumber" type="PhoneNumberType" minOccurs="0"/>
+			<xsd:element name="SSN" type="SSNType" minOccurs="0"/>
+			<xsd:element name="DateSigned" type="DateType" minOccurs="0"/>
+			<xsd:element name="DateReviewed" type="DateType" minOccurs="0"/>
+			<xsd:element name="AuthorizeDiscuss" type="CheckboxType" minOccurs="0"/>
+			<xsd:element name="Signature" type="String50Type" minOccurs="0"/>
+			<xsd:element name="Description" type="ShortDescriptionType" minOccurs="0"/>
+			<xsd:element name="Notes" type="ExplanationType" minOccurs="0"/>
+			<xsd:element name="Age" type="IntegerType" minOccurs="0"/>
+			<xsd:element name="DateOfDeath" type="DateType" minOccurs="0"/>
+			<xsd:element name="DateOfBirth" type="DateType" minOccurs="0"/>
+			<xsd:element name="DecedentIndicator" type="CheckboxType" minOccurs="0"/>
+			<xsd:element name="NewNameAddressChkBox" type="CheckboxType" minOccurs="0"/>
+			<xsd:element name="InCareOf" type="String50Type" minOccurs="0"/>
+			<xsd:element name="Occupation" type="String50Type" minOccurs="0"/>
+			<xsd:element name="StateIdNumber" type="String20Type" minOccurs="0"/>
+			<xsd:element name="PriorYearAGI" type="AmountType" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<!-- Type for Person or Business Choice Gate - Added with 2006v1.0 -->
+	<xsd:complexType name="PersonOrBusinessType">
+		<xsd:sequence>
+			<xsd:element name="TypeOfEntity" type="ShareholderEntityType"/>
+			<xsd:choice>
+				<xsd:element name="PersonData" type="PersonType"/>
+				<xsd:element name="BusinessData" type="BusinessType"/>
+			</xsd:choice>
+		</xsd:sequence>
+	</xsd:complexType>
+	<!-- Type for Preparer-->
+	<xsd:complexType name="PreparerType">
+		<xsd:sequence>
+			<xsd:element name="Title" type="PersonTitleType" minOccurs="0"/>
+			<xsd:element name="PreparerName" type="PersonNameType" minOccurs="0"/>
+			<xsd:element name="FirmName" type="BusinessNameType" minOccurs="0"/>
+			<xsd:element name="ContactName" type="PersonNameType" minOccurs="0"/>
+			<xsd:element name="Address" type="AddressType" minOccurs="0"/>
+			<xsd:element name="EmailAddress" type="EmailAddressType" minOccurs="0"/>
+			<xsd:element name="PhoneNumber" type="PhoneNumberType" minOccurs="0"/>
+			<xsd:element name="FaxNumber" type="PhoneNumberType" minOccurs="0"/>
+			<xsd:element name="EFIN" type="EFINType" minOccurs="0"/>
+			<xsd:element name="ETIN" type="ETINType" minOccurs="0"/>
+			<xsd:element name="PTIN" type="PTINType" minOccurs="0"/>
+			<xsd:element name="SSN" type="SSNType" minOccurs="0"/>
+			<xsd:element name="FEIN" type="EINType" minOccurs="0"/>
+			<xsd:element name="StateID" type="String20Type" minOccurs="0"/>
+			<xsd:element name="IDNumberType" type="String20Type" minOccurs="0"/>
+			<xsd:element name="DateSignedPrepared" type="DateType" minOccurs="0"/>
+			<xsd:element name="DateReviewed" type="DateType" minOccurs="0"/>
+			<xsd:element name="AuthorizeDiscuss" type="CheckboxType" minOccurs="0"/>
+			<xsd:element name="PreparerIndicator" type="CheckboxType" minOccurs="0"/>
+			<xsd:element name="PreparerSelfEmployIndicator" type="CheckboxType" minOccurs="0"/>
+			<xsd:element name="SignatureType" type="PINType" minOccurs="0"/>
+			<xsd:element name="Description" type="ShortDescriptionType" minOccurs="0"/>
+			<xsd:element name="Notes" type="ExplanationType" minOccurs="0"/>
+			<xsd:element name="PhoneType" type="PhoneNumType" minOccurs="0"/>
+			<xsd:element name="PhoneExtension" type="String20Type" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<!-- Type for TIN-->
+	<xsd:complexType name="TINType">
+		<xsd:annotation>
+			<xsd:documentation>Defines the primary TIN used</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="TypeTIN">
+				<xsd:annotation>
+					<xsd:documentation>Defines the Federal Taxpayer Identification Number Type.</xsd:documentation>
+				</xsd:annotation>
+				<xsd:simpleType>
+					<xsd:restriction base="xsd:string">
+						<xsd:enumeration value="FEIN"/>
+						<xsd:enumeration value="SSN"/>
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:element>
+			<xsd:element name="TINTypeValue">
+				<xsd:annotation>
+					<xsd:documentation>Either Federal Employer Identification Number or Social Security Number.</xsd:documentation>
+				</xsd:annotation>
+				<xsd:simpleType>
+					<xsd:restriction base="xsd:string">
+						<xsd:pattern value="[0-9]{9}"/>
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:simpleType name="PINTypeState">
+		<xsd:annotation>
+			<xsd:documentation>Type for Reporting Agent PIN</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:pattern value="[A-Za-z0-9]{1}|[A-Za-z0-9]{2}|[A-Za-z0-9]{3}|[A-Za-z0-9]{4}|[A-Za-z0-9]{5}|[A-Za-z0-9]{6}|[A-Za-z0-9]{7}|[A-Za-z0-9]{8}|[A-Za-z0-9]{9}|[A-Za-z0-9]{10}|[A-Za-z0-9]{11}|[A-Za-z0-9]{12}|[A-Za-z0-9]{13}|[A-Za-z0-9]{14}|[A-Za-z0-9]{15}">
+				<xsd:annotation>
+					<xsd:documentation>State issued PIN - 15 alphameric maximum</xsd:documentation>
+				</xsd:annotation>
+			</xsd:pattern>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- ACH Amount Type -->
+	<xsd:simpleType name="ACHAmountType">
+		<xsd:restriction base="xsd:decimal">
+			<xsd:totalDigits value="10"/>
+			<xsd:fractionDigits value="2"/>
+			<xsd:minInclusive value="0.00"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- ACH Identifier Type -->
+	<xsd:simpleType name="ACHIdentifierType">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="15"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- ACH Name Type -->
+	<xsd:simpleType name="ACHNameType">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="22"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- FTA Tax Type Code Type-->
+	<xsd:complexType name="FTATaxTypeCode">
+		<xsd:sequence>
+			<xsd:element name="FTACode">
+				<xsd:simpleType>
+					<xsd:restriction base="xsd:string">
+						<xsd:pattern value="[0-9]{3}"/>
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:element>
+			<xsd:element name="StateTaxTypeCode">
+				<xsd:simpleType>
+					<xsd:restriction base="xsd:string">
+						<xsd:pattern value="[0-9]{2}|[  ]{2}|[0-9][ ]"/>
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<!--ACH Entity Detail Type Used for ACH Debit-->
+	<xsd:complexType name="ACHEntityDetailType">
+		<xsd:sequence>
+			<xsd:choice>
+				<xsd:element name="Checking" type="CheckboxType">
+					<xsd:annotation>
+						<xsd:documentation>
+							<Description>Checking Account</Description>
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="Savings" type="CheckboxType">
+					<xsd:annotation>
+						<xsd:documentation>
+							<Description>Savings Account</Description>
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:choice>
+			<xsd:element name="RoutingTransitNumber" type="RoutingTransitNumberType"/>
+			<xsd:element name="BankAccountNumber" type="BankAccountNumberType"/>
+			<xsd:element name="PaymentAmount" type="ACHAmountType"/>
+			<xsd:element name="IdentificationNumber" type="ACHIdentifierType" minOccurs="0"/>
+			<xsd:element name="AccountHolderName" type="ACHNameType" minOccurs="0"/>
+			<xsd:element name="AccountHolderType" type="BankAccountHolderType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>"1" for Business or "2" for Personal</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="RequestedPaymentDate" type="DateType" minOccurs="0"/>
+			<xsd:element name="AddendaRecord" type="AddendaRecordType" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<!--ACH Credit Detail Type used for ACH Credit -->
+	<xsd:complexType name="ACHCreditDetailType">
+		<xsd:sequence>
+			<xsd:element name="PaymentAmount" type="ACHAmountType"/>
+			<xsd:element name="IdentificationNumber" type="ACHIdentifierType" minOccurs="0"/>
+			<xsd:element name="RequestedPaymentDate" type="DateType" minOccurs="0"/>
+			<xsd:element name="AddendaRecord" type="AddendaRecordType" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<!-- State Direct Deposit Type -->
+	<xsd:complexType name="StateDirectDepositType">
+		<xsd:annotation>
+			<xsd:documentation>Content model for State Refund Direct Deposit</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="TelephoneNumber" type="PhoneNumberType" minOccurs="0"/>
+			<xsd:element name="RoutingTransitNumber" type="RoutingTransitNumberType"/>
+			<xsd:element name="BankAccountNumber" type="BankAccountNumberType"/>
+			<xsd:element name="Amount" type="ACHAmountType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Amount is only necessary where customer requests direct deposit be split into more than one account</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:choice>
+				<xsd:element name="Checking" type="CheckboxType"/>
+				<xsd:element name="Savings" type="CheckboxType"/>
+			</xsd:choice>
+		</xsd:sequence>
+	</xsd:complexType>
+	<!-- State refund to 529 Tuition Trust Account -->
+	<xsd:complexType name="StateDirectDeposit529Type">
+		<xsd:annotation>
+			<xsd:documentation>Content model for State Refund Direct Deposit into a 529 (Tuition Trust) account</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="RoutingTransitNumber" type="RoutingTransitNumberType" minOccurs="0"/>
+			<xsd:element name="BankAccountNumber" type="BankAccountNumberType"/>
+			<xsd:element name="Amount" type="ACHAmountType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Amount is only necessary where customer requests direct deposit be split into more than one account</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:choice minOccurs="0">
+				<xsd:element name="Checking" type="CheckboxType"/>
+				<xsd:element name="Savings" type="CheckboxType"/>
+			</xsd:choice>
+			<xsd:element name="BeneficiaryName" type="IndividualNameType"/>
+			<xsd:element name="BeneficiarySSN" type="SSNType" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<!-- Addenda Record Type -->
+	<xsd:complexType name="AddendaRecordType">
+		<xsd:sequence>
+			<xsd:element name="TaxpayerIdentification" type="ACHIdentifierType" minOccurs="0"/>
+			<xsd:element name="TaxTypeCode" type="FTATaxTypeCode" minOccurs="0"/>
+			<xsd:element name="TaxPeriodEndDate" type="DateType" minOccurs="0"/>
+			<xsd:element name="TXPAmount" minOccurs="0" maxOccurs="3">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="SubAmountType">
+							<xsd:simpleType>
+								<xsd:restriction base="xsd:string">
+									<xsd:maxLength value="1"/>
+								</xsd:restriction>
+							</xsd:simpleType>
+						</xsd:element>
+						<xsd:element name="SubAmount" type="ACHAmountType"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="FullIATType">
+		<xsd:annotation>
+			<xsd:documentation>Comment describing your root element</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="ForeignCurrency" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>If states are only sending to domestic RTN's, then everything in this section can be defaulted, i.e. no currency exchange info</xsd:documentation>
+				</xsd:annotation>
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="ForeignExchangeIndicator" minOccurs="0">
+							<xsd:simpleType>
+								<xsd:restriction base="xsd:string">
+									<xsd:enumeration value="FV"/>
+									<xsd:enumeration value="VF"/>
+									<xsd:enumeration value="FF"/>
+								</xsd:restriction>
+							</xsd:simpleType>
+						</xsd:element>
+						<xsd:element name="ForeignExchangeRefIndicator" minOccurs="0">
+							<xsd:simpleType>
+								<xsd:restriction base="xsd:string">
+									<xsd:enumeration value="1"/>
+									<xsd:enumeration value="2"/>
+									<xsd:enumeration value="3"/>
+								</xsd:restriction>
+							</xsd:simpleType>
+						</xsd:element>
+						<xsd:element name="ForeignExchangeReference" minOccurs="0">
+							<xsd:simpleType>
+								<xsd:restriction base="xsd:string">
+									<xsd:maxLength value="15"/>
+								</xsd:restriction>
+							</xsd:simpleType>
+						</xsd:element>
+						<xsd:element name="OriginatingCurrencyCode">
+							<xsd:simpleType>
+								<xsd:restriction base="xsd:string">
+									<xsd:maxLength value="3"/>
+								</xsd:restriction>
+							</xsd:simpleType>
+						</xsd:element>
+						<xsd:element name="DestinationCurrencyCode">
+							<xsd:simpleType>
+								<xsd:restriction base="xsd:string">
+									<xsd:maxLength value="3"/>
+								</xsd:restriction>
+							</xsd:simpleType>
+						</xsd:element>
+						<xsd:element name="ForeignPaymentAmount" type="ACHAmountType">
+							<xsd:annotation>
+								<xsd:documentation/>
+							</xsd:annotation>
+						</xsd:element>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="PaymentDetail">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="DestinationCountry" type="ISOCountryType"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="ForeignDFI">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="ForeignDFIName" type="String35Type"/>
+						<xsd:element name="ForeignDFIIdentifier">
+							<xsd:simpleType>
+								<xsd:restriction base="xsd:string">
+									<xsd:maxLength value="34"/>
+								</xsd:restriction>
+							</xsd:simpleType>
+						</xsd:element>
+						<xsd:element name="ForeignDFICountryCode" type="ISOCountryType"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="Receiver">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="ReceiverName" type="String35Type"/>
+						<xsd:element name="ReceiverID" minOccurs="0">
+							<xsd:simpleType>
+								<xsd:restriction base="xsd:string">
+									<xsd:maxLength value="15"/>
+								</xsd:restriction>
+							</xsd:simpleType>
+						</xsd:element>
+						<xsd:element name="ReceiverAddress" type="AddressType"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<!-- String 2 Type -->
+	<xsd:simpleType name="String2Type">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="2"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- String 3 Type -->
+	<xsd:simpleType name="String3Type">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="3"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- String 35 Type -->
+	<xsd:simpleType name="String35Type">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="35"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- ISO Country Type -->
+	<xsd:simpleType name="ISOCountryType">
+		<xsd:annotation>
+			<xsd:documentation>ISO 3166-1 alpha2 Country Codes</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="AF">
+				<xsd:annotation>
+					<xsd:documentation>AFGHANISTAN</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="AX">
+				<xsd:annotation>
+					<xsd:documentation>ALAND ISLANDS</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="AL">
+				<xsd:annotation>
+					<xsd:documentation>ALBANIA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="DZ">
+				<xsd:annotation>
+					<xsd:documentation>ALGERIA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="AS">
+				<xsd:annotation>
+					<xsd:documentation>AMERICAN SAMOA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="AD">
+				<xsd:annotation>
+					<xsd:documentation>ANDORRA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="AO">
+				<xsd:annotation>
+					<xsd:documentation>ANGOLA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="AI">
+				<xsd:annotation>
+					<xsd:documentation>ANGUILLA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="AQ">
+				<xsd:annotation>
+					<xsd:documentation>ANTARCTICA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="AG">
+				<xsd:annotation>
+					<xsd:documentation>ANTIGUA AND BARBUDA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="AR">
+				<xsd:annotation>
+					<xsd:documentation>ARGENTINA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="AM">
+				<xsd:annotation>
+					<xsd:documentation>ARMENIA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="AW">
+				<xsd:annotation>
+					<xsd:documentation>ARUBA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="AU">
+				<xsd:annotation>
+					<xsd:documentation>AUSTRALIA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="AT">
+				<xsd:annotation>
+					<xsd:documentation>AUSTRIA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="AZ">
+				<xsd:annotation>
+					<xsd:documentation>AZERBAIJAN</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="BS">
+				<xsd:annotation>
+					<xsd:documentation>BAHAMAS</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="BH">
+				<xsd:annotation>
+					<xsd:documentation>BAHRAIN</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="BD">
+				<xsd:annotation>
+					<xsd:documentation>BANGLADESH</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="BB">
+				<xsd:annotation>
+					<xsd:documentation>BARBADOS</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="BY">
+				<xsd:annotation>
+					<xsd:documentation>BELARUS</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="BE">
+				<xsd:annotation>
+					<xsd:documentation>BELGIUM</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="BZ">
+				<xsd:annotation>
+					<xsd:documentation>BELIZE</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="BJ">
+				<xsd:annotation>
+					<xsd:documentation>BENIN</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="BM">
+				<xsd:annotation>
+					<xsd:documentation>BERMUDA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="BT">
+				<xsd:annotation>
+					<xsd:documentation>BHUTAN</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="BO">
+				<xsd:annotation>
+					<xsd:documentation>BOLIVIA, PLURINATIONAL STATE OF</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="BA">
+				<xsd:annotation>
+					<xsd:documentation>BOSNIA AND HERZEGOVINA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="BW">
+				<xsd:annotation>
+					<xsd:documentation>BOTSWANA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="BV">
+				<xsd:annotation>
+					<xsd:documentation>BOUVET ISLAND</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="BR">
+				<xsd:annotation>
+					<xsd:documentation>BRAZIL</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="IO">
+				<xsd:annotation>
+					<xsd:documentation>BRITISH INDIAN OCEAN TERRITORY</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="BN">
+				<xsd:annotation>
+					<xsd:documentation>BRUNEI DARUSSALAM</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="BG">
+				<xsd:annotation>
+					<xsd:documentation>BULGARIA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="BF">
+				<xsd:annotation>
+					<xsd:documentation>BURKINA FASO</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="BI">
+				<xsd:annotation>
+					<xsd:documentation>BURUNDI</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="KH">
+				<xsd:annotation>
+					<xsd:documentation>CAMBODIA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="CM">
+				<xsd:annotation>
+					<xsd:documentation>CAMEROON</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="CA">
+				<xsd:annotation>
+					<xsd:documentation>CANADA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="CV">
+				<xsd:annotation>
+					<xsd:documentation>CAPE VERDE</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="KY">
+				<xsd:annotation>
+					<xsd:documentation>CAYMAN ISLANDS</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="CF">
+				<xsd:annotation>
+					<xsd:documentation>CENTRAL AFRICAN REPUBLIC</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="TD">
+				<xsd:annotation>
+					<xsd:documentation>CHAD</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="CL">
+				<xsd:annotation>
+					<xsd:documentation>CHILE</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="CN">
+				<xsd:annotation>
+					<xsd:documentation>CHINA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="CX">
+				<xsd:annotation>
+					<xsd:documentation>CHRISTMAS ISLAND</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="CC">
+				<xsd:annotation>
+					<xsd:documentation>COCOS (KEELING) ISLANDS</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="CO">
+				<xsd:annotation>
+					<xsd:documentation>COLOMBIA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="KM">
+				<xsd:annotation>
+					<xsd:documentation>COMOROS</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="CG">
+				<xsd:annotation>
+					<xsd:documentation>CONGO</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="CD">
+				<xsd:annotation>
+					<xsd:documentation>CONGO, THE DEMOCRATIC REPUBLIC OF THE</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="CK">
+				<xsd:annotation>
+					<xsd:documentation>COOK ISLANDS</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="CR">
+				<xsd:annotation>
+					<xsd:documentation>COSTA RICA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="CI">
+				<xsd:annotation>
+					<xsd:documentation>COTE D'IVOIRE</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="HR">
+				<xsd:annotation>
+					<xsd:documentation>CROATIA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="CU">
+				<xsd:annotation>
+					<xsd:documentation>CUBA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="CY">
+				<xsd:annotation>
+					<xsd:documentation>CYPRUS</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="CZ">
+				<xsd:annotation>
+					<xsd:documentation>CZECH REPUBLIC</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="DK">
+				<xsd:annotation>
+					<xsd:documentation>DENMARK</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="DJ">
+				<xsd:annotation>
+					<xsd:documentation>DJIBOUTI</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="DM">
+				<xsd:annotation>
+					<xsd:documentation>DOMINICA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="DO">
+				<xsd:annotation>
+					<xsd:documentation>DOMINICAN REPUBLIC</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="EC">
+				<xsd:annotation>
+					<xsd:documentation>ECUADOR</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="EG">
+				<xsd:annotation>
+					<xsd:documentation>EGYPT</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="SV">
+				<xsd:annotation>
+					<xsd:documentation>EL SALVADOR</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="GQ">
+				<xsd:annotation>
+					<xsd:documentation>EQUATORIAL GUINEA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ER">
+				<xsd:annotation>
+					<xsd:documentation>ERITREA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="EE">
+				<xsd:annotation>
+					<xsd:documentation>ESTONIA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ET">
+				<xsd:annotation>
+					<xsd:documentation>ETHIOPIA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="FK">
+				<xsd:annotation>
+					<xsd:documentation>FALKLAND ISLANDS (MALVINAS)</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="FO">
+				<xsd:annotation>
+					<xsd:documentation>FAROE ISLANDS</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="FJ">
+				<xsd:annotation>
+					<xsd:documentation>FIJI</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="FI">
+				<xsd:annotation>
+					<xsd:documentation>FINLAND</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="FR">
+				<xsd:annotation>
+					<xsd:documentation>FRANCE</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="GF">
+				<xsd:annotation>
+					<xsd:documentation>FRENCH GUIANA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="PF">
+				<xsd:annotation>
+					<xsd:documentation>FRENCH POLYNESIA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="TF">
+				<xsd:annotation>
+					<xsd:documentation>FRENCH SOUTHERN TERRITORIES</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="GA">
+				<xsd:annotation>
+					<xsd:documentation>GABON</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="GM">
+				<xsd:annotation>
+					<xsd:documentation>GAMBIA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="GE">
+				<xsd:annotation>
+					<xsd:documentation>GEORGIA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="DE">
+				<xsd:annotation>
+					<xsd:documentation>GERMANY</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="GH">
+				<xsd:annotation>
+					<xsd:documentation>GHANA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="GI">
+				<xsd:annotation>
+					<xsd:documentation>GIBRALTAR</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="GR">
+				<xsd:annotation>
+					<xsd:documentation>GREECE</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="GL">
+				<xsd:annotation>
+					<xsd:documentation>GREENLAND</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="GD">
+				<xsd:annotation>
+					<xsd:documentation>GRENADA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="GP">
+				<xsd:annotation>
+					<xsd:documentation>GUADELOUPE</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="GU">
+				<xsd:annotation>
+					<xsd:documentation>GUAM</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="GT">
+				<xsd:annotation>
+					<xsd:documentation>GUATEMALA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="GG">
+				<xsd:annotation>
+					<xsd:documentation>GUERNSEY</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="GN">
+				<xsd:annotation>
+					<xsd:documentation>GUINEA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="GW">
+				<xsd:annotation>
+					<xsd:documentation>GUINEA-BISSAU</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="GY">
+				<xsd:annotation>
+					<xsd:documentation>GUYANA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="HT">
+				<xsd:annotation>
+					<xsd:documentation>HAITI</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="HM">
+				<xsd:annotation>
+					<xsd:documentation>HEARD ISLAND AND MCDONALD ISLANDS</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VA">
+				<xsd:annotation>
+					<xsd:documentation>HOLY SEE (VATICAN CITY STATE)</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="HN">
+				<xsd:annotation>
+					<xsd:documentation>HONDURAS</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="HK">
+				<xsd:annotation>
+					<xsd:documentation>HONG KONG</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="HU">
+				<xsd:annotation>
+					<xsd:documentation>HUNGARY</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="IS">
+				<xsd:annotation>
+					<xsd:documentation>ICELAND</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="IN">
+				<xsd:annotation>
+					<xsd:documentation>INDIA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ID">
+				<xsd:annotation>
+					<xsd:documentation>INDONESIA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="IR">
+				<xsd:annotation>
+					<xsd:documentation>IRAN, ISLAMIC REPUBLIC OF</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="IQ">
+				<xsd:annotation>
+					<xsd:documentation>IRAQ</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="IE">
+				<xsd:annotation>
+					<xsd:documentation>IRELAND</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="IM">
+				<xsd:annotation>
+					<xsd:documentation>ISLE OF MAN</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="IL">
+				<xsd:annotation>
+					<xsd:documentation>ISRAEL</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="IT">
+				<xsd:annotation>
+					<xsd:documentation>ITALY</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="JM">
+				<xsd:annotation>
+					<xsd:documentation>JAMAICA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="JP">
+				<xsd:annotation>
+					<xsd:documentation>JAPAN</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="JE">
+				<xsd:annotation>
+					<xsd:documentation>JERSEY</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="JO">
+				<xsd:annotation>
+					<xsd:documentation>JORDAN</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="KZ">
+				<xsd:annotation>
+					<xsd:documentation>KAZAKHSTAN</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="KE">
+				<xsd:annotation>
+					<xsd:documentation>KENYA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="KI">
+				<xsd:annotation>
+					<xsd:documentation>KIRIBATI</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="KP">
+				<xsd:annotation>
+					<xsd:documentation>KOREA, DEMOCRATIC PEOPLE'S REPUBLIC OF</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="KR">
+				<xsd:annotation>
+					<xsd:documentation>KOREA, REPUBLIC OF</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="KW">
+				<xsd:annotation>
+					<xsd:documentation>KUWAIT</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="KG">
+				<xsd:annotation>
+					<xsd:documentation>KYRGYZSTAN</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="LA">
+				<xsd:annotation>
+					<xsd:documentation>LAO PEOPLE'S DEMOCRATIC REPUBLIC</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="LV">
+				<xsd:annotation>
+					<xsd:documentation>LATVIA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="LB">
+				<xsd:annotation>
+					<xsd:documentation>LEBANON</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="LS">
+				<xsd:annotation>
+					<xsd:documentation>LESOTHO</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="LR">
+				<xsd:annotation>
+					<xsd:documentation>LIBERIA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="LY">
+				<xsd:annotation>
+					<xsd:documentation>LIBYAN ARAB JAMAHIRIYA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="LI">
+				<xsd:annotation>
+					<xsd:documentation>LIECHTENSTEIN</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="LT">
+				<xsd:annotation>
+					<xsd:documentation>LITHUANIA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="LU">
+				<xsd:annotation>
+					<xsd:documentation>LUXEMBOURG</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MO">
+				<xsd:annotation>
+					<xsd:documentation>MACAO</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MK">
+				<xsd:annotation>
+					<xsd:documentation>MACEDONIA, THE FORMER YUGOSLAV REPUBLIC OF</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MG">
+				<xsd:annotation>
+					<xsd:documentation>MADAGASCAR</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MW">
+				<xsd:annotation>
+					<xsd:documentation>MALAWI</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MY">
+				<xsd:annotation>
+					<xsd:documentation>MALAYSIA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MV">
+				<xsd:annotation>
+					<xsd:documentation>MALDIVES</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ML">
+				<xsd:annotation>
+					<xsd:documentation>MALI</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MT">
+				<xsd:annotation>
+					<xsd:documentation>MALTA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MH">
+				<xsd:annotation>
+					<xsd:documentation>MARSHALL ISLANDS</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MQ">
+				<xsd:annotation>
+					<xsd:documentation>MARTINIQUE</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MR">
+				<xsd:annotation>
+					<xsd:documentation>MAURITANIA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MU">
+				<xsd:annotation>
+					<xsd:documentation>MAURITIUS</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="YT">
+				<xsd:annotation>
+					<xsd:documentation>MAYOTTE</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MX">
+				<xsd:annotation>
+					<xsd:documentation>MEXICO</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="FM">
+				<xsd:annotation>
+					<xsd:documentation>MICRONESIA, FEDERATED STATES OF</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MD">
+				<xsd:annotation>
+					<xsd:documentation>MOLDOVA, REPUBLIC OF</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MC">
+				<xsd:annotation>
+					<xsd:documentation>MONACO</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MN">
+				<xsd:annotation>
+					<xsd:documentation>MONGOLIA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ME">
+				<xsd:annotation>
+					<xsd:documentation>MONTENEGRO</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MS">
+				<xsd:annotation>
+					<xsd:documentation>MONTSERRAT</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MA">
+				<xsd:annotation>
+					<xsd:documentation>MOROCCO</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MZ">
+				<xsd:annotation>
+					<xsd:documentation>MOZAMBIQUE</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MM">
+				<xsd:annotation>
+					<xsd:documentation>MYANMAR</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="NA">
+				<xsd:annotation>
+					<xsd:documentation>NAMIBIA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="NR">
+				<xsd:annotation>
+					<xsd:documentation>NAURU</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="NP">
+				<xsd:annotation>
+					<xsd:documentation>NEPAL</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="NL">
+				<xsd:annotation>
+					<xsd:documentation>NETHERLANDS</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="AN">
+				<xsd:annotation>
+					<xsd:documentation>NETHERLANDS ANTILLES</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="NC">
+				<xsd:annotation>
+					<xsd:documentation>NEW CALEDONIA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="NZ">
+				<xsd:annotation>
+					<xsd:documentation>NEW ZEALAND</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="NI">
+				<xsd:annotation>
+					<xsd:documentation>NICARAGUA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="NE">
+				<xsd:annotation>
+					<xsd:documentation>NIGER</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="NG">
+				<xsd:annotation>
+					<xsd:documentation>NIGERIA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="NU">
+				<xsd:annotation>
+					<xsd:documentation>NIUE</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="NF">
+				<xsd:annotation>
+					<xsd:documentation>NORFOLK ISLAND</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MP">
+				<xsd:annotation>
+					<xsd:documentation>NORTHERN MARIANA ISLANDS</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="NO">
+				<xsd:annotation>
+					<xsd:documentation>NORWAY</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="OM">
+				<xsd:annotation>
+					<xsd:documentation>OMAN</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="PK">
+				<xsd:annotation>
+					<xsd:documentation>PAKISTAN</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="PW">
+				<xsd:annotation>
+					<xsd:documentation>PALAU</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="PS">
+				<xsd:annotation>
+					<xsd:documentation>PALESTINIAN TERRITORY, OCCUPIED</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="PA">
+				<xsd:annotation>
+					<xsd:documentation>PANAMA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="PG">
+				<xsd:annotation>
+					<xsd:documentation>PAPUA NEW GUINEA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="PY">
+				<xsd:annotation>
+					<xsd:documentation>PARAGUAY</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="PE">
+				<xsd:annotation>
+					<xsd:documentation>PERU</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="PH">
+				<xsd:annotation>
+					<xsd:documentation>PHILIPPINES</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="PN">
+				<xsd:annotation>
+					<xsd:documentation>PITCAIRN</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="PL">
+				<xsd:annotation>
+					<xsd:documentation>POLAND</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="PT">
+				<xsd:annotation>
+					<xsd:documentation>PORTUGAL</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="PR">
+				<xsd:annotation>
+					<xsd:documentation>PUERTO RICO</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="QA">
+				<xsd:annotation>
+					<xsd:documentation>QATAR</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="RE">
+				<xsd:annotation>
+					<xsd:documentation>REUNION</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="RO">
+				<xsd:annotation>
+					<xsd:documentation>ROMANIA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="RU">
+				<xsd:annotation>
+					<xsd:documentation>RUSSIAN FEDERATION</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="RW">
+				<xsd:annotation>
+					<xsd:documentation>RWANDA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="BL">
+				<xsd:annotation>
+					<xsd:documentation>SAINT BARTHELEMY</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="SH">
+				<xsd:annotation>
+					<xsd:documentation>SAINT HELENA, ASCENSION AND TRISTAN DA CUNHA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="KN">
+				<xsd:annotation>
+					<xsd:documentation>SAINT KITTS AND NEVIS</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="LC">
+				<xsd:annotation>
+					<xsd:documentation>SAINT LUCIA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MF">
+				<xsd:annotation>
+					<xsd:documentation>SAINT MARTIN</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="PM">
+				<xsd:annotation>
+					<xsd:documentation>SAINT PIERRE AND MIQUELON</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VC">
+				<xsd:annotation>
+					<xsd:documentation>SAINT VINCENT AND THE GRENADINES</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="WS">
+				<xsd:annotation>
+					<xsd:documentation>SAMOA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="SM">
+				<xsd:annotation>
+					<xsd:documentation>SAN MARINO</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ST">
+				<xsd:annotation>
+					<xsd:documentation>SAO TOME AND PRINCIPE</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="SA">
+				<xsd:annotation>
+					<xsd:documentation>SAUDI ARABIA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="SN">
+				<xsd:annotation>
+					<xsd:documentation>SENEGAL</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="RS">
+				<xsd:annotation>
+					<xsd:documentation>SERBIA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="SC">
+				<xsd:annotation>
+					<xsd:documentation>SEYCHELLES</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="SL">
+				<xsd:annotation>
+					<xsd:documentation>SIERRA LEONE</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="SG">
+				<xsd:annotation>
+					<xsd:documentation>SINGAPORE</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="SK">
+				<xsd:annotation>
+					<xsd:documentation>SLOVAKIA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="SI">
+				<xsd:annotation>
+					<xsd:documentation>SLOVENIA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="SB">
+				<xsd:annotation>
+					<xsd:documentation>SOLOMON ISLANDS</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="SO">
+				<xsd:annotation>
+					<xsd:documentation>SOMALIA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ZA">
+				<xsd:annotation>
+					<xsd:documentation>SOUTH AFRICA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="GS">
+				<xsd:annotation>
+					<xsd:documentation>SOUTH GEORGIA AND THE SOUTH SANDWICH ISLANDS</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ES">
+				<xsd:annotation>
+					<xsd:documentation>SPAIN</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="LK">
+				<xsd:annotation>
+					<xsd:documentation>SRI LANKA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="SD">
+				<xsd:annotation>
+					<xsd:documentation>SUDAN</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="SR">
+				<xsd:annotation>
+					<xsd:documentation>SURINAME</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="SJ">
+				<xsd:annotation>
+					<xsd:documentation>SVALBARD AND JAN MAYEN</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="SZ">
+				<xsd:annotation>
+					<xsd:documentation>SWAZILAND</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="SE">
+				<xsd:annotation>
+					<xsd:documentation>SWEDEN</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="CH">
+				<xsd:annotation>
+					<xsd:documentation>SWITZERLAND</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="SY">
+				<xsd:annotation>
+					<xsd:documentation>SYRIAN ARAB REPUBLIC</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="TW">
+				<xsd:annotation>
+					<xsd:documentation>TAIWAN, PROVINCE OF CHINA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="TJ">
+				<xsd:annotation>
+					<xsd:documentation>TAJIKISTAN</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="TZ">
+				<xsd:annotation>
+					<xsd:documentation>TANZANIA, UNITED REPUBLIC OF</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="TH">
+				<xsd:annotation>
+					<xsd:documentation>THAILAND</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="TL">
+				<xsd:annotation>
+					<xsd:documentation>TIMOR-LESTE</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="TG">
+				<xsd:annotation>
+					<xsd:documentation>TOGO</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="TK">
+				<xsd:annotation>
+					<xsd:documentation>TOKELAU</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="TO">
+				<xsd:annotation>
+					<xsd:documentation>TONGA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="TT">
+				<xsd:annotation>
+					<xsd:documentation>TRINIDAD AND TOBAGO</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="TN">
+				<xsd:annotation>
+					<xsd:documentation>TUNISIA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="TR">
+				<xsd:annotation>
+					<xsd:documentation>TURKEY</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="TM">
+				<xsd:annotation>
+					<xsd:documentation>TURKMENISTAN</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="TC">
+				<xsd:annotation>
+					<xsd:documentation>TURKS AND CAICOS ISLANDS</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="TV">
+				<xsd:annotation>
+					<xsd:documentation>TUVALU</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="UG">
+				<xsd:annotation>
+					<xsd:documentation>UGANDA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="UA">
+				<xsd:annotation>
+					<xsd:documentation>UKRAINE</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="AE">
+				<xsd:annotation>
+					<xsd:documentation>UNITED ARAB EMIRATES</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="GB">
+				<xsd:annotation>
+					<xsd:documentation>UNITED KINGDOM</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="US">
+				<xsd:annotation>
+					<xsd:documentation>UNITED STATES</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="UM">
+				<xsd:annotation>
+					<xsd:documentation>UNITED STATES MINOR OUTLYING ISLANDS</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="UY">
+				<xsd:annotation>
+					<xsd:documentation>URUGUAY</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="UZ">
+				<xsd:annotation>
+					<xsd:documentation>UZBEKISTAN</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VU">
+				<xsd:annotation>
+					<xsd:documentation>VANUATU</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VE">
+				<xsd:annotation>
+					<xsd:documentation>VENEZUELA, BOLIVARIAN REPUBLIC OF</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VN">
+				<xsd:annotation>
+					<xsd:documentation>VIET NAM</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VG">
+				<xsd:annotation>
+					<xsd:documentation>VIRGIN ISLANDS, BRITISH</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VI">
+				<xsd:annotation>
+					<xsd:documentation>VIRGIN ISLANDS, U.S.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="WF">
+				<xsd:annotation>
+					<xsd:documentation>WALLIS AND FUTUNA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="EH">
+				<xsd:annotation>
+					<xsd:documentation>WESTERN SAHARA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="YE">
+				<xsd:annotation>
+					<xsd:documentation>YEMEN</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ZM">
+				<xsd:annotation>
+					<xsd:documentation>ZAMBIA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ZW">
+				<xsd:annotation>
+					<xsd:documentation>ZIMBABWE</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+</xsd:schema>

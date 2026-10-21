@@ -1,0 +1,967 @@
+       2018
+     MULTICAT
+            TM
+
+
+ ALL TOBACCO DATA
+PROGRAMMING DETAIL
+NOTICE:
+
+This document contains proprietary information that is the exclusive property of ITGB.
+All rights are reserved. No part of this document may be reproduced in any manner
+without the express written permission of ITGB.
+
+ ITG Brands 2017
+
+                                                  Management Science Associates, Inc.
+                                                                     Support Center
+                                                                    1-877- 544-4429
+                                            ITG Brands, LLC
+                All TOBACCO DATA REPORTING INFORMATION KIT
+                               November, 2017
+
+
+                                                Table of Contents
+                                                                                                                      Page #
+
+Introduction – General Information .................................................................................. 1
+
+Next Steps…. .................................................................................................................. 2
+
+Tobacco Reporting Requirements ................................................................................... 3
+
+Media Types ................................................................................................................... 4
+
+Miscellaneous Information.............................................................................................. 5
+
+
+MULTICATTM All Tobacco Data Format
+
+         MULTICATTM – Overview of Reporting Requirements…………………… ......... .6-7
+
+         MULTICATTM – Header Identification Record (HID) .......................................... 8-9
+
+         MULTICATTM – Brand Identification Record (BID)…………… …………….. .10-12
+
+         MULTICATTM – Ship To Identification Record (SID) ...................................... 13-15
+
+         MULTICATTM – Purchase Record (PUR)............................................................ 16
+
+         MULTICATTM – Total Record (TOT) ................................................................... 17
+
+         MULTICATTM – APPENDIX ........................................................................ ...18-26
+
+         APPENDIX – ITGB Product Descriptions........ ...... ........................................27-28
+INTRODUCTION – GENERAL INFORMATION
+This document is provided to all wholesalers who have agreed to report retail shipment data to
+MSAi on behalf of ITG Brands LLC in the MultiCatTM All Tobacco Data Format. Data reporting
+instructions contained in this document will serve as a tool to assist you in understanding and
+complying with ITGB’s Data Reporting Requirements.
+
+
+ITGB will not reimburse Accounts for any costs of providing sales information. Including
+but not limited to:
+
+       Labor
+       Computer
+       Software
+
+
+Questions pertaining to MultiCatTM All Tobacco Programming Details or data reporting
+issues outlined in this document should be directed to the Distributor Support Center at
+(1-877-544-4429).
+
+
+All information contained in and related to these Data Reporting Requirements are confidential
+and the sole property of ITG Brands LLC. It is your responsibility to safeguard the confidentiality
+of information and data contained in this document and ensure materials provided are stored in a
+secure location.
+
+
+
+
+MSAi Copyright©2017                                                                                   1
+ITGB Reporting Requirements – V. 1.0 (November 2017)
+NEXT STEPS
+
+1. Review All Tobacco Programming Details and proceed to make format changes according
+   to the file specifications if applicable.
+
+2. Account Numbers (wholesaler identification) will be assigned by the Distributor Support
+   Center.
+
+3. Electronic Data files in the MultiCatTM Format should be transferred via iDT software, which
+   can be downloaded at the following web site: http:\\idt.msa.com
+
+    Note: Accounts submitting data via iDT software must be enrolled with MSAi to
+    receive a password to submit data on this web site.
+
+4. Call the Distributor Support Center (1-877-544-4429) if you have any questions regarding
+   the MultiCatTM All Tobacco programming details or data reporting issues.
+
+
+
+
+MSAi Copyright©2017                                                                               2
+ITGB Reporting Requirements – V. 1.0 (November 2017)
+TOBACCO REPORTING REQUIREMENTS
+Data:
+   All data which includes shipments to retail, returns, and inventory must be reported in selling
+    units and submitted in the following reporting format outlined in this document:
+                            MULTICATTM All Tobacco Format
+    Wholesalers opting to utilize the optional MULTICATTM Format to satisfy ITGB
+    wholesale agreement reporting requirements must agree to release all sales data to
+    ITGB. ITGB will accept other manufacturer’s MULTICATTM Format reporting
+    requirements unless otherwise noted in the comments field.
+
+   Each week and each site must be a separate file.
+   Wholesaler must authorize release of any/all historical data to ITG Brands LLC.
+   Report accurate weekly data (includes outbound shipments, transshipments, returns and
+    inventory) to the Distributor Support Center in a format acceptable to ITGB. This Data must
+    be provided for all Non-Direct Wholesalers, all wholesale clubs, all distribution centers, and
+    all other locations that the Wholesaler supplies.
+   Data will be verified for accuracy, timeliness, readability, reasonableness and completeness.
+   Data must be received by the Distributor Support Center no later than 3 working days
+    following the end of the shipping week unless otherwise instructed.
+   Data reported must be account specific, covering all manufacturers’ brand packings
+    identified by carton UPC/SKU. Information must also include specific description and
+    UPC/SKU of all promotional products shipped to each account.
+   Wholesalers must submit 100% complete and accurate data for each week of the period.
+   All products purchased by the Wholesaler or any affiliates, subsidiaries and the parent
+    company, and shipped, sold, or returned from customers must be included in the
+    Wholesaler’s sales information reporting.
+   Wholesaler must report all saleable and unsaleable product accepted back from customers
+    via UPC/SKU with a negative value entered in the corresponding Purchase Record.
+   ITGB reserves the right to utilize the data as it deems appropriate.
+
+Weekly Inventories:
+   Wholesaler must provide accurate weekly inventory counts of all individual packings
+    (including promotional product) for all manufacturers by UPC/SKU during the period.
+    Inventories reported must include detailed product description or promotional description
+    i.e., SMP (Special Marked Packs), OI (Off Invoice), TD (Trade Discount product), etc. as
+    applicable.
+
+   All products purchased, tax stamped or obtained by the Wholesaler or any affiliate including
+    but not limited to subsidiaries, parents or related companies must be included in the data
+    reports.
+
+Quarterly Inventories:
+   Wholesaler must provide an accurate final physical inventory count at the end of reporting
+    week 13 in each quarter. Wholesaler will adjust each site’s, and cause related non-direct
+    wholesaler’s, internal inventory records to reflect the results of the physical inventory prior to
+    the submission of the data for reporting week 13 in each quarter. The quarterly inventories
+    should be included in regular weekly data files for the final week of the quarter.
+    Note: Due dates for receipt of Quarter Ending Inventory Files will be communicated to you by the Distributor
+    Support Center prior to the end of each quarter.
+
+
+
+
+MSAi Copyright©2017                                                                                                3
+ITGB Reporting Requirements – V. 1.0 (November 2017)
+MEDIA TYPES
+
+Acceptable media type:
+
+    1. iDT (Internet Data Transfer)
+
+
+
+Notes:
+
+         1. Preferred method of data submission is iDT (Internet Data Transfer) – contact
+            the Distributor Support Center for specifics or if you are unable to transmit via
+            iDT .
+
+         2. All data is to be recorded in ASCII (American Standard Code for Information
+            Interchange).
+
+
+
+
+MSAi Copyright©2017                                                                        4
+ITGB Reporting Requirements – V. 1.0 (November 2017)
+MISCELLANEOUS INFORMATION
+   The Distributor Support Center address:
+
+        Management Science Associates, Inc.
+        Distributor Support Center
+        6565 Penn Avenue
+        Pittsburgh, PA 15206-4490
+
+
+   Distributor Support Center phone number (for data-related questions only):
+
+        1-877-544-4429
+
+
+   Distributor Support Center FAX number:
+
+        1-412-515-8737
+
+
+   Distributor Support Center e-mail address:
+
+        dsc@msa.com
+
+
+   Start-up Enrollment Kit: New Accounts Only
+
+           Account ID (one per shipping site), if necessary
+           iDT (Internet Data Transfer) Document
+
+
+
+
+MSAi Copyright©2017                                                              5
+ITGB Reporting Requirements – V. 1.0 (November 2017)
+MULTICATTM All Tobacco File Format
+The MULTICATTM Format is the preferred format for reporting data to MSAi. The MULTICAT TM
+Format can be used to provide data across multiple categories within a given subset of
+manufacturer’s programs and should therefore simplify distributors’ reporting processes. It also
+has additional features that make it easier to interpret the data, which should result in fewer
+inquiries.
+
+
+Field definitions and requirements may vary by program or industry. There are separate
+MULTICATTM Format instructions for each industry to explain industry specific information.
+Please refer to each manufacturer’s program details for specific program requirements. If you
+have any questions, please call the Distributor Support Center at 1-877-544-4429.
+
+
+A field that is required for one industry may not be pertinent to another. These requirements are
+given in the Required Fields column within the MULTICATTM Format document. Explanations
+of the Required Fields are as follows:
+
+
+Required Fields – Definitions
+
+       Yes. These fields are required for the specific industry program.
+       No.   These fields are not required for the specific industry program.
+       Optional. If possible, please populate these fields.
+       N/A. These fields are Not Applicable to the specific industry and should be left blank.
+
+As with previous formats, this format requires a fixed width ASCII data file.
+
+
+Please note numeric fields must be reported as a real number with floating decimal point.
+Assumed decimals will no longer be accepted.
+
+
+
+
+MSAi Copyright©2017                                                                               6
+ITGB Reporting Requirements – V. 1.0 (November 2017)
+Summary of Combined Tobacco Data File Reporting
+Requirements:
+
+If a distributor cannot comply with each of the following guidelines or if MSAi cannot derive the
+necessary information via its current processing capabilities, then separate files will need to be
+submitted as outlined in the respective MULTICAT Formats (US Cigarette Industry Format &
+Smokeless Tobacco Industry Format).
+
+All data fields must continue to meet every manufacturer’s program requirements.
+
+Once this modified data file is ready to be submitted to MSAi, the initial file must have the Test
+or Live Indicator set to T (Test). Refer to Header Identification Record; Column 16. Any file
+formats, previously submitted as “Live” files, must continue to be submitted during the testing
+process, until the “Test” file is approved by the Distributor Support Center.
+
+Items per Selling Unit will need to be represented as number of cigarettes or “sticks” per selling
+unit for US Cigarettes or number of cans per selling unit for Smokeless Products. Refer to
+Brand Identification Record; Columns 132-137.
+
+MSAi Category Code is required, as follows:
+Cigarettes = 003231
+E-Cigarettes = 003292
+Cigars = 003251
+Little/Filtered Cigars = 003252
+Premium Cigars = 003227
+Moist/Spit-Free Tobacco = 003211
+Dry Snuff (Nasal) = 003213
+Loose Leaf – chewing = 003212
+RYO Tobacco = 003221
+Pipe Tobacco = 003241
+Twist/Rope = 003214
+Plug = 003215
+(Refer to Brand Identification Record; Columns 145-150)
+
+Reporting of Returns (Non-Saleable Products) – While US Cigarettes programs accept the
+reporting of cigarette returns at a brand family level, Smokeless manufacturers require this
+reporting at the SKU level. Refer to Appendix.
+
+
+
+
+MSAi Copyright©2017                                                                                  7
+ITGB Reporting Requirements – V. 1.0 (November 2017)
+Header Identification Record (HID)
+The HID record identifies the Distributor/Wholesaler site or any other data source providing data, along with contact information.
+                                                                          MULTICATTM Format
+                 Required                                                                                                                      Technical
+ Size Columns     Field                                                 Master Description                                                   Specifications Justification
+  3     1-3        Yes    Header Identification Record Type                                                                                 Alphabetic Literal  Full
+                          (HID)
+  8     4-11       Yes    Distributor ID Number                                                                                              Alphanumeric             Full
+                          Pre-assigned 8 digit identification number to identify distributor shipping location. This information is
+                          supplied during the enrollment process.
+  4    12-15       Yes    Project Identification                                                                                             Alphanumeric            LJ/BF
+                          Used to designate the industry for this specific file.                                                                Literal
+
+                            Combined Tobacco = TOB
+  1      16          Yes    Test or Live Indicator                                                                                          Alphabetic Literal        Full
+                            Code to indicate whether the data is valid live data or test data.
+                            T= Test
+                            <blank> = Live
+
+                            Data files must be sent as “Test” until the Distributor Support Center approves the files for sending “Live”.
+                            Any programming changes made to data files must also be sent as “Test”.
+
+  1      17          Yes    Time Interval                                                                                                   Alphabetic Literal        Full
+                            Week = W
+  8    18-25         Yes    End Date of Data In This File                                                                                       Date                  Full
+                            Date of the last day in the data period being reported.                                                         (YYYYMMDD)
+
+                            ** For example: 20040103 for data week ending on Saturday January 3, 2004.
+ 32    26-57         Yes    Distributor Name                                                                                                 Alphanumeric            LJ/BF
+                            Name for the specific shipping location.
+ 90    58-147        Yes    Distributor Address                                                                                              Alphanumeric            LJ/BF
+                            Address for the specific shipping location.
+ 25   148-172        Yes    Distributor City                                                                                                 Alphanumeric            LJ/BF
+                            City for the specific shipping location.
+  2   173-174        Yes    Distributor State                                                                                                Alphanumeric             Full
+                            Two character State or Province code for the specific shipping location.
+  9   175-183        Yes    Distributor Zip Code                                                                                             Alphanumeric            LJ/BF
+                            Zip Code/Postal Code for the specific shipping location.
+  3   184-186        No     Distributor Country                                                                                              Alphanumeric             Full
+                            Country for the specific shipping location.
+
+
+
+
+ LJ - Left Justify                          RJ – Right Justification                                 BF – Blank Fill                                             ZF – Zero Fill
+MSAi Copyright©2017                                                                                                                                                               8
+ITGB Reporting Requirements – V. 1.0 (November 2017)
+Header Identification Record (HID)
+The HID record identifies the Distributor/Wholesaler site or any other data source providing data, along with contact information.
+
+
+
+
+ LJ - Left Justify                    RJ – Right Justification                    BF – Blank Fill                                ZF – Zero Fill
+MSAi Copyright©2017                                                                                                                               9
+ITGB Reporting Requirements – V. 1.0 (November 2017)
+Brand Identification Record (BID)
+One BID record is required for each unique SKU sold, returned or inventoried. This record also contains the total distributor's closing inventory
+for each SKU. Please refer to Appendix for some general notes and specific field details.
+
+
+
+
+ LJ - Left Justify                    RJ – Right Justification                      BF – Blank Fill                                ZF – Zero Fill
+MSAi Copyright©2017                                                                                                                                 10
+ITGB Reporting Requirements – V. 1.0 (November 2017)
+Brand Identification Record (BID)
+One BID record is required for each unique SKU sold, returned or inventoried. This record also contains the total distributor’s closing inventory
+for each SKU. Please refer to Appendix for some general notes and specific field details.
+
+
+
+
+ LJ - Left Justify                    RJ – Right Justification                     BF – Blank Fill                                ZF – Zero Fill
+MSAi Copyright©2017                                                                                                                                11
+ITGB Reporting Requirements – V. 1.0 (November 2017)
+Brand Identification Record (BID)
+                                                                                                                                                        11
+One BID record is required for each unique SKU sold, returned or inventoried. This record also contains the total distributor’s closing inventory
+for each SKU. Please refer to Appendix for some general notes and specific field details.
+
+
+
+
+ LJ - Left Justify                    RJ – Right Justification                     BF – Blank Fill                                ZF – Zero Fill
+MSAi Copyright©2017                                                                                                                                12
+ITGB Reporting Requirements – V. 1.0 (November 2017)
+Ship-To Identification Record (SID)
+One SID record is required for each unique ship to customer location that received or returned product. This includes retail stores, wholesalers;
+vend operators, manufacturer representatives and employee sales. Please refer to Appendix for some general notes and specific field details.
+
+
+
+
+ LJ - Left Justify                    RJ – Right Justification                     BF – Blank Fill                                ZF – Zero Fill
+MSAi Copyright©2017                                                                                                                                13
+ITGB Reporting Requirements – V. 1.0 (November 2017)
+Ship-To Identification Record (SID)
+One SID record is required for each unique ship to customer location that received or returned product. This includes retail stores, wholesalers;
+vend operators, manufacturer representatives and employee sales. Please refer to Appendix for some general notes and specific field details.
+
+
+
+
+ LJ - Left Justify                    RJ – Right Justification                     BF – Blank Fill                                ZF – Zero Fill
+MSAi Copyright©2017                                                                                                                                14
+ITGB Reporting Requirements – V. 1.0 (November 2017)
+Ship-To Identification Record (SID)
+One SID record is required for each unique ship to customer location that received or returned product. This includes retail stores, wholesalers;
+vend operators, manufacturer representatives and employee sales. Please refer to Appendix for some general notes and specific field details.
+
+
+
+
+ LJ - Left Justify                    RJ – Right Justification                     BF – Blank Fill                                ZF – Zero Fill
+MSAi Copyright©2017                                                                                                                                15
+ITGB Reporting Requirements – V. 1.0 (November 2017)
+Purchase Record (PUR)
+One PUR record is required for each SKU being shipped to a customer. The PUR record contains the quantity information for each unique SKU
+purchased and/or returned by a ship to customer location. Please refer to Appendix for some general notes and specific field details.
+
+
+
+
+ LJ - Left Justify                    RJ – Right Justification                 BF – Blank Fill                              ZF – Zero Fill
+MSAi Copyright©2017                                                                                                                          16
+ITGB Reporting Requirements – V. 1.0 (November 2017)
+Total Record (TOT)
+The TOT record is a single record that provides control total information for validation of the data contained in the previous record types.
+
+
+
+
+ LJ - Left Justify                    RJ – Right Justification                      BF – Blank Fill                                ZF – Zero Fill
+MSAi Copyright©2017                                                                                                                                 17
+ITGB Reporting Requirements – V. 1.0 (November 2017)
+                               APPENDIX
+                    Tobacco Quantity Shipped Reporting
+Product Description
+This field provides the detailed description of the SKU being reported. It is essential for brand identification.
+ Include all attributes of the product when describing the SKU.
+ Separate each attribute description with a space.
+ Exclude any extraneous words that do not describe the actual product (e.g. DSPLY, No Returns).
+ Avoid using 2-character state abbreviations in the product description.
+
+Examples of attributes to include are:
+       Brand / Brand Family (e.g., Winston, Kool, Salem, Maverick, USA Gold, Sonoma, etc.)
+       Flavor (e.g., Original, Wintergreen, Straight, Clove, Cherry, Vanilla)
+       Cut (e.g., Fine Cut, FC, Long Cut, LC)
+       Length (e.g., 70, 80, 85, 100, 120, Kings, KS, KG)
+       Filter vs. Non-Filter (e.g., FLT, NF)
+       Style /Color (e.g., Gold, Blue)
+       Menthol vs. Non-Menthol (e.g., M, MEN, MTHL, NM, NON-MEN)
+       Pack Type (e.g., Soft, SP, BX, Box, Tin)
+
+Failure to follow these guidelines may result in unclassified products. This may have an adverse impact on
+meeting the Manufacturer Program requirements.
+
+IMPORTANT: ITGB requires specific Product Descriptions for this field. See Page 28 of this document for
+specific brand descriptions required for all ITGB Products.
+
+Promotion Description
+This field provides the detailed description of the promotion being reported.
+ Include promotional descriptions and incentive as required by the manufacturers.
+ Exclude any specific promotion code required by a Manufacturer’s Program. This field should contain a
+    description of the promotion, not the code. Any related code for the promotion should be reported in the
+    Manufacturer Promotion Code field (below).
+
+
+
+Promotion Indicator
+This field contains the code to indicate if the SKU was sold as part of a promotion.
+ Enter Y, if the SKU was sold as part of a promotion.
+ Enter N, if the SKU was NOT sold as part of a promotion.
+
+
+
+
+MSAi Copyright©2017                                                                                                 18
+ITGB Reporting Requirements – V. 1.0 (November 2017)
+                               APPENDIX
+                    Tobacco Quantity Shipped Reporting
+State Tax Jurisdiction
+There are two options available for reporting State Tax Jurisdiction. You may select one of the two options,
+but NOT BOTH.
+
+OPTION 1 - Using Multiple SID Records
+
+       State Tax Jurisdiction must be reported in columns 197-198 in the Store Identification Record (SID) on
+        the MULTICATTM All Tobacco File Format.
+Reporting examples are provided below:
+
+Example of correct reporting for product to a reporting Non-Direct distributor who supplies retail outlets in
+multiple states using the State Tax Jurisdiction:
+
+                         Ship To          Ship To Customer        Ship To Customer           State Tax
+        Type (1-
+                        Customer          Shipping Number        Shipping Number Ext        Jurisdiction
+           3)
+                      Number (4-11)            (12-19)                  (20-27)              (197-198)
+           SID          12345678              23456789                34567891                   PA
+           SID          12345678              23456789                34567892                  WV
+           SID          12345678              23456789                34567893                   OH
+
+       Customer Number / Customer Shipping Number / Customer Number extension combination must be
+        unique and not duplicated for every SID record on the weekly data file. Any one of the three fields
+        could be used to make the record unique.
+       State Tax Jurisdiction field is reported with the USPS two-character state code.
+All reported two-character state codes must comply with United States Postal Service abbreviations.
+
+If products are shipped to a location, and those products will, in turn, thereafter be shipped to multiple State
+Tax Jurisdictions, products must be separated by the respective State Tax Jurisdiction. In separating the store
+records, each must have a unique combination of Customer Number / Customer Shipping Number / Customer
+Number extension assigned.
+
+You are not required to report tax jurisdictions below the state level.
+
+
+
+
+MSAi Copyright©2017                                                                                             19
+ITGB Reporting Requirements – V. 1.0 (November 2017)
+                                APPENDIX
+                     Tobacco Quantity Shipped Reporting
+State Tax Jurisdiction (continued)
+OPTION 2 - Using Multiple BID Records
+
+         State Tax Jurisdiction must be reported in columns 208-209 in the Brand Identification Record (BID) on
+          the MULTICATTM All Tobacco File Format.
+Reporting examples are provided below:
+
+Example of correct reporting for product to a reporting Non-Direct distributor who supplies retail outlets in
+multiple states using the State Tax Jurisdiction:
+
+               SKU (18-      Product Description (32     State Tax Jurisdiction (208-
+Type (1-3)                                                                            Inventory (251-261)
+                   31)                – 81)                          209)
+BID            123           Winston NM 85 BX FF                      PA                    00000000150
+BID            124           Winston NM 85 BX FF                     WV                     00000000200
+BID            125           Winston NM 85 BX FF                      OH                    00000000300
+
+         SKU must be unique and not duplicated for every BID record on the weekly data file.
+         State Tax Jurisdiction field is reported with the USPS two-character state code.
+         Inventory must be reported accurately for each SKU reported.
+
+All reported two-character state codes must comply with United States Postal Service abbreviations.
+
+If products are shipped to a location, and those products will, in turn, thereafter be shipped to multiple State
+Tax Jurisdictions, products must be separated by the respective State Tax Jurisdiction. In separating the brand
+records, each must have a unique SKU assigned.
+
+Distributor Component Shipper Flag
+The Distributor Component Shipper Flag field indicates if the SKU is a shipper, component of a shipper, or not
+a shipper. MSAi supports 2 methods for reporting multi-item shippers in the MULTICATTM Format for US
+Cigarettes.
+ Total Shipper: Each shipper must be reported as a single SKU. The Distributor Component Shipper Flag
+    field should be set to ‘S’.
+ Shipper Component: Each component within the shipper must be reported as an SKU. The Distributor
+    Component Shipper Flag field should be set to ‘C’.
+ The Distributor Component Shipper Flag field should be blank if the item is not a shipper.
+ When reporting a shipper, only report the total shipper or the individual components of the shipper - DO
+    NOT report both.
+ Refer to the Manufacturer’s Programming Details for specific reporting requirements.
+
+
+
+
+MSAi Copyright©2017                                                                                             20
+ITGB Reporting Requirements – V. 1.0 (November 2017)
+                                APPENDIX
+                     Tobacco Quantity Shipped Reporting
+Manufacturer Promotion Code
+This field contains the promotion code, as provided by the manufacturer. Contact the manufacturer’s
+representative for this information, if it is required by the manufacturer’s program.
+
+Items per Selling Unit
+For US Cigarettes, this field is defined as the number of cigarettes or “sticks” per selling unit.
+
+        Some examples of acceptable values for the various selling units are:
+           200 Carton, containing 10-packs with 20 “sticks” per pack
+             5 Sleeve, containing 5 cans
+            10 Sleeve, containing 10 cans
+            45 Display Unit, containing 45 cans
+           250 Carton, containing 10-packs with 25 “sticks” per pack
+           100 Half Carton, containing 5-packs with 20 “sticks” per pack
+            60 3-Pack Multi-Pack
+            40 2-Pack Multi-Pack
+            20 Pack, containing 20 “sticks”
+            25 Pack, containing 25 “sticks”
+
+These values are used to calculate a total stick count and total number of cans. The Items per Selling Unit in the
+BID record is multiplied by the Quantity Shipped in the PUR record to obtain total stick count or total number
+of cans.
+
+Inventory Reporting
+The BID Record contains the Measure Value 1 field, in which closing inventory (in selling units) should be
+reported for the unique SKU. Valid selling units include carton, sleeve, display, multi-pack and pack.
+
+The following are three examples of how to report Items per Selling Unit and inventory within the BID record:
+
+Example 1:
+If the selling unit is a standard carton and the closing stock inventory is 1.5 cartons, then report 200 in the items per Selling
+Unit field and report 1.5 in the Measure Value 1 field for inventory.
+
+Example 2:
+If the selling unit is a 3-pack multi-pack and the closing stock inventory is 5 of these 3-packs, then report 60 in
+the Items per Selling Unit field and report 5 in the Measure Value 1 field for inventory.
+
+Example 3:
+If the selling unit is a standard pack and the closing stock inventory is 4 packs, then report 20 in the Items per
+Selling Unit field and report 4 in the Measure Value 1 field for inventory.
+
+
+MSAi Copyright©2017                                                                                              21
+ITGB Reporting Requirements – V. 1.0 (November 2017)
+                               APPENDIX
+                    Tobacco Quantity Shipped Reporting
+Example 4:
+If the selling unit is a 5-can sleeve and the closing stock inventory is 2 sleeves, then report 5 in the Items Per
+Selling Unit field and report 2 in the Measure Value 1 field for inventory.
+
+Example 5:
+If the selling unit is a 10-can sleeve and the closing stock inventory is 5 sleeves, then report 10 in the Items per
+Selling Unit field and report 5 in the Measure Value 1 field for inventory.
+
+Example 6:
+If the selling unit is a 45-can display and the closing stock inventory is 4 displays, then report 45 in the Items
+per Selling Unit field and report 4 in the Measure Value 1 field for inventory.
+
+MSAi Category Code
+The MSAi Category Code on the Brand Identification record is a predefined category code to classify the SKU
+by product type. An MSAi Category Code must be supplied for all tobacco products reported to MSAi on the
+combined cigarette and MST data file. This information is supplied during the enrollment process. A partial
+listing of MSAi Category Codes for tobacco products are listed below.
+
+Moist Snuff/Spit-Free Tobacco/Hard Snuff                                    003211
+Cigars                                                                      003251
+Little/Filtered Cigars                                                      003252
+Premium Cigars                                                              003227
+Cigarettes                                                                  003231
+E-Cigarettes                                                                003292
+Dry Snuff (Nasal)                                                           003213
+Loose Leaf – chewing                                                        003212
+RYO Tobacco                                                                 003221
+Pipe Tobacco                                                                003241
+Twist/Rope                                                                  003214
+Plug                                                                        003215
+If you are unsure of which MSAi Category Code should be used, contact your Distributor Support Center
+representative.
+
+Ship-To Customer Name
+This field contains the specific banner name for the customer receiving shipment.
+ Report the banner name as it appears on the storefront. Owner names and headquarter names should not
+    be reported.
+ Report a common name when identifying a cash and carry transaction, such as, consumer sale, employee
+    sale, and manufacturer representative sale. In addition, be sure to set the Ship-To Customer Cash And
+    Carry Indicator to “Y”.
+
+
+MSAi Copyright©2017                                                                                                  22
+ITGB Reporting Requirements – V. 1.0 (November 2017)
+                               APPENDIX
+                    Tobacco Quantity Shipped Reporting
+   Exclude the chain assigned store number from this field. The chain assigned store number should be
+    reported in the field Ship-To Customer Store Number field.
+   Report DBA (doing business as), when applicable, using the following naming configuration: Banner Name
+    DBA / Alternate Banner Name.
+
+Ship-To Customer Number and Ship-To Customer Shipping Number (Extension)
+All stores in a chain may share the same Customer Number, but should be assigned a unique Customer
+Shipping Number.
+
+Example:
+
+If a chain (e.g., ABC MART) with customer number 9999 has 3 stores numbered 123, 456 and 789, when
+reporting store 123, report ABC MART in the Ship-To Customer Name, 9999 in the Ship-To Customer Number
+and 123 in the Ship-To Customer Shipping Number.
+
+If the Ship-To Customer Shipping Number field is not large enough to accommodate the store number, you
+may also use the Ship-To Customer Shipping Number Extension field, to make a store unique.
+
+The Ship-To Customer Store Number should contain the chain assigned store number for the customer
+receiving shipment.
+
+Ship-To Customer Address
+This field contains the Ship-To address for the customer receiving shipment.
+ Report the actual street address, including house number, street name and street type.
+ Report suite number, office number or terminal, when the store is located in a strip mall, office complex
+    or airport.
+ Use the distributor address, when identifying a cash and carry transaction. This would be the same
+    address as provided in the HID record.
+ Avoid using post office boxes for the Ship-To address.
+ Exclude extraneous words that do not describe the actual shipping address.
+
+Ship-To Customer City
+This field contains the city of the customer receiving shipment.
+
+Ship-To Customer State
+This field contains the state of the customer receiving shipment. Populate this field with proper abbreviations.
+Illegal values are not accepted.
+
+Note:
+ Territory abbreviations can be reported in this field for shipments outside of the U.S.
+ A list of legal values can be provided upon request.
+
+MSAi Copyright©2017                                                                                           23
+ITGB Reporting Requirements – V. 1.0 (November 2017)
+                               APPENDIX
+                    Tobacco Quantity Shipped Reporting
+
+Ship-To Customer Zip Code + 4
+This field contains the zip+4 code of the customer receiving shipment. Illegal values are not accepted.
+
+Ship-To Customer Cash And Carry Indicator
+This field contains the code to indicate if the customer receiving shipment is a Cash And Carry account. A Cash
+And Carry account is defined as a customer that receives product that is not intended for resale.
+     Enter Y, if the account is a Cash And Carry customer.
+     Enter N, if the account is NOT a Cash And Carry customer.
+
+Quantity Shipped Reporting
+The PUR Record contains the Measure Value 1 field, which should be populated with the total number of
+selling units of the unique SKU, which were distributed to a customer. Valid selling units include carton, multi-
+pack and pack. Cartons are the typical selling unit.
+
+The following are examples of how to report Items per Selling Unit and quantity shipped.
+
+Example 1:
+If the selling unit is a standard carton and the quantity shipped are 1.5 cartons, then report 200 in the Items
+per Selling Unit field and report 1.5 in the Measure Value 1 field for quantity shipped.
+
+Example 2:
+If the selling unit is a 5-can sleeve and the quantity shipped are 2 sleeves, then report 5 in the Items per Selling
+Unit field and report 5.0 in the Measure Value 1 field for quantity shipped.
+
+Example 3:
+If the selling unit is a standard pack and the quantity shipped are 4 packs, then report 20 in the Items per
+Selling Unit field and report 4.0 in the Measure Value 1 field for quantity shipped.
+
+Example 4:
+If the selling unit is a 10-can sleeve and the quantity shipped are 5 sleeves, then report 10 in the Items per
+Selling Unit field and report 5.0 in the Measure Value 1 field for quantity shipped.
+
+Example 5:
+If the selling unit is a 45-can display and the quantity shipped are 4 displays, then report 45 in the Items per
+Selling Unit field and report 4.0 in the Measure Value 1 field for quantity shipped.
+
+Example 6:
+If the selling unit is a 10-can sleeve and the quantity shipped are 2 cans, then report 10 in the Items per Selling
+Unit field and report 0.2 in the Measure Value 1 for quantity shipped.
+
+The same methodology applies for returns.
+MSAi Copyright©2017                                                                                                24
+ITGB Reporting Requirements – V. 1.0 (November 2017)
+                               APPENDIX
+                    Tobacco Quantity Shipped Reporting
+Dollar reporting
+The PUR Record contains the Measure Value 2 field, which is optionally populated with the total Dollars Sold
+of the unique SKU to a customer. The following are two examples of how to report Dollars Sold:
+
+Example 1:
+If you sell 10 sleeves to a customer for $30 each, then report 300 in the Measure Value 2 for total dollars sold.
+
+Example 2:
+If you sell 5 sleeves to a customer for $30 each, then report 150 in the Measure Value 2 for total dollars sold.
+
+Reporting Returns
+Returned SKUs should be reported on a separate purchase record.
+
+Example 1:
+If the SKU has 10 cartons shipped and 4 cartons returned, then
+1 PUR record should be reported with a value of 10.0 in the Measure Value 1 field and
+1 PUR record should be reported with a value of –4.0 in the Measure Value 1 field.
+
+Example 2:
+If the SKU has 15 sleeves shipped and 8 sleeves returned, then
+1 PUR record should be reported with a value of 15.0 in the Measure Value 1 field and
+1 PUR record should be reported with a value of –8.0 in the Measure Value 1 field.
+
+The same methodology applies for returns of packs/cans.
+
+Example 1:
+If the SKU has 10 cartons shipped and 5 packs returned, then
+1 PUR record should be reported with a value of 10.0 in the Measure Value 1 field and
+1 PUR record should be reported with a value of -.5 in the Measure Value 1 field.
+
+Example 1:
+If the SKU has 23 sleeves shipped and 7 cans returned, then
+1 PUR record should be reported with a value of 23.0 in the Measure Value 1 field and
+1 PUR record should be reported with a value of -.7 in the Measure Value 1 field.
+
+Returns must be reported as a negative value. The negative sign must precede the quantity reported.
+
+
+
+
+MSAi Copyright©2017                                                                                            25
+ITGB Reporting Requirements – V. 1.0 (November 2017)
+                              APPENDIX
+                   Tobacco Quantity Shipped Reporting
+Reporting Non-Saleable (Returns)
+If you are unable to report the return of non-saleable products at the SKU level, you must create an opposing
+return SKU for that product.
+
+Use the following instructions to report non-saleable products with an opposing return SKU record:
+ The keyword “returns” should be included in the SKU’s Product Description field (BID record).
+ Negative value must be reported in the Measure Value 1 field (PUR record).
+
+
+
+
+MSAi Copyright©2017                                                                                         26
+ITGB Reporting Requirements – V. 1.0 (November 2017)
+                              APPENDIX
+                   Tobacco Quantity Shipped Reporting
+
+
+ITGB PRODUCT DESCRIPTIONS
+The following Standardized Product Descriptions are recommended for all ITGB Products in Brand
+Identification Record (BID) Section - Columns 32-81:
+
+Wholesalers currently using different product descriptions may continue to do so
+
+Cigarettes
+ Fortuna                                               Kool
+ Fortuna Blue Box 100                                  Kool Menthol Box
+ Fortuna Blue Box King                                 Kool Menthol Box 100
+ Fortuna Menthol DK Green Box 100                      Kool Menthol Blue Box
+ Fortuna Menthol DK Green Box King                     Kool Menthol Blue Box 100
+ Fortuna Menthol Green Box 100                         Kool Menthol XL Wide Blue Box
+ Fortuna Menthol Green Box King                        Kool Menthol XL Wide Green Box
+ Fortuna NF Soft King
+ Fortuna Pale Blue Box 100
+ Fortuna Pale Blue Box King
+ Fortuna Red Box 100
+ Fortuna Red Box King
+
+ Malibu                                                Maverick
+ Malibu Menthol Blue Slim Box 100                      Maverick Box
+ Malibu Menthol Blue Slim Box 120                      Maverick Box 100
+ Malibu Menthol Green Slim Box 100                     Maverick Gold Box
+ Malibu Menthol Green Slim Box 120                     Maverick Gold Box 100
+ Malibu Pink Slim Box 100                              Maverick Menthol Box
+ Malibu Pink Slim Box 120                              Maverick Menthol Box 100
+                                                       Maverick Menthol Gold Box 100
+                                                       Maverick Silver Box 100
+                                                       Maverick Silver Menthol Box 100
+
+ Montclair                                             Rave
+ Montclair Black Box 100                               Rave Menthol DK Green Box 100
+ Montclair Menthol Blue Box 100                        Rave Menthol DK Green Box King
+ Montclair Gold Box 100                                Rave Gold Box 100
+ Montclair Silver Box 100                              Rave Gold Box King
+                                                       Rave Red Box 100
+                                                       Rave Red Box King
+
+
+
+
+MSAi Copyright©2017                                                                          27
+ITGB Reporting Requirements – V. 1.0 (November 2017)
+                              APPENDIX
+                   Tobacco Quantity Shipped Reporting
+ Salem                                                 Sonoma
+ Salem Menthol Box                                     Sonoma Menthol Blue Soft 100
+ Salem Menthol Box 100                                 Sonoma Menthol Blue Box 100
+ Salem Menthol Gold Box                                Sonoma Menthol DK Green Soft 100
+ Salem Menthol Gold Box 100                            Sonoma Menthol DK Green Box 100
+ Salem Menthol Silver Box                              Sonoma Menthol DK Green Box King
+ Salem Menthol Silver Box 100                          Sonoma Gold Soft 100
+                                                       Sonoma Gold Box 100
+                                                       Sonoma Gold Box King
+                                                       Sonoma Menthol Green Soft 100
+                                                       Sonoma Menthol Green Box 100
+                                                       Sonoma NF Soft King
+                                                       Sonoma Red Soft 100
+                                                       Sonoma Red Box 100
+                                                       Sonoma Red Box King
+
+ USA Gold                                              Winston
+ USA Gold Menthol Blue Soft 100                        Winston Red Box
+ USA Gold Menthol Blue Box 100                         Winston Red Box 100
+ USA Gold Menthol Blue Soft King                       Winston Gold Box
+ USA Gold Menthol Blue Box King                        Winston Gold Box 100
+ USA Gold Menthol DK Green Soft 100                    Winston White Box
+ USA Gold Menthol DK Green Box 100                     Winston White Box 100
+ USA Gold Menthol DK Green Glide Tec Box
+ USA Gold Menthol DK Green Soft King
+ USA Gold Menthol DK Green Box King
+ USA Gold Gold Soft 100
+ USA Gold Gold 100 Box
+ USA Gold Gold Glide Tec Box
+ USA Gold Gold Soft King
+ USA Gold Gold Box King
+ USA Gold Menthol Green Soft 100
+ USA Gold Menthol Green Box 100
+ USA Gold Menthol Green Soft King
+ USA Gold NF Soft King
+ USA Gold Red Soft 100
+ USA Gold Red Box 100
+ USA Gold Red Glide Tec Box
+ USA Gold Red Soft King
+ USA Gold Red Box King
+
+
+
+
+MSAi Copyright©2017                                                                       28
+ITGB Reporting Requirements – V. 1.0 (November 2017)
+                                  APPENDIX
+                       Tobacco Quantity Shipped Reporting
+Mass Market Cigars (MMC)
+Backwoods
+Bckwds Orig Single 24CT UP
+Bckwds Sweet Single 24CT UP
+Bckwds Hny Berry Single 24CT UP
+Bckwds Hny Bourbon Single 24CT UP
+Bckwds Drk Stout Single 24CT UP
+Bckwds Sweet 3Pack 10/3
+Bckwds Hny Berry 3Pack 10/3
+Bckwds Hny Bourbon 3Pack 10/3
+Bckwds Drk Stout 3Pack 10/3
+Bckwds Orig 5Pack 8/5
+Bckwds Sweet 5Pack 8/5
+Bckwds BlcknSwt 5Pack 8/5
+Bckwds Hny 5Pack 8/5
+Bckwds Hny Berry 5Pack 8/5
+Bckwds Hny Bourbon 5Pack 8/5
+Bckwds Drk Stout 5Pack 8/5
+
+Dutch Masters
+Dtch Mstr Palma 55CT
+Dtch Mstr Palma Choc 55CT
+Dtch Mstr Crna Dlx 55CT
+Dtch Mstr Crna Grp 55CT
+Dtch Mstr Sports 55CT
+Dtch Mstr Palma 4Pack 5/4
+Dtch Mstr Crna Dlx 4Pack 5/4
+Dtch Mstr Crna Grp 4Pack 5/4
+Dtch Mstr Crna Hny Sprt 4Pack 5/4
+Dtch Mstr Cgrlo Van Single 30CT
+Dtch Mstr Cgrlo Cgnc Single 30CT
+Dtch Mstr Cgrlo Choc Single 30CT
+Dtch Mstr Cgrlo Grp Single 30CT
+Dtch Mstr Cgrlo Strwbry Single 30CT
+Dtch Mstr Cgrlo Cgnc 3Pack 20/3
+Dtch Mstr Cgrlo Sweet 3Pack 20/3
+Dtch Mstr Cgrlo Wht Grp 3Pack 20/3
+Dtch Mstr Cgrlo Grn 3Pack 20/3
+Dtch Mstr Cgrlo Choc 3Pack 20/3
+Dtch Mstr Cgrlo Wine 3Pack 20/3
+Dtch Mstr Cgrlo Plma 3Pack 20/3
+Dtch Mstr Cgrlo Dlx 3Pack 20/3
+Dtch Mstr Cgrlo Grn Swt 3Pack 20/3
+Dtch Mstr Cgrlo Grp 5pack 5/5
+Dtch Mstr Cgrlo Van 5Pack 5/5
+Dtch Mstr Cgrlo Choc 5Pack 5/5
+Dtch Mstr Prsdnt 50CT Box
+Dtch Mstr Prsdnt 5Pack 5/5
+
+Dutch
+Dutch Cgrlo Bry Fusion 2Pack 30/2
+Dutch Cgrlo Hny Fusion 2Pack 30/2
+Dutch Cgrlo Java Fusion 2Pack 30/2
+Dutch Cgrlo Mint Fusion 2Pack 30/2
+Dutch Cgrlo Rum Fusion 2Pack 30/2
+
+
+MSAi Copyright©2017                                         29
+ITGB Reporting Requirements – V. 1.0 (November 2017)
+

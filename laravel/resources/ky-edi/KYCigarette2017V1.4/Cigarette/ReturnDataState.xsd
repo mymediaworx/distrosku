@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0">
+	<xsd:include schemaLocation="Forms/SchPack.xsd"/>
+	<xsd:include schemaLocation="Forms/SchUnaffixedStampReport.xsd"/>
+	<xsd:include schemaLocation="Forms/SchTransaction.xsd"/>
+	<xsd:element name="ReturnDataState">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element ref="SchTransaction"/>
+				<xsd:element ref="SchUnaffixedStampReport" minOccurs="0"/>
+				<xsd:element ref="SchPack" minOccurs="0"/>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+</xsd:schema>

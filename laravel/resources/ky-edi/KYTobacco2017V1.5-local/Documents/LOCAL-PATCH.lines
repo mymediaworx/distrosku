@@ -1,0 +1,13 @@
+> 			<xsd:enumeration value="KY-VAP2"/>
+> 			<xsd:enumeration value="UNTAXED"/>
+< 			<xsd:attribute name="stateSchemaVersion" type="String50Type" fixed="KYTobacco2017V1.4"/>
+> 			<xsd:attribute name="stateSchemaVersion" type="String50Type" fixed="KYTobacco2017V1.5"/>
+< 			<xsd:element name="ProductDescription" type="TobAlphaNumeric35Type">
+> 			<xsd:element name="ProductDescription" type="TobAlphaNumeric85Type">
+< 			<xsd:element name="Manufacturer" type="TobAlphaNumeric35Type">
+> 			<xsd:element name="Manufacturer" type="TobAlphaNumeric85Type">
+< 			<xsd:element name="BrandFamily" type="TobAlphaNumeric35Type">
+> 			<xsd:element name="BrandFamily" type="TobAlphaNumeric85Type">
+> 	</xsd:simpleType>
+> 	<xsd:simpleType name="TobAlphaNumeric85Type">
+> 		<xsd:restriction base="xsd:string"><xsd:maxLength value="85"/></xsd:restriction>

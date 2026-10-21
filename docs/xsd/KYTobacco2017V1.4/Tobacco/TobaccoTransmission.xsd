@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2015 rel. 3 sp1 (x64) (http://www.altova.com) by Dept of Revenue (Internal Services Div) -->
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xsd:annotation>
+		<xsd:documentation>
+			<Description>Transmission Header for Kentucky Tobacco</Description>
+			<Version>1.300</Version>
+			<ReleaseDate>February 2018</ReleaseDate>
+		</xsd:documentation>
+	</xsd:annotation>
+	<xsd:include schemaLocation="../ExtendedCommon/TransmissionHeader.xsd"/>
+	<xsd:include schemaLocation="TobaccoReturn.xsd"/>
+	<xsd:element name="TobaccoTransmission">
+		<xsd:annotation>
+			<xsd:documentation>Integrated Transmission schema for inclusion in SOAP body</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element ref="TransmissionHeader"/>
+				<xsd:element ref="ReturnState" maxOccurs="unbounded"/>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+</xsd:schema>

@@ -1,0 +1,3825 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2017 (x64) (http://www.altova.com) by State of Nebraska - Department of Revenue (WSCA-NE Dept of Revenue) -->
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0">
+	<xsd:include schemaLocation="../CommonSO/StateeFileTypes.xsd"/>
+	<xsd:annotation>
+		<xsd:documentation>This is a place for states to store enumerated lists of values </xsd:documentation>
+	</xsd:annotation>
+	<xsd:simpleType name="ReturnTypeType">
+		<xsd:restriction base="String10Type">
+			<xsd:enumeration value="CIG"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="CigStampUOMType">
+		<xsd:annotation>
+			<xsd:documentation>Stamp Unit Of Measure - STATES CAN MODIFY THE LIST OF VALUES IN THIS ELEMENT</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="String35Type">
+			<xsd:enumeration value="10"/>
+			<xsd:enumeration value="20"/>
+			<xsd:enumeration value="25"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="CigAttributeType">
+		<xsd:annotation>
+			<xsd:documentation>Special Identifier Attributes - STATES CAN MODIFY THE LIST OF VALUES IN THIS ELEMENT</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="String35Type">
+			<!-- <xsd:enumeration value="Red"/>
+			<xsd:enumeration value="Blue"/> -->
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="CigUPCUOMType">
+		<xsd:annotation>
+			<xsd:documentation>Unit of Measure</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="String10Type">
+			<xsd:enumeration value="CAR">
+				<xsd:annotation id="Carton"/>
+			</xsd:enumeration>
+			<xsd:enumeration value="CSE">
+				<xsd:annotation id="Case"/>
+			</xsd:enumeration>
+			<xsd:enumeration value="PAK">
+				<xsd:annotation id="Pack"/>
+			</xsd:enumeration>
+			<xsd:enumeration value="STK">
+				<xsd:annotation id="Stick"/>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="CigScheduleType">
+		<xsd:annotation>
+			<xsd:documentation>Type of Schedule</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="String35Type">
+			<xsd:maxLength value="21"/>
+			<xsd:enumeration value="1A"/>
+			<xsd:enumeration value="1B"/>
+			<xsd:enumeration value="1C"/>
+			<xsd:enumeration value="1D"/>
+			<xsd:enumeration value="2A"/>
+			<xsd:enumeration value="2B"/>
+			<xsd:enumeration value="2C"/>
+			<xsd:enumeration value="2D"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="CigDenomEnumType">
+		<xsd:restriction base="String10Type">
+			<xsd:enumeration value="20s"/>
+			<xsd:enumeration value="25s"/>
+			<xsd:enumeration value="Tribal 20s"/>
+			<xsd:enumeration value="Tribal 25s"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="CigAdjustmentType">
+		<xsd:restriction base="String20Type">
+			<xsd:enumeration value="Damaged"/>
+			<xsd:enumeration value="Destroyed"/>
+			<xsd:enumeration value="Floor Stock"/>
+			<xsd:enumeration value="Small Cigar"/>
+			<xsd:enumeration value="Counting Error"/>
+			<xsd:enumeration value="Returned"/>
+			<xsd:enumeration value="Shipment Error"/>
+			<xsd:enumeration value="Stolen"/>
+			<xsd:enumeration value="Transfer"/>
+			<xsd:enumeration value="Shrinkage"/>
+			<xsd:enumeration value="Timing"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="CigTypeOfAddressType">
+		<xsd:restriction base="String20Type">
+			<xsd:enumeration value="Mailing"/>
+			<xsd:enumeration value="Location"/>
+			<xsd:enumeration value="Billing"/>
+			<xsd:enumeration value="Delivery"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="CigTypeOfCustomerType">
+		<xsd:restriction base="String20Type">
+			<xsd:enumeration value="Distributor"/>
+			<xsd:enumeration value="Manufacturer"/>
+			<xsd:enumeration value="Retailer"/>
+			<xsd:enumeration value="Subjobber"/>
+			<xsd:enumeration value="Employee"/>
+			<xsd:enumeration value="Customer"/>
+			<xsd:enumeration value="Wholesaler"/>
+			<xsd:enumeration value="Delivery Seller"/>
+			<xsd:enumeration value="Native"/>
+			<xsd:enumeration value="Military"/>
+			<xsd:enumeration value="Government"/>
+			<xsd:enumeration value="InterBranch Transfer"/>
+			<xsd:enumeration value="Distribution Center"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="CigFedDescType">
+		<xsd:restriction base="String20Type">
+			<xsd:enumeration value="Cigarette"/>
+			<xsd:enumeration value="Small Cigar"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="CigTransDocumentType">
+		<xsd:restriction base="String35Type">
+			<xsd:enumeration value="Invoice"/>
+			<xsd:enumeration value="Purchase Order"/>
+			<xsd:enumeration value="Credit Memo"/>
+			<xsd:enumeration value="Affidavit"/>
+			<xsd:enumeration value="Returned Goods Authorization"/>
+			<xsd:enumeration value="Bill of Lading"/>
+			<xsd:enumeration value="Confirmation"/>
+			<xsd:enumeration value="Other"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="CigTaxJurisdictionType">
+		<xsd:annotation>
+			<xsd:documentation>Tax Jurisdiction abbreviations</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="AL">
+				<xsd:annotation>
+					<xsd:documentation>Alabama</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="AK">
+				<xsd:annotation>
+					<xsd:documentation>Alaska</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="AS">
+				<xsd:annotation>
+					<xsd:documentation>American Samoa</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="AZ">
+				<xsd:annotation>
+					<xsd:documentation>Arizona</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="AR">
+				<xsd:annotation>
+					<xsd:documentation>Arkansas</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="CA">
+				<xsd:annotation>
+					<xsd:documentation>California</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="CO">
+				<xsd:annotation>
+					<xsd:documentation>Colorado</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MP">
+				<xsd:annotation>
+					<xsd:documentation>Commonwealth of the Northern Mariana Islands</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="CT">
+				<xsd:annotation>
+					<xsd:documentation>Connecticut</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="DE">
+				<xsd:annotation>
+					<xsd:documentation>Delaware</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="DC">
+				<xsd:annotation>
+					<xsd:documentation>District of Columbia</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="FM">
+				<xsd:annotation>
+					<xsd:documentation>Federated States of Micronesia</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="FL">
+				<xsd:annotation>
+					<xsd:documentation>Florida</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="GA">
+				<xsd:annotation>
+					<xsd:documentation>Georgia</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="GU">
+				<xsd:annotation>
+					<xsd:documentation>Guam</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="HI">
+				<xsd:annotation>
+					<xsd:documentation>Hawaii</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ID">
+				<xsd:annotation>
+					<xsd:documentation>Idaho</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="IL">
+				<xsd:annotation>
+					<xsd:documentation>Illinois</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="IN">
+				<xsd:annotation>
+					<xsd:documentation>Indiana</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="IA">
+				<xsd:annotation>
+					<xsd:documentation>Iowa</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="KS">
+				<xsd:annotation>
+					<xsd:documentation>Kansas</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="KY">
+				<xsd:annotation>
+					<xsd:documentation>Kentucky</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="KYMRT1">
+				<xsd:annotation>
+					<xsd:documentation>KY Mod Risk 50%</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="KYMRT2">
+				<xsd:annotation>
+					<xsd:documentation>KY Mod Risk 25%</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="LA">
+				<xsd:annotation>
+					<xsd:documentation>Louisiana</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ME">
+				<xsd:annotation>
+					<xsd:documentation>Maine</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MH">
+				<xsd:annotation>
+					<xsd:documentation>Marshall Islands</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MD">
+				<xsd:annotation>
+					<xsd:documentation>Maryland</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MA">
+				<xsd:annotation>
+					<xsd:documentation>Massachusetts</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MI">
+				<xsd:annotation>
+					<xsd:documentation>Michigan</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MN">
+				<xsd:annotation>
+					<xsd:documentation>Minnesota</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MS">
+				<xsd:annotation>
+					<xsd:documentation>Mississippi</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MO">
+				<xsd:annotation>
+					<xsd:documentation>Missouri</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MT">
+				<xsd:annotation>
+					<xsd:documentation>Montana</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="NE">
+				<xsd:annotation>
+					<xsd:documentation>Nebraska</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="NV">
+				<xsd:annotation>
+					<xsd:documentation>Nevada</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="NH">
+				<xsd:annotation>
+					<xsd:documentation>New Hampshire</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="NJ">
+				<xsd:annotation>
+					<xsd:documentation>New Jersey</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="NM">
+				<xsd:annotation>
+					<xsd:documentation>New Mexico</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="NY">
+				<xsd:annotation>
+					<xsd:documentation>New York</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="NC">
+				<xsd:annotation>
+					<xsd:documentation>North Carolina</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ND">
+				<xsd:annotation>
+					<xsd:documentation>North Dakota</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="OH">
+				<xsd:annotation>
+					<xsd:documentation>Ohio</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="OK">
+				<xsd:annotation>
+					<xsd:documentation>Oklahoma</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="OR">
+				<xsd:annotation>
+					<xsd:documentation>Oregon</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="PW">
+				<xsd:annotation>
+					<xsd:documentation>Palau</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="PA">
+				<xsd:annotation>
+					<xsd:documentation>Pennsylvania</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="PR">
+				<xsd:annotation>
+					<xsd:documentation>Puerto Rico</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="RI">
+				<xsd:annotation>
+					<xsd:documentation>Rhode Island</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="SC">
+				<xsd:annotation>
+					<xsd:documentation>South Carolina</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="SD">
+				<xsd:annotation>
+					<xsd:documentation>South Dakota</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="TN">
+				<xsd:annotation>
+					<xsd:documentation>Tennessee</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="TX">
+				<xsd:annotation>
+					<xsd:documentation>Texas</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VI">
+				<xsd:annotation>
+					<xsd:documentation>U.S. Virgin Islands</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="UT">
+				<xsd:annotation>
+					<xsd:documentation>Utah</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VT">
+				<xsd:annotation>
+					<xsd:documentation>Vermont</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VA">
+				<xsd:annotation>
+					<xsd:documentation>Virginia</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="WA">
+				<xsd:annotation>
+					<xsd:documentation>Washington</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="WV">
+				<xsd:annotation>
+					<xsd:documentation>West Virginia</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="WI">
+				<xsd:annotation>
+					<xsd:documentation>Wisconsin</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="WY">
+				<xsd:annotation>
+					<xsd:documentation>Wyoming</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="AA">
+				<xsd:annotation>
+					<xsd:documentation>Armed Forces the Americas</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="AE">
+				<xsd:annotation>
+					<xsd:documentation>Armed Forces Europe</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="AP">
+				<xsd:annotation>
+					<xsd:documentation>Armed Forces Pacific</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="AKANC"/>
+			<xsd:enumeration value="AKBAR"/>
+			<xsd:enumeration value="AKBET"/>
+			<xsd:enumeration value="AKFBK"/>
+			<xsd:enumeration value="AKFNS"/>
+			<xsd:enumeration value="AKJUN"/>
+			<xsd:enumeration value="AKMAT"/>
+			<xsd:enumeration value="AKNTP"/>
+			<xsd:enumeration value="AKSIT"/>
+			<xsd:enumeration value="ALABB">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Abbeville</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALABV">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Albertville</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALADD">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Addison</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALALB">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Alabaster</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALALG">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Allgood</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALALT">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Altoona</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALALV">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Aliceville</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALAND">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Andalusia</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALANN">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Anniston</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALARB">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Arab</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALARG">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Argo</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALARI">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Ariton</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALARL">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Arley</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALASF">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Ashford</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALASL">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Ashland</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALASV">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Ashville</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALATH">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Athens</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALATT">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Attalla</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALAUB">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Auburn</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALAVN">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Avon</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALAXC">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Alexander City</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALBBA">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Beatrice</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALBCV">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Branchville</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALBGP">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Bridgeport</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALBIB">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Bibb County</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALBKW">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Brookwood</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALBLB">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Bayou La Batre</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALBNK">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Banks</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALBNT">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Brent</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALBOZ">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Boaz</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALBRB">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Barbour County</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALBRC">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Bear Creek</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALBRD">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Brundidge</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALBRL">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Brilliant</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALBRP">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Berry PJ</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALBRT">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Brantley</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALBRY">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Berry</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALBTC">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Blount County</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALBTV">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Blountsville</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALBUL">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Bullock County</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALBUT">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Butler</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALBWC">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Baldwin County</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALBYM">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Bay Minette</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALCBC">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Chambers County</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALCBH">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Carbon Hill</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALCBP">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Cedar Bluff PJ</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALCCY">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Calhoun County</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALCDB">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Cedar Bluff</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALCDV">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Cordova</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALCFC">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Coffee County</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALCHB">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Childersburg</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALCHC">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Conecuh County</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALCHK">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Cherokee</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALCHP">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Childersburg PJ</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALCHT">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Chatom</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALCIT">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Citronelle</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALCKC">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Cherokee County</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALCKW">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Chickasaw</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALCLC">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Clarke County</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALCLI">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Clio</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALCLM">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Cullman</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALCLN">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Clanton</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALCLR">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Calera</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALCLV">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Cleveland</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALCMB">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Columbia</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALCMC">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Cullman County</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALCMI">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Columbiana</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALCNC">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Cleburne County</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALCOC">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Colbert County</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALCOL">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Collinsville</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALCOS">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Coosada</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALCPH">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Camp Hill</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALCRE">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Creola</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALCRT">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Courtland</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALCSB">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Castleberry</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALCSC">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Coosa County</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALCSV">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Crossville</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALCTC">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Choctaw County</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALCTV">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Centreville</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALCTW">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Cottonwood</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALCWC">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Crenshaw County</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALCYC">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Clay County</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALCYH">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Clayhatchee</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALDBS">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Double Springs</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALDDV">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Dadeville</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALDEC">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Decatur</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALDET">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Detroit</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALDKC">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Dekalb County</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALDLC">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Dale County</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALDLV">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Daleville</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALDMP">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Demopolis</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALDOR">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Dora</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALDOZ">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Dozier</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALDPH">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Daphne</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALDPI">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Dauphin Island</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALDTH">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Dothan</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALDTP">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Dutton PJ</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALDUG">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Douglas</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALDUT">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Dutton</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALEBT">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Elberta</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALECL">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Eclectic</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALELB">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Elba</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALENT">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Enterprise</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALESB">
+				<xsd:annotation>
+					<xsd:documentation>Alabama East Brewton</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALESC">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Escambia County</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALEUF">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Eufaula</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALEUT">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Eutaw</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALEVG">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Evergreen</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALEWC">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Etowah County</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALEXC">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Excel</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALFAY">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Fayette</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALFDP">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Fort Deposit PJ</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALFKP">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Falkville PJ</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALFLC">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Florence</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALFLK">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Falkville</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALFLM">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Flomaton</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALFLR">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Florala</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALFOL">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Foley</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALFRH">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Fairhope</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALFRK">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Franklin County</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALFTD">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Fort Deposit</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALFTP">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Fort Payne</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALFUL">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Fultondale</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALFYC">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Fayette County</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALFYF">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Fyffe</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALGAD">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Gadsden</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALGAN">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Gantt</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALGAR">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Garden City</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALGAY">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Gaylesville</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALGDW">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Goodwater</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALGEN">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Geneva</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALGER">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Geraldine</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALGFS">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Gulf Shores</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALGLB">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Gilbertown</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALGLC">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Glencoe</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALGLD">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Goldville</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALGNC">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Geneva County</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALGNP">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Guin PJ</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALGOR">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Gordo</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALGOS">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Goshen</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALGRA">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Grant</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALGRB">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Greensboro</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALGRC">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Greene County</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALGRG">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Georgiana</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALGRV">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Greenville</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALGTR">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Guntersville</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALGUN">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Guin</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALGVH">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Grove Hill</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALHAM">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Hamilton</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALHED">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Headland</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALHEF">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Heflin</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALHEL">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Helena</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALHEN">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Henagar</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALHIL">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Hillsboro</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALHKB">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Hackleburg</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALHLC">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Hale County</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALHLV">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Haleyville</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALHLW">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Hollywood</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALHMV">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Hammondville</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALHNT">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Huntsville</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALHNV">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Hanceville</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALHOD">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Hodges</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALHOK">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Hokes Bluff</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALHRB">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Hurtsboro</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALHRC">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Henry County</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALHRP">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Harpersville</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALHRT">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Hartselle</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALHSC">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Houston County</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALHYN">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Hayneville</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALIDR">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Ider</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALIRN">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Irondale</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALJCK">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Jackson</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALJEM">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Jemison</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALJFC">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Jefferson County</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALJKC">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Jackson County</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALJKV">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Jacksonville</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALJSP">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Jasper PJ</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALJSR">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Jasper</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALKEN">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Kennedy</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALKIL">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Killen</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALKIN">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Kinsey</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALKST">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Kinston</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALLAF">
+				<xsd:annotation>
+					<xsd:documentation>Alabama LaFayette</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALLAM">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Lamar County</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALLAN">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Lanett</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALLAU">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Lauderdale County</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALLCK">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Lockhart</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALLEB">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Leesburg</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALLED">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Leeds</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALLEH">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Leighton</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALLEX">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Lexington</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALLIM">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Limestone County</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALLIS">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Lisman</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALLIT">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Littleville</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALLIV">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Livingston</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALLKV">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Lake View</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALLNC">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Lincoln</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALLND">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Linden</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALLNG">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Langston</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALLNV">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Lineville</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALLOC">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Locust Fork</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALLOP">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Loachapoka</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALLOW">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Lowndes County</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALLOX">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Loxley</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALLPL">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Level Plains</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALLPP">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Level Plains PJ</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALLSV">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Louisville</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALLUV">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Luverne</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALLVW">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Lakeview</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALLYN">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Lynn</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALMAC">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Macon County</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALMAD">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Madison</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALMAG">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Magnolia Springs</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALMAL">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Malvern</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALMAP">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Maplesville</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALMAR">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Marion</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALMBC">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Mobile County</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALMCI">
+				<xsd:annotation>
+					<xsd:documentation>Alabama McIntosh</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALMCK">
+				<xsd:annotation>
+					<xsd:documentation>Alabama McKenzie</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALMCP">
+				<xsd:annotation>
+					<xsd:documentation>Alabama McIntosh PJ</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALMDC">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Midland City</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALMDS">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Madison County</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALMDV">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Moundville</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALMGC">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Marengo County</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALMGP">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Margaret PJ</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALMGT">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Margaret</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALMID">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Midway</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALMLJ">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Millry PJ</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALMLP">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Millport</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALMLR">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Millry</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALMNB">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Mountainboro</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALMOB">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Mobile</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALMOO">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Moody</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALMRC">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Marion County</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALMRV">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Monroeville</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALMSC">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Marshall County</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALMTB">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Mountain Brook</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALMTG">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Montgomery</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALMTV">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Montevallo</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALMUN">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Munford</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALMUS">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Muscle Shoals</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALMVN">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Mt Vernon</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALMYR">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Myrtlewood</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALNAV">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Nauvoo</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALNED">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Needham</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALNOT">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Notasulga</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALNTB">
+				<xsd:annotation>
+					<xsd:documentation>Alabama North Bibb</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALNTC">
+				<xsd:annotation>
+					<xsd:documentation>Alabama North Courtland</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALNTP">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Northport</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALNWB">
+				<xsd:annotation>
+					<xsd:documentation>Alabama New Brockton</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALNWH">
+				<xsd:annotation>
+					<xsd:documentation>Alabama New Hope</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALNWN">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Newbern</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALNWS">
+				<xsd:annotation>
+					<xsd:documentation>Alabama New Site</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALNWT">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Newton</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALOCR">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Owens Cross Rds</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALODV">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Odenville</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALOHT">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Ohatchee</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALOKG">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Oak Grove</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALOKM">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Oakman</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALONT">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Oneonta</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALOPL">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Opelika</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALOPP">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Opp</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALORG">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Orange Beach</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALORV">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Orrville</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALOXF">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Oxford</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALOZK">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Ozark</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALPAR">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Parrish</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALPCV">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Priceville</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALPEN">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Pennington</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALPER">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Perry County</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALPET">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Petrey</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALPGS">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Pleasant Groves</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALPGV">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Pleasant Grove</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALPHC">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Phil Campbell</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALPHX">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Phenix City</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALPIE">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Piedmont</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALPIK">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Pike County</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALPIS">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Pisgah</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALPKC">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Pickens County</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALPKP">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Pickensville PJ</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALPKR">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Pike Road</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALPKV">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Pickensville</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALPLC">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Pell City</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALPLH">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Pelham</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALPNH">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Pine Hill</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALPNK">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Pinckard</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALPNR">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Pine Ridge</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALPOW">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Powell</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALPRD">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Prichard</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALPRP">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Prichard PJ</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALPTV">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Prattville</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALRAG">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Ragland</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALRBW">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Rainbow City</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALRCK">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Rockford</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALRDB">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Red Bay</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALRDL">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Red Level</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALREC">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Reece City</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALREF">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Reform</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALRFP">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Reform PJ</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALRGP">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Ragland PJ</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALRHB">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Rehobeth</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALRND">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Randolph County</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALRNK">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Roanoke</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALRNV">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Rainsville</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALROB">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Robertsdale</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALROG">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Rogersville</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALROS">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Rosa</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALRSC">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Russell County</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALRSV">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Russellville</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALRUT">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Rutledge</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALRVR">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Riverside</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALSAM">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Samson</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALSAR">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Sardis City</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALSAT">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Satsuma</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALSCP">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Slocomb PJ</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALSCT">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Scottsboro</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALSEC">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Section</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALSEL">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Selma</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALSHF">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Sheffield</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALSHI">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Shiloh</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALSHL">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Shelby County</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALSIL">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Silas</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALSKP">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Skyline PJ</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALSKY">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Skyline</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALSLC">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Slocomb</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALSLP">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Saraland PJ</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALSLV">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Silverhill</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALSMC">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Sumter County</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALSMS">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Smith's Station</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALSNE">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Snead</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALSPF">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Spanish Fort</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALSRK">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Sand Rock</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALSRL">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Saraland</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALSRP">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Sand Rock PJ</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALSTC">
+				<xsd:annotation>
+					<xsd:documentation>Alabama St Clair County</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALSTF">
+				<xsd:annotation>
+					<xsd:documentation>Alabama St. Florian</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALSTL">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Steele</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALSTP">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Southside PJ</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALSTS">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Southside</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALSTV">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Stevenson</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALSUL">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Sulligent</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALSUM">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Summerdale</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALSUS">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Susan Moore</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALSWP">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Sweet Water PJ</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALSWT">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Sweet Water</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALSYC">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Sylacauga</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALSYV">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Sylvania</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALTAY">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Taylor</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALTDC">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Talladega County</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALTHB">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Thorsby</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALTKP">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Tuskegee PJ</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALTLD">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Talladega</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALTLS">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Tallassee</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALTMS">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Thomaston</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALTMV">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Thomasville</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALTOX">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Toxey</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALTRF">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Trafford</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALTRN">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Trinity</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALTRV">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Trussville</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALTRY">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Troy</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALTSC">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Tuscumbia</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALTSK">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Tuskegee</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALTUC">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Tuscaloosa County</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALTUS">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Tuscaloosa</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALTWN">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Town Creek</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALUNS">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Union Springs</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALUNT">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Uniontown</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALVAL">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Valley</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALVAN">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Vance</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALVER">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Vernon</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALVIN">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Vina</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALVLG">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Valley Grande</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALVLH">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Valley Head</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALVNC">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Vincent</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALWAD">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Wadley</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALWAT">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Waterloo</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALWAV">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Waverly</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALWBL">
+				<xsd:annotation>
+					<xsd:documentation>Alabama West Blocton</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALWDK">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Woodstock</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALWDL">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Woodland</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALWDP">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Wadley PJ</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALWDV">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Woodville</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALWED">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Wedowee</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALWET">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Wetumpka</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALWEV">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Weaver</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALWJF">
+				<xsd:annotation>
+					<xsd:documentation>Alabama West Jefferson</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALWLG">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Walnut Grove</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALWLK">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Walker County</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALWLV">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Wilsonville</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALWLX">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Wilcox County</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALWNC">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Winston County</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALWNF">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Winfield</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALWPT">
+				<xsd:annotation>
+					<xsd:documentation>Alabama West Point</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALWSH">
+				<xsd:annotation>
+					<xsd:documentation>Alabama Washington County</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ALYRK">
+				<xsd:annotation>
+					<xsd:documentation>Alabama York</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ARLAA">
+				<xsd:annotation>
+					<xsd:documentation>Arkansas AR/LA</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ARMOA">
+				<xsd:annotation>
+					<xsd:documentation>Arkansas AR/MO</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="AROKA">
+				<xsd:annotation>
+					<xsd:documentation>Arkansas AR/OK</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ARTNA">
+				<xsd:annotation>
+					<xsd:documentation>Arkansas AR/TN</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="AZBLU">
+				<xsd:annotation>
+					<xsd:documentation>Arizona Blue</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="AZGRN">
+				<xsd:annotation>
+					<xsd:documentation>Arizona Green Tax Free Native</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="AZRED">
+				<xsd:annotation>
+					<xsd:documentation>Arizona Red Taxable Native</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="AZYEL"/>
+			<xsd:enumeration value="IDCDT">
+				<xsd:annotation>
+					<xsd:documentation>Idaho Coeur D Alene</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="IDKTT">
+				<xsd:annotation>
+					<xsd:documentation>Idaho Kootenai</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="IDNPT">
+				<xsd:annotation>
+					<xsd:documentation>Idaho Nez Perce</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="IDSBT">
+				<xsd:annotation>
+					<xsd:documentation>Idaho Shoshone Bannock</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="IDSPT">
+				<xsd:annotation>
+					<xsd:documentation>Idaho Shoshone Pauite</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ILCCC">
+				<xsd:annotation>
+					<xsd:documentation>Illinois Cicero/Cook</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ILCHC">
+				<xsd:annotation>
+					<xsd:documentation>Illinois Chicago/Cook</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ILCKC">
+				<xsd:annotation>
+					<xsd:documentation>Illinois Cook County</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ILEVC">
+				<xsd:annotation>
+					<xsd:documentation>Illinois Evanstan/Cook</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ILRMT">
+				<xsd:annotation>
+					<xsd:documentation>Illinois Rosemont</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOALB">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Albany</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOBCK">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Buckner</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOBEL">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Belle</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOBLA">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Bland</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOBLS">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Blue Springs</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOBLT">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Belton</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOBNC">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Bunceton</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOBNV">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Booneville</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOBRK">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Brookfield</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOBRN">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Branson</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOBRY">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Braymer</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOBTH">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Bethany</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOBWL">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Bowling Green</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOCAM">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Cameron</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOCAR">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Carthage</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOCEN">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Centralia</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOCHI">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Chillicothe</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOCLA">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Clarence</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOCLI">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Clinton</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOCOL">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Columbia</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOCON">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Concordia</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOCOR">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Corder</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOCPG">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Cape Girardeau</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOCRG">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Craig</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOCRJ">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Carl Junction</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOCRT">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Carrollton</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOEDN">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Edina</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOEXS">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Excelsior Springs</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOFAY">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Fayette</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOFFX">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Fairfax</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOFRC">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Forest City</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOFRL">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Foristell</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOFRT">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Fredericktown</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOFUL">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Fulton</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOGDV">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Grandview</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOGLD">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Gladstone</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOGLS">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Glasgow</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOGNC">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Green City</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOGNV">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Grain Valley</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOHAM">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Hamilton</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOHAN">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Hannibal</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOHAR">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Harrisonville</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOHEN">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Henrietta</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOHER">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Hermann</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOHIG">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Higginsville</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOHLD">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Holden</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOIND">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Independence</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOJAC">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Jackson County</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOJEF">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Jefferson City</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOJOP">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Joplin</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOKBN">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Knob Noster</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOKCY">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Kansas City</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOKEN">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Kennett</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOKGC">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Kingdom City</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOKGV">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Kingsville</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOKKV">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Kirksville</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOLAP">
+				<xsd:annotation>
+					<xsd:documentation>Missouri La Plata</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOLEB">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Lebanon</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOLES">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Lee's Summit</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOLEX">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Lexington</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOLIB">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Liberty</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOLOU">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Louisiana</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOLSL">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Lake St. Louis</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOMAC">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Macon</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOMAY">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Maysville</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOMDC">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Mound City</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOMEX">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Mexico</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOMGC">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Montgomery City</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOMIL">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Milan</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOMOB">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Moberly</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOMPH">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Memphis</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOMRC">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Monroe City</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOMRV">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Maryville</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOMSH">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Marshall</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOMTG">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Mountain Grove</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MONBN">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Norborne</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MONEO">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Neosho</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MONEV">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Nevada</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MONKC">
+				<xsd:annotation>
+					<xsd:documentation>Missouri North Kansas City</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MONOV">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Novinger</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MONWF">
+				<xsd:annotation>
+					<xsd:documentation>Missouri New Franklin</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MONWH">
+				<xsd:annotation>
+					<xsd:documentation>Missouri New Haven</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOODS">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Odessa</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOOKG">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Oak Grove</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOOKV">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Oakview</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOORG">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Oregon</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOOTV">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Otterville</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOOWV">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Owensville</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOPAC">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Pacific</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOPEC">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Peculiar</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOPKH">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Park Hills</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOPLB">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Plattsburg</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOPLH">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Pleasant Hill</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOPLM">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Palmyra</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOPOP">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Poplar Bluff</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOPRC">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Princeton</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOPTG">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Pilot Grove</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MORAY">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Raytown</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MORCH">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Richmond</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOREP">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Republic</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOROL">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Rolla</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MORSL">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Russellville</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOSAL">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Salisbury</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOSAV">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Savannah</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOSBV">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Shelbyville</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOSED">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Sedalia</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOSHB">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Shelbina</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOSLA">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Slater</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOSLC">
+				<xsd:annotation>
+					<xsd:documentation>Missouri St. Louis City</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOSPG">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Springfield</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOSTC">
+				<xsd:annotation>
+					<xsd:documentation>Missouri St. Charles</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOSTG">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Sturgeon</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOSTJ">
+				<xsd:annotation>
+					<xsd:documentation>Missouri St. Joseph</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOSTP">
+				<xsd:annotation>
+					<xsd:documentation>Missouri St. Peters</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOSTY">
+				<xsd:annotation>
+					<xsd:documentation>Missouri St. Louis County</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOSUG">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Sugar Creek</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOSWS">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Sweet Springs</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOTAR">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Tarkio</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOTRE">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Trenton</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOTRO">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Troy</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOUNN">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Union</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOVND">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Vandalia</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOWAV">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Waverly</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOWEB">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Webb City</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOWEL">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Wellsville</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOWIN">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Windsor</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOWNB">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Warrensburg</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOWNT">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Warrenton</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOWRT">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Wright City</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOWSH">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Washington</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="MOWTZ">
+				<xsd:annotation>
+					<xsd:documentation>Missouri Wentzville</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="NMAPA">
+				<xsd:annotation>
+					<xsd:documentation>New Mexico Acoma Pueblo</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="NMTCS">
+				<xsd:annotation>
+					<xsd:documentation>New Mexico Tax Credit Stamp</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="NYCTY">
+				<xsd:annotation>
+					<xsd:documentation>New York New York City</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="OHCYH">
+				<xsd:annotation>
+					<xsd:documentation>Ohio Cuyahoga County</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="OKALQ">
+				<xsd:annotation>
+					<xsd:documentation>Oklahoma Alabama Quassarte</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="OKAPC">
+				<xsd:annotation>
+					<xsd:documentation>Oklahoma Apache Tribe</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="OKCAT">
+				<xsd:annotation>
+					<xsd:documentation>Oklahoma Cheyenne Arapaho Tribes</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="OKCKN">
+				<xsd:annotation>
+					<xsd:documentation>Oklahoma Cherokee Nation</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="OKCMN">
+				<xsd:annotation>
+					<xsd:documentation>Oklahoma Comanche Nation</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="OKCPT">
+				<xsd:annotation>
+					<xsd:documentation>Oklahoma Citizen Potawatomi Tribe</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="OKCSN">
+				<xsd:annotation>
+					<xsd:documentation>Oklahoma Chickasaw Nation</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="OKCTN">
+				<xsd:annotation>
+					<xsd:documentation>Oklahoma Choctaw Nation</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="OKEST">
+				<xsd:annotation>
+					<xsd:documentation>Oklahoma Eastern Shawnee Tribe</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="OKFSA">
+				<xsd:annotation>
+					<xsd:documentation>Oklahoma Fort Sill Apache Tribe</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="OKGTO">
+				<xsd:annotation>
+					<xsd:documentation>Oklahoma Gray Tribal Original </xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="OKIAT">
+				<xsd:annotation>
+					<xsd:documentation>Oklahoma Iowa Tribe</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="OKKPT">
+				<xsd:annotation>
+					<xsd:documentation>Oklahoma Kickapoo Tribe</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="OKKTT">
+				<xsd:annotation>
+					<xsd:documentation>Oklahoma Kialegee Tribal Town</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="OKKWN">
+				<xsd:annotation>
+					<xsd:documentation>Oklahoma Kaw Nation</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="OKMGU">
+				<xsd:annotation>
+					<xsd:documentation>Oklahoma Magenta Unity</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="OKMIT">
+				<xsd:annotation>
+					<xsd:documentation>Oklahoma Miami Tribe</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="OKMSC">
+				<xsd:annotation>
+					<xsd:documentation>Oklahoma Muscogee Creek</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="OKNCA">
+				<xsd:annotation>
+					<xsd:documentation>Oklahoma New Compact</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="OKNCK">
+				<xsd:annotation>
+					<xsd:documentation>Oklahoma New Compact KS </xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="OKNCT">
+				<xsd:annotation>
+					<xsd:documentation>Oklahoma New Compact TX</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="OKNFR">
+				<xsd:annotation>
+					<xsd:documentation>Oklahoma Native Full Rate</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="OKOMT">
+				<xsd:annotation>
+					<xsd:documentation>Oklahoma Otoe-Missouria Tribe</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="OKOSN">
+				<xsd:annotation>
+					<xsd:documentation>Oklahoma Osage Nation</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="OKOTC">
+				<xsd:annotation>
+					<xsd:documentation>Oklahoma Orange Tribe Compact</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="OKOTT">
+				<xsd:annotation>
+					<xsd:documentation>Oklahoma Ottawa Tribe</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="OKPNC">
+				<xsd:annotation>
+					<xsd:documentation>Oklahoma Ponca Tribe of Oklahoma</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="OKPWN">
+				<xsd:annotation>
+					<xsd:documentation>Oklahoma Pawnee Nation</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="OKQPW">
+				<xsd:annotation>
+					<xsd:documentation>Oklahoma Quapaw Tribe</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="OKSEM">
+				<xsd:annotation>
+					<xsd:documentation>Oklahoma Seminole Nation</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="OKSFN">
+				<xsd:annotation>
+					<xsd:documentation>Oklahoma Sac Fox Nation</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="OKSTB">
+				<xsd:annotation>
+					<xsd:documentation>Oklahoma State Tribe Border</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="OKTNK">
+				<xsd:annotation>
+					<xsd:documentation>Oklahoma Tonkawa Tribe</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="OKTNU">
+				<xsd:annotation>
+					<xsd:documentation>Oklahoma Tan Unity</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="OKTRB">
+				<xsd:annotation>
+					<xsd:documentation>Oklahoma Tribal</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="OKTTT">
+				<xsd:annotation>
+					<xsd:documentation>Oklahoma Thlopthlocco Tribal Town</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="OKWAT">
+				<xsd:annotation>
+					<xsd:documentation>Oklahoma Wichita Affiliated Tribes</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="OKWYN">
+				<xsd:annotation>
+					<xsd:documentation>Oklahoma Wyandotte Nation</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="OKYTE">
+				<xsd:annotation>
+					<xsd:documentation>Oklahoma Yellow Trib Excp</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="UNSTP">
+				<xsd:annotation>
+					<xsd:documentation>Unstamped</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VAABD">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Abingdon</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VAAND">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Annandale</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VAAPP">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Appalachia</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VAARC">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Arlington County</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VABED">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Bedford</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VABKB">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Blacksburg</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VABKS">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Blackstone</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VABLF">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Bluefield</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VABRS">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Bristol</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VABRW">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Broadway</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VABSG">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Big Stone Gap</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VACHB">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Christiansburg</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VACHL">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Chantilly</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VACHP">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Chesapeake</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VACHV">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Charlottesville</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VACHW">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Chilhowie</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VACLF">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Clifton Forge</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VACLW">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Clintwood</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VACOB">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Coeburn</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VACOV">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Covington City</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VACUL">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Culpeper</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VADAM">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Damascus</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VAFAQ">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Fauquier</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VAFFX">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Fairfax</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VAFKB">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Fredericksburg</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VAFRK">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Franklin</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VAFRM">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Farmville</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VAGOR">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Gordonsville</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VAHAM">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Hampton</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VAHER">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Herndon</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VAHRB">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Harrisonburg</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VAHRC">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Harrison City</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VAKNK">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Kilmarnock</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VALUR">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Luray</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VALYN">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Lynchburg</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VAMAN">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Manassas Park</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VAMAR">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Marion</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VAMRT">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Martinville</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VAMTJ">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Mt Jackson</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VANMK">
+				<xsd:annotation>
+					<xsd:documentation>Virginia New Market</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VANOR">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Norton</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VANOV">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Northern Virginia</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VANPN">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Newport News</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VANRF">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Norfolk</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VAORT">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Orange Town</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VAPET">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Petersburg</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VAPOQ">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Poquoson</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VAPOR">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Portsmouth</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VAPUL">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Pulaski</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VARAD">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Radford</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VARKM">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Rocky Mount</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VARNK">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Roanoke</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VASAL">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Salem</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VASCT">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Scottsville</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VASMF">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Smithfield</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VASPF">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Springfield</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VASTN">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Stuanton</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VASUF">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Suffolk</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VATAP">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Tappahannock</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VATAZ">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Tazewell</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VATOA">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Town of Ashland</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VATOS">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Town of Stuart</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VAVAB">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Virginia Beach</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VAVIN">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Vinton</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VAWBC">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Waynesboro City</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VAWCH">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Winchester</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VAWIL">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Williamsburg</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VAWIS">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Wise</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VAWNS">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Windsor</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VAWRN">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Warrenton</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VAWRS">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Warsaw</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VAWSK">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Woodstock</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VAWTS">
+				<xsd:annotation>
+					<xsd:documentation>Virginia White Stone</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="VAWYT">
+				<xsd:annotation>
+					<xsd:documentation>Virginia Wytheville</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="WACVT">
+				<xsd:annotation>
+					<xsd:documentation>Washington Colville Tribal</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="WAKST">
+				<xsd:annotation>
+					<xsd:documentation>Washington Kalispell Tribal</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="WAPYT">
+				<xsd:annotation>
+					<xsd:documentation>Washington Puyallup Tribal</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="WASWT">
+				<xsd:annotation>
+					<xsd:documentation>Washington Swinomish Tribal</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="WAYKT">
+				<xsd:annotation>
+					<xsd:documentation>Washington Yakama Tribal</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="WAZOT">
+				<xsd:annotation>
+					<xsd:documentation>Washington Tribal Zero Value</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="WITRB">
+				<xsd:annotation>
+					<xsd:documentation>Wisconsin Tribal</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="CigMSAStatusType">
+		<xsd:annotation>
+			<xsd:documentation>MSA Status (OPM, SPM, NPM, N/A, PM, NPM1, NPM2, NSM)</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="String10Type">
+			<xsd:enumeration value="OPM"/>
+			<xsd:enumeration value="SPM"/>
+			<xsd:enumeration value="NPM"/>
+			<xsd:enumeration value="N/A"/>
+			<xsd:enumeration value="PM"/>
+			<xsd:enumeration value="NPM1"/>
+			<xsd:enumeration value="NPM2"/>
+			<xsd:enumeration value="NSM"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+</xsd:schema>

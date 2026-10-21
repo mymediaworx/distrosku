@@ -1,0 +1,22 @@
+<div>
+    <div class="card">
+        <label>Van / truck</label>
+        <select wire:model.live="vanId" data-test="van">@forelse($vans as $v)<option value="{{ $v->id }}">{{ $v->name }}</option>@empty<option value="">No van warehouse set up</option>@endforelse</select>
+        <label>Customer</label>
+        <select wire:model.live="customerId" data-test="customer"><option value="">Choose…</option>@foreach($customers as $c)<option value="{{ $c->id }}">{{ $c->name }} ({{ $c->terms }})</option>@endforeach</select>
+        @if($shipTos->count() > 1)<label>Ship-to</label><select wire:model.live="shipToId">@foreach($shipTos as $s)<option value="{{ $s->id }}">{{ $s->name }} · {{ $s->city }}</option>@endforeach</select>@endif
+    </div>
+    <div class="card"><form wire:submit="add" style="display:flex;gap:.5rem"><input wire:model="scan" placeholder="Scan or type UPC / SKU / name" autofocus><button style="width:auto">Add</button></form>
+        <table class="tbl" style="margin-top:.5rem">
+            @foreach($cart as $i => $l)<tr><td>{{ $l['name'] }}<br><span class="muted">{{ $l['sku'] }} · ${{ number_format((float) $l['price'], 2) }} · van has {{ (float) ($stock[$l['product_id']] ?? 0) }}</span></td>
+                <td style="width:80px"><input inputmode="decimal" wire:model.blur="cart.{{ $i }}.qty"></td><td style="width:48px"><button class="bad" wire:click="remove({{ $i }})" aria-label="Remove">×</button></td></tr>@endforeach
+        </table>
+        <p style="text-align:right;font-size:1.4rem;font-weight:700" data-test="total">${{ number_format((float) $this->total, 2) }}</p>
+        <label>Tender</label>
+        <div class="grid">@foreach(['cash' => 'Cash', 'check' => 'Check', 'account' => 'Charge account'] as $k => $v)<button type="button" wire:click="$set('tender','{{ $k }}')" class="{{ $tender === $k ? '' : 'btn2' }}">{{ $v }}</button>@endforeach</div>
+    </div>
+    @if($needsSig)<div class="card">@include('partials.signature-pad', ['acks' => $acks])</div>@endif
+    @if($err)<div class="card err" data-test="err">{{ $err }}</div>@endif
+    @if($ok)<div class="card ok" data-test="ok">{{ $ok }}</div>@endif
+    <button wire:click="sell" wire:loading.attr="disabled" @disabled(! $cart || ! $customerId) data-test="sell">Complete sale</button>
+</div>

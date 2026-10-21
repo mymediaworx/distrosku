@@ -1,0 +1,1165 @@
+       Management Science Associates, Inc.
+
+
+
+MULTICAT™ Format
+Requirements - Tobacco
+April, 2019
+Contents
+Reporting Summary ......................................................................................................................................3
+Definitions and Requirements ......................................................................................................................3
+Summary of Record Types ............................................................................................................................4
+Brand Reporting ............................................................................................................................................5
+   Product Description ..................................................................................................................................5
+   Promotion Description ..............................................................................................................................6
+   Promotion Indicator ..................................................................................................................................6
+   State Tax Jurisdiction ................................................................................................................................6
+   Distributor Component Shipper Flag ........................................................................................................7
+   Manufacturer Promotion Code.................................................................................................................8
+   Items per Selling Unit ................................................................................................................................8
+   Items per Selling Unit ................................................................................................................................8
+   Inventory Reporting ................................................................................................................................11
+   MSA Category Code ................................................................................................................................11
+Customer/Store Reporting Ship-To Customer Name .................................................................................12
+   Ship-To Customer Number and Ship-To Customer Shipping Number (Extension) ................................12
+   Ship-To Customer Address ......................................................................................................................13
+   Ship-To Customer City ............................................................................................................................13
+   Ship-To Customer State ..........................................................................................................................13
+   Ship-To Customer Zip Code + 4 ...............................................................................................................13
+   Ship-To Customer Cash And Carry Indicator ...........................................................................................13
+Quantity Shipped Reporting .......................................................................................................................14
+   Dollar reporting .......................................................................................................................................14
+   Reporting Returns ...................................................................................................................................15
+   Reporting Non-Saleable (Returns) ..........................................................................................................15
+Appendix .....................................................................................................................................................16
+
+
+
+
+MSA Copyright©2019                                                       Page 2                                                                  April 2019
+Reporting Summary
+The MULTICATTM Format is the preferred format for reporting data to MSA. The MULTICATTM
+Format can be used to provide data across multiple categories within a given subset of
+Manufacturer’s programs and should therefore simplify Distributors’ reporting processes. It
+also has additional features that make it easier to interpret the data, which should result in
+fewer inquiries.
+
+
+
+Definitions and Requirements
+This document contains the technical specifications for the MULTICATTM Format for all category
+submissions.
+
+Field definitions and requirements may vary by program or industry. Please also ensure that
+you refer to each Manufacturer’s program details for specific program requirements. If you
+have any questions, please call the Distributor Support Center at
+877-544-4429, Option 1.
+
+A field that is required for one industry may not be pertinent to another. These requirements
+are given in the Required Fields column within this document. Explanations of the Required
+Fields are as follows:
+
+Required Fields – Definitions
+•      Yes. These fields are required for the specific industry program.
+•      No. These fields are not required for the specific industry program.
+•      Optional. If possible, please populate these fields.
+•      N/A. These fields are Not Applicable to the specific industry and should be left blank.
+
+As with previous formats, this new format requires a fixed width ASCII data file. Please note
+numeric fields must be reported as a real number with floating decimal point. Assumed
+decimals will no longer be accepted.
+
+
+
+
+MSA Copyright©2019                          Page 3                                      April 2019
+Summary of Record Types
+Below are the MULTICATTM Format sections and definitions for reporting records for all Tobacco items.
+Please refer to the Appendix for some general notes and technical specifications for each field and
+details if needed for each identification record type listed below.
+
+Header Identification Record (HID)
+A HID record identifies the Distributor/Wholesaler site or any other data source providing data, along
+with contact information. There should only be one per file. Include identification number, name,
+address, week end date.
+
+
+Brand Identification Record (BID)
+A BID record is required for each unique SKU sold, returned or inventoried. There will be multiple per
+file. Each record also contains the total Distributor’s closing inventory for each SKU.
+
+
+Ship-To Identification Record (SID)
+A SID record is required for each unique ship to customer location that received or returned product.
+This includes retail stores, wholesalers, vend operators, Manufacturer Representatives and Employee
+sales. There will be multiple per file. Include Customer number, shipping number, name and address.
+
+
+Purchase Record (PUR)
+A PUR record is required for each SKU being shipped to a customer. The PUR record contains the
+quantity information for each unique SKU purchased and/or returned by a ship to customer location.
+There will be multiple per file. Should include gross quantity shipped and negative transactions for
+returns or other quantity adjustments. Note: Net volume is delivered.
+
+
+Total Record (TOT)
+The TOT record is a single record that provides control total information for validation of the data
+contained in the previous record types. A data validation control record includes DID Number, Number
+of BID records, Number of SID records, Number of PUR records and Total Items shipped for the week
+one per file.
+
+
+
+
+MSA Copyright©2019                              Page 4                                         April 2019
+Brand Reporting
+The below sections provide details on field descriptions and examples to help assure the data file is
+accurate and processes without unclassified products, suspend or fatal errors.
+
+Product Description
+This field provides the detailed description of the SKU being reported. It is essential for brand
+identification. Attributes may vary slightly from category to category.
+
+•   Include all attributes of the product when describing the SKU.
+•   Separate each attribute description with a space.
+•   Exclude any extraneous words that do not describe the actual product (e.g. B3G2F, DSPLY,
+    No Returns).
+•   Exclude the provincial marking code or state code from this field. The two-letter
+    state/provincial marking code indicating the province/state to which the product is being
+    shipped should be reported in the Provincial Marking Code/State Tax Jurisdiction field.
+
+**Failure to follow these guidelines may result in unclassified products. This may have an
+adverse impact on meeting the Manufacturer Program requirements.
+
+Attribute Examples:
+
+    Brand / Brand Family                Marlboro, Kool, Skoal, Liggett Select, Newport, USA
+                                        Gold, Copenhagen, Grizzly, Kodiak, Red Seal
+
+    Flavor                              Original, Wintergreen, Straight, Clove, Cherry, Vanilla
+
+    Cut                                 Fine Cut, FC, Long Cut, LC
+
+    Length                              e.g. 70, 80, 85, 100, 120, Kings, KS, KG
+
+    Filter vs. Non-Filter               FLT, NF
+
+    Menthol vs. Non- Menthol            M, MEN, MTHL, NM, NON-MEN
+
+    Pack Type                           Soft, SP, BX, Box, Tin
+
+
+
+
+MSA Copyright©2019                                Page 5                                            April 2019
+Promotion Description
+This field provides the detailed description of the promotion being reported.
+
+    •   Include promotional descriptions and incentive as required by the Manufacturers.
+    •   Exclude any specific promotion code required by a Manufacturer’s Program. This field
+        should contain a description of the promotion, not the code.
+    •   Any related code for the promotion should be reported in the Manufacturer Promotion
+        Code field.
+
+
+Promotion Indicator
+This field contains the code to indicate if the SKU was sold as part of a promotion.
+
+       Enter Y, if the SKU was sold as part of a promotion.
+       Enter N, if the SKU was NOT sold as part of a promotion.
+
+
+State Tax Jurisdiction
+There are two options available for reporting State Tax Jurisdiction. You may select one of the
+two options, but NOT BOTH.
+
+Option 1 - Using Multiple SID Records
+State Tax Jurisdiction must be reported in columns 197-198 in the Store Identification Record
+(SID) on the MULTICATTM All Tobacco File Format. Reporting examples are provided below:
+
+                       Ship To         Ship To Customer        Ship To Customer           State Tax
+        Type
+                      Customer         Shipping Number        Shipping Number Ext        Jurisdiction
+        (1-3)
+                    Number (4-11)           (12-19)                  (20-27)              (197-198)
+
+            SID        12345678            23456789                 34567891                 PA
+
+            SID        12345678            23456789                 34567892                 WV
+
+            SID        12345678            23456789                 34567893                 OH
+
+
+
+Below is an example of correct reporting for product to a reporting Non-Direct distributor who
+supplies retail outlets in multiple states using the State Tax Jurisdiction:
+
+             Customer Number / Customer Shipping Number / Customer Number extension
+              combination must be unique and not duplicated for every SID record on the
+              weekly data file. Any one of the three fields could be used to make the record
+              unique.
+
+             State Tax Jurisdiction field is reported with the USPS two-character state code.
+
+             All reported two-character state codes must comply with United States Postal
+              Service abbreviations.
+
+
+MSA Copyright©2019                                Page 6                                          April 2019
+If products are shipped to a location, and those products will, in turn, thereafter be shipped to
+multiple State Tax Jurisdictions, products must be separated by the respective State Tax
+Jurisdiction. In separating the store records, each must have a unique combination of
+Customer Number / Customer Shipping Number / Customer Number extension assigned. You
+are not required to report tax jurisdictions below the state level.
+
+
+Option 2 - Using Multiple BID Records
+State Tax Jurisdiction must be reported in columns 208-209 in the Brand Identification Record
+(BID) on the MULTICATTM All Tobacco File Format. Reporting examples are provided below:
+
+Example of correct reporting for product to a reporting Non-Direct Distributor who supplies Retail
+Outlets in multiple states using the State Tax Jurisdiction:
+
+      Type              SKU         Product Description      State Tax Jurisdiction       Inventory
+      (1-3)           (18-31)            (32 – 81)                 (208-209)               (251-261)
+       BID              123         Camel NM 85 BX FF                 PA                 00000000150
+       BID              124         Camel NM 85 BX FF                 WV                 00000000200
+       BID              125         Camel NM 85 BX FF                 OH                 00000000300
+
+             SKU must be unique and not duplicated for every BID record on the weekly data
+              file.
+             State Tax Jurisdiction field is reported with the USPS two-character state code.
+             Inventory must be reported accurately for each SKU reported.
+
+All reported two-character state codes must comply with United States Postal Service
+abbreviations.
+
+If products are shipped to a location, and those products will, in turn, thereafter be shipped to
+multiple State Tax Jurisdictions, products must be separated by the respective State Tax
+Jurisdiction. In separating the brand records, each must have a unique SKU assigned.
+
+
+Distributor Component Shipper Flag
+The Distributor Component Shipper Flag field indicates if the SKU is a shipper, component of a
+shipper, or not a shipper. MSA supports 2 methods for reporting multi-item shippers in the
+MULTICATTM format for US Cigarettes.
+
+•   Total Shipper: Each shipper must be reported as a single SKU. The Distributor Component
+    Shipper Flag field should be set to ‘S’.
+• Shipper Component: Each component within the shipper must be reported as an SKU.
+    The Distributor Component Shipper Flag field should be set to ‘C’.
+• The Distributor Component Shipper Flag field should be blank if the item is not a shipper.
+• When reporting a shipper, only report the total shipper or the individual components of
+    the shipper - DO NOT report both.
+Refer to the Manufacturer’s Programming Details for specific reporting requirements.
+
+
+MSA Copyright©2019                               Page 7                                             April 2019
+    Manufacturer Promotion Code
+    This field contains the promotion code, as provided by the Manufacturer. Contact the
+    Manufacturer’s Representative for this information, if it is required by the Manufacturer’s
+    program.
+
+
+    Items per Selling Unit
+    For US Cigarettes, this field is defined as the number of cigarettes or “sticks” per selling unit.
+
+       Some examples of acceptable values for the various selling units are:
+
+           200         Carton, containing 10-packs with 20 “sticks” per pack
+           5           Sleeve, containing 5 cans
+           10          Sleeve, containing 10 cans
+           45          Display Unit, containing 45 cans
+           250         Carton, containing 10-packs with 25 “sticks” per pack
+           100         Half Carton, containing 5-packs with 20 “sticks” per pack
+           60          3-Pack Multi-Pack
+           40          2-Pack Multi-Pack
+           20          Pack, containing 20 “sticks”
+           25          Pack, containing 25 “sticks”
+
+    These values are used to calculate a total stick count and total number of cans. The Items per
+    Selling Unit in the BID record is multiplied by the Quantity Shipped in the PUR record to obtain
+    total stick count or total number of cans.
+
+    Items per Selling Unit
+    The Items per Selling Unit in the BID record is used by MSA to calculate a total number of consumer
+    units. This value is multiplied by the Quantity Shipped in the PUR record to obtain total number of
+    consumer units.
+                    MultiCat - Reporting Requirements                                                                Examples
+
+
+                                                                                                               BID           PUR
+  MSA                                   Items per               Selling Units                                 Record        Record      Total MSA Calculated
+               MSA Category                                                             Brand description
+Category                               Selling Unit                  Field                                                              Eaches from BID and
+                Description                                                                of unit sold
+  Code                                 (BID record)             (PUR record)                                 Items per     Quantity         PUR records
+                                                                                                            selling Unit   Shipped
+
+
+                                    Number of Sticks          Number of Selling
+                                     per selling unit            units shipped         "Brand X" Gold 100                     10            Total Sticks
+3231             Cigarettes                                                                                     200
+                                   (e.g. Selling unit =    for a particular SKU to a      Menthol Box                      (Cartons)      200 * 10 = 2000
+                                                                                                              (Sticks)
+                                         Carton)                  customer.
+
+                                        Number of
+               Large Cigars             Cigar Sticks          Number of Selling
+                                                                                        "Brand X" Grape
+              Machine made,           per selling unit           units shipped                                  60             9            Total Sticks
+3251                                                                                     Cigarillo 30/2ct
+            popular priced, mass    (e.g. selling unit =   for a particular SKU to a                          (Sticks)     (Uprights)       60 * 9 = 540
+                                                                                             Upright
+                 produced            Boxes/Uprights/              customer.
+                                      Bundle Packs)
+
+
+
+    MSA Copyright©2019                                                  Page 8                                                          April 2019
+           Little/Filtered
+                Cigars
+                                     Number of
+       Small cigarette-style                               Number of Selling
+                                     Cigar Sticks                                   "Brand X" Little
+         cigars that mostly                                   units shipped                                 200            6            Total Sticks
+3252                               per selling unit                                 Cigar Cherry 100
+        are 20 per pack, as                             for a particular SKU to a                         (Sticks)     (Cartons)       200 * 6 = 1200
+                                 (e.g. Selling unit =                                      Box
+       well as other cigars                                    customer.
+                                       Carton)
+         that are taxed as
+        "small/little" cigars
+
+                                     Number of
+                                                           Number of Selling
+                                     Cigar Sticks
+        Premium Cigars                                        units shipped       Premium "Brand X"         25            4             Total Sticks
+3227                               per selling unit
+       Majority handmade                                for a particular SKU to a     25ct Box            (Sticks)     (Boxes)          25 * 4 = 100
+                                 (e.g. Selling unit =
+                                                               customer.
+                                       Box/Tin)
+
+
+
+                                Number of Cans per         Number of Selling
+                                     selling unit             units shipped          "Brand X" LC            5            10            Total Cans
+3211        Moist Snuff
+                                 (e.g. Selling unit =   for a particular SKU to a   Wintergreen 5ct        (Cans)       (Rolls)         5 * 10 = 50
+                                   Rolls/Sleeves)              customer.
+
+                                  Number of Cans           Number of Selling
+                                   per selling unit           units shipped                                  10            6            Total Cans
+3217            SNUS                                                              "Brand X" Snus 10ct
+                                 (e.g. Selling unit =   for a particular SKU to a                          (Cans)      (Sleeves)        10 * 6 = 60
+                                   Rolls/Sleeves)              customer.
+
+                                     Number of
+                                      Consumer             Number of Selling
+       Compressed Tobacco
+                                  Packs per selling           units shipped                                 10            8             Total Packs
+3218      Sticks/Strips/                                                          "Brand X" Stick 10ct
+                                         unit.          for a particular SKU to a                         (Packs)      (Boxes)          10 * 8 = 80
+          Pellets/Orbs
+                                 (e.g. Selling unit =          customer.
+                                         Box)
+
+
+
+
+                                     Number of                                      "Brand X" 4.65oz        12            7         Total Cans/Tumblers
+                                                           Number of Selling          Tumbler 12ct       (Tumblers)    (Boxes)           12 * 7 = 84
+                                   Cans/Tumbler
+                                                              units shipped
+3213         Dry Snuff             per selling unit.
+                                                        for a particular SKU to a
+                                 (e.g. Selling unit =                               "Brand X" 4.65oz        1             3         Total Cans/Tumblers
+                                                               customer.
+                                         Box)                                           Tumbler          (Tumbler)    (Tumblers)          1*3=3
+
+                                                                                    "Brand X" Chew          12            4            Total Pouches
+                                Number of Pouches          Number of Selling         Mint 3oz 12ct       (Pouches)     (Boxes)          12 * 4 = 48
+       Loose Leaf Chewing          per selling unit.          units shipped
+3212
+            Tobacco              (e.g. Selling unit =   for a particular SKU to a                            1
+                                                                                    "Brand X" Chew
+                                         Box)                  customer.                                              5 (Pouches) Total Pouches 1 * 5 = 5
+                                                                                       Mint 3oz
+                                                                                                          (Pouch)
+
+                         Number of Consumer
+                                                           Number of Selling
+                               Packages
+                                                              units shipped         "Brand X" Twist          12          12            Total Packages
+3214     Plug/Twist/Rope    per selling unit.
+                                                        for a particular SKU to a      Large 12ct        (Packages)    (Boxes)          12 * 12 = 144
+                          (e.g. Selling unit =
+                                                               customer.
+                                  Box)
+
+
+                                     Number of                                       "Brand X" Gold         12            2         Total Bags/Canisters
+                                                           Number of Selling        Menthol 3oz 12ct     (Pouches)     (Boxes)           12 * 2 = 24
+                                   Bags/Canisters
+                                                              units shipped
+        RYO/MYO Tobacco            per selling unit.
+3221                                                    for a particular SKU to a
+                                 (e.g. Selling unit =                                "Brand X" Gold          1            3         Total Bags/Canisters
+                                                               customer.
+                                         Box)                                         Menthol 6oz          (Bag)        (Bags)            1*3=3
+
+
+
+
+   MSA Copyright©2019                                                Page 9                                                         April 2019
+                                   Number of                                         "Brand X" Cherry        12           2          Total Bags/Canisters
+                                                           Number of Selling             3oz 12ct          (Bags)      (Boxes)            12 * 2 = 24
+                                 Bags/Canisters
+                                                              units shipped
+3241       Pipe Tobacco          per selling unit.
+                                                        for a particular SKU to a
+                               (e.g. Selling unit =                                  "Brand X" Cherry         1           2          Total Bags/Canisters
+                                                               customer.
+                                       Box)                                               16oz              (Bag)       (Bags)             1*2=2
+
+
+
+
+                                   Number of
+                                 Booklets/Rolls
+                                                           Number of Selling
+                                 per selling unit.
+                                                              units shipped         "Brand X" Blue 1.5       24           9             Total Booklets
+3261          Papers           (Note: this is not a
+                                                        for a particular SKU to a         24ct            (Booklets)   (Boxes)           24 * 9 = 216
+                                  sheet count)
+                                                               customer.
+                               (e.g. Selling unit =
+                                       Box)
+
+
+
+                                Number of Tubes            Number of Selling                                               3
+                                 per selling unit             units shipped                                  200       (Cartons/         Total Tubes
+3261          Tubes                                                               "Brand X" KSF 200ct
+                               (e.g. Selling unit =     for a particular SKU to a                          (Tubes)                      200 * 3 = 600
+                                                               customer.                                                Boxes)
+                                     Carton)
+
+
+                                    Number of
+                                     Consumer
+                                                           Number of Selling
+                                 packs per selling
+                                                              units shipped          "Brand X" Cherry        25           4              Total Packs
+3261          Wraps             unit. (Note: this is
+                                                        for a particular SKU to a     25/2ct upright       (Packs)     (Boxes)           25 * 4 = 100
+                                not a wrap count)
+                                                               customer.
+                                (e.g. Selling unit =
+                                        Box)
+
+
+
+                                    Number of
+                                     Consumer
+                                      packs per            Number of Selling
+          E-Cigarettes/                                                             "Brand X" Menthol
+                                    selling unit.             units shipped                                   5           3              Total Packs
+3292        E-Cigars -                                                               E-Cig Disposable
+                                (Note: this is not a    for a particular SKU to a                          (Packs)     (Boxes)            5 * 3 = 15
+           Disposable                                                                      12mg
+                                    stick count)               customer.
+                                (e.g. Selling unit =
+                                        Box)
+
+                              Number of Consumer
+                              packs per selling unit.      Number of Selling
+                                                                                  "Brand X" Menthol
+          E-Cigarettes/        (Note: this is not a           units shipped                                  10           2              Total Packs
+3292                                                                              E-Cig Cartridge 6mg
+         E-Cigars - Refills     cartridge count)        for a particular SKU to a                          (Packs)     (Boxes)           10 * 2 = 20
+                                                                                        3ct refill
+                               (e.g. Selling unit =            customer.
+                                       Box)
+
+                                 Number of kits            Number of Selling
+          E-Cigarettes/
+                                 per selling unit.            units shipped         "Brand X" E-Cig Kit      10           8                Total Kits
+3292    E-Cigars - Starter
+                               (e.g. Selling unit =     for a particular SKU to a         24mg              (Kits)     (Boxes)            10 * 8 = 80
+               Kits
+                                       Box)                    customer.
+
+                                                           Number of Selling
+          E-Cigarettes/        Number of bottles              units shipped          "Brand X" E-Cig
+3292                                                                                                          1           3        Total Bottles   1*5=3
+        E-Cigars - Liquids      per selling units       for a particular SKU to a      Liquid 10ml
+                                                               customer.
+
+
+
+
+   MSA Copyright©2019                                                Page 10                                                         April 2019
+         Tobacco Derived
+              Non-          Number of Cans per     Number of Selling units
+                                                                               "Brand X" LC
+3293      Pharmaceutical      selling unit (e.g.   shipped for a particular                     5 (Cans)   10 (Rolls)   Total Cans 5 * 10 = 50
+                                                                              Wintergreen 5ct
+          Nicotine Gum,      Selling unit = Box)     SKU to a customer.
+        Lozenges, Pouches
+
+
+
+
+   Inventory Reporting
+   The BID Record contains the Measure Value 1 field, in which closing inventory (in selling units)
+   should be reported for the unique SKU. Valid selling units include carton, sleeve, display, multi-
+   pack and pack. The following are examples of how to report Items per Selling Unit and
+   inventory within the BID record:
+
+            Example 1: If the selling unit is a standard carton and the closing stock inventory is 1.5
+   cartons, then report 200 in the Items per Selling Unit field and report 1.5 in the Measure Value
+   1 field for inventory.
+
+           Example 2: If the selling unit is a 3-pack multi-pack and the closing stock inventory is 5
+   of these 3-packs, then report 60 in the Items per Selling Unit field and report 5 in the Measure
+   Value 1 field for inventory.
+
+            Example 3: If the selling unit is a standard pack and the closing stock inventory is 4
+   packs, then report 20 in the Items per Selling Unit field and report 4 in the Measure Value 1
+   field for inventory.
+
+           Example 4: If the selling unit is a 5-can sleeve and the closing stock inventory is 2 sleeves, then
+   report 5 in the Items per Selling Unit field and report 2 in the Measure Value 1 field for inventory.
+
+            Example 5: If the selling unit is a 10-can sleeve and the closing stock inventory is 5
+   sleeves, then report 10 in the Items per Selling Unit field and report 5 in the Measure Value 1
+   field for inventory.
+
+            Example 6: If the selling unit is a 45-can display and the closing stock inventory is 4
+   displays, then report 45 in the Items per Selling Unit field and report 4 in the Measure Value 1
+   field for inventory.
+
+
+   MSA Category Code
+   The MSA Category Code on the Brand Identification record is a predefined category code to
+   classify the SKU by product type. An MSA Category Code must be supplied for all tobacco
+   products reported to MSA on the combined cigarette and MST data file. This information is
+   supplied during the enrollment process. The MSA Category Codes for Tobacco products are
+   listed below.
+
+
+
+
+   MSA Copyright©2019                                          Page 11                                                  April 2019
+    MSA Category                                        Code
+    Moist Snuff/Spit-Free Tobacco/Hard Snuff           003211
+    Loose Leaf Chewing Tobacco                         003212
+    Dry Snuff (Nasal)                                  003213
+    Twist/Rope                                         003214
+    SNUS                                               003217
+    RYO/MYO Tobacco                                    003221
+    Premium Cigars                                     003227
+    Cigarettes                                         003231
+    Pipe Tobacco                                       003241
+    Large Cigars                                       003251
+    Little/Filtered Cigars                             003252
+    Papers/Tubes/Wraps                                 003261
+    E-Cigarettes (Disposable/Refills/Starter Kits)    003292
+    Tobacco Derived Products (TDP)                    003293
+
+
+If you are unsure of which MSA Category Code should be used, contact your Distributor Support Center
+Representative.
+
+
+
+Customer/Store Reporting
+Ship-To Customer Name
+This field contains the specific banner name for the customer receiving shipment.
+
+•   Report the banner name as it appears on the storefront. Owner names and headquarter
+    names should not be reported.
+•   Report a common name when identifying a cash and carry transaction, such as, consumer
+    sale, employee sale, and Manufacturer Representative sale. In addition, be sure to set the
+    Ship-To Customer Cash And Carry Indicator to “Y”.
+•   Exclude the chain assigned store number from this field. The chain assigned store number
+    should be reported in the field Ship-To Customer Store Number field.
+•   Report DBA (doing business as), when applicable, using the following naming configuration:
+    Banner Name DBA / Alternate Banner Name.
+
+
+
+Ship-To Customer Number and Ship-To Customer Shipping Number (Extension)
+All stores in a chain may share the same Customer Number, but should be assigned a unique
+Customer Shipping Number.
+
+      Example: If a chain (e.g. ABC MART) with customer number 9999 has 3 stores
+numbered 123, 456 and 789, when reporting store 123, report ABC MART in the Ship-To
+
+MSA Copyright©2019                                   Page 12                                 April 2019
+Customer Name, 9999 in the Ship-To Customer Number and 123 in the Ship-To Customer
+Shipping Number.
+
+If the Ship-To Customer Shipping Number field is not large enough to accommodate the store
+number, you may also use the Ship-To Customer Shipping Number Extension field, to make a
+store unique.
+
+The Ship-To Customer Store Number should contain the chain assigned store number for the
+customer receiving shipment.
+
+
+Ship-To Customer Address
+This field contains the ship to address for the customer receiving shipment.
+
+•   Report the actual street address, including house number, street name and street type.
+•   Report suite number, office number or terminal, when the store is located in a strip mall,
+    office complex or airport.
+•   Use the distributor address, when identifying a cash and carry transaction. This would be
+    the same address as provided in the HID record.
+•   Avoid using post office boxes for the ship to address.
+•   Exclude extraneous words that do not describe the actual shipping address.
+
+
+
+Ship-To Customer City
+This field contains the city of the customer receiving shipment.
+
+
+Ship-To Customer State
+This field contains the state of the customer receiving shipment. Populate this field with
+proper abbreviations. Illegal values are not accepted. Note: Territory abbreviations can be
+reported in this field for shipments outside of the U.S.
+
+    •   A list of legal values can be provided upon request.
+
+Ship-To Customer Zip Code + 4
+This field contains the zip+4 code of the customer receiving shipment. Illegal values are not
+accepted.
+
+
+Ship-To Customer Cash And Carry Indicator
+This field contains the code to indicate if the customer receiving shipment is a Cash And Carry account.
+A Cash And Carry account is defined as a customer that receives product that is not intended
+for resale.
+
+    •   Enter Y, if the account is a Cash And Carry customer.
+    •   Enter N, if the account is NOT a Cash And Carry customer.
+
+
+
+
+MSA Copyright©2019                              Page 13                                          April 2019
+Quantity Shipped Reporting
+The PUR Record contains the Measure Value 1 field, which should be populated with the total
+number of selling units of the unique SKU, which were distributed to a customer. Valid selling
+units include carton, multi-pack and pack. Cartons are the typical selling unit.
+
+The following are examples of how to report Items per Selling Unit and quantity shipped.
+
+         Example 1: If the selling unit is a standard carton and the quantity shipped are 1.5
+cartons, then report 200 in the Items per Selling Unit field and report 1.5 in the Measure Value
+1 field for quantity shipped.
+
+        Example 2: If the selling unit is a 5-can sleeve and the quantity shipped are 2 sleeves,
+then report 5 in the Items per Selling Unit field and report 2.0 in the Measure Value 1 field for
+quantity shipped.
+
+        Example 3: If the selling unit is a standard pack and the quantity shipped are 4 packs,
+then report 20 in the Items per Selling Unit field and report 4.0 in the Measure Value 1 field for
+quantity shipped.
+
+        Example 4: If the selling unit is a 10-can sleeve and the quantity shipped are 5 sleeves,
+then report 10 in the Items per Selling Unit field and report 5.0 in the Measure Value 1 field for
+quantity shipped.
+
+         Example 5: If the selling unit is a 45-can display and the quantity shipped are 4
+displays, then report 45 in the Items per Selling Unit field and report 4.0 in the Measure Value
+1 field for quantity shipped.
+
+        Example 6: If the selling unit is a 10-can sleeve and the quantity shipped are 2 cans,
+then report 10 in the Items per Selling Unit field and report 0.2 in the Measure Value 1 for
+quantity shipped. The same methodology applies for returns.
+
+
+Dollar reporting
+The PUR Record contains the Measure Value 2 field, which is optionally populated with the
+total Dollars Sold of the unique SKU to a customer. The following are two examples of how to
+report Dollars Sold:
+
+      Example 1: If you sell 10 sleeves to a customer for $30 each, then report 300 in the
+Measure Value 2 for total dollars sold.
+
+      Example 2: If you sell 5 sleeves to a customer for $30 each, then report 150 in the
+Measure Value 2 for total dollars sold.
+
+
+
+
+MSA Copyright©2019                               Page 14                                             April 2019
+Reporting Returns
+Returned SKUs should be reported on a separate purchase record.
+
+        Example 1: If the SKU has 10 cartons shipped and 4 cartons returned, then:
+
+                    1 PUR record should be reported with a value of 10.0 in
+                     the Measure Value 1 field and 1 PUR record should be
+                     reported with a value of –4.0 in the Measure Value 1
+                     field.
+
+        Example 2: If the SKU has 15 sleeves shipped and 8 sleeves returned, then:
+                1 PUR record should be reported with a value of 15.0 in
+                   the Measure Value 1 field and 1 PUR record should be
+                   reported with a value of –8.0 in the Measure Value 1
+                   field.
+                The same methodology applies for returns of packs/cans.
+
+        Example 3: If the SKU has 10 cartons shipped and 5 packs returned, then:
+               BID record should be reported with a unit of 200 (sticks per carton)
+               1 PUR record should be reported with a value of 10.0 in the Measure Value
+                   1 field and 1 PUR record should be reported with a value of -.5 in the
+                   Measure Value 1 field.
+
+        Example 4: If the SKU has 23 sleeves shipped and 7 cans returned, then:
+                BID record should be reported with a Unit of 10 (to indicate 10 cans per
+                   sleeve)
+                1 PUR record should be reported with a value of 23.0 in the Measure Value
+                   1 field and 1 PUR record should be reported with a value of -.7 in the
+                   Measure Value 1 field.
+                Returns must be reported as a negative value. The negative sign must
+                   precede the quantity reported.
+
+
+Reporting Non-Saleable (Returns)
+If you are unable to report the return of non-saleable products at the SKU level, you must
+create an opposing return SKU for that product.
+
+Use the following instructions to report non-saleable products with an opposing return SKU
+record:
+
+•   The keyword “returns” should be included in the SKU’s Product Description field (BID
+    record)
+•   Negative value must be reported in the Measure Value 1 field (PUR record)
+
+
+
+
+MSA Copyright©2019                              Page 15                                      April 2019
+Appendix
+The below table contains technical programming details for the MULTICATTM file format. For any
+questions or assistance with submission of files, please contact the MSA Distributor Support
+Center at 877-544-4429, Option 1.
+
+
+
+
+MSA Copyright©2019                             Page 16                                       April 2019
+MULTICATTM Tobacco File Programming Specifications
+MULTICATTM Format - Header Identification Record (HID)
+The HID record identifies the Distributor/Wholesaler site or any other data source providing data, along with contact information.
+                     Required                                                                                                                Technical
+ Size   Columns        Field                                          Master Description                                                   Specifications       Justification
+   3       1-3          Yes     Header Identification Record Type (HID)                                                                   Alphabetic Literal         Full
+
+  8       4-11         Yes      Distributor ID Number                                                                                       Alphanumeric            Full
+                                Pre-assigned 8 digit identification number to identify distributor shipping location. This information
+                                is supplied during the enrollment process.
+  4       12-15        Yes      Project Identification                                                                                   Alphanumeric Literal      LJ/BF
+                                Used to designate the industry for this specific file.
+                                Combined Tobacco = TOB
+
+  1         16         Yes      Test or Live Indicator                                                                                    Alphabetic Literal        Full
+                                Code to indicate whether the data is valid live data or test data.
+                                T= Test
+                                <blank> = Live
+
+                                Data files must be sent as “Test” until the Distributor Support Center approves the files for
+                                sending “Live”. Any programming changes made to data files must also be sent as “Test”.
+
+  1         17         Yes      Time Interval Week                                                                                        Alphabetic Literal        Full
+                                =W
+  8       18-25        Yes      End Date of Data In This File                                                                            Date (YYYYMMDD)            Full
+                                Date of the last day in the data period being reported.
+                                ** For example: 20040103 for data week ending on Saturday January 3, 2004.
+
+ 32       26-57        Yes      Distributor Name                                                                                            Alphanumeric           LJ/BF
+                                Name for the specific shipping location.
+ 90      58-147        Yes      Distributor Address                                                                                         Alphanumeric           LJ/BF
+                                Address for the specific shipping location.
+ 25      148-172       Yes      Distributor City                                                                                            Alphanumeric           LJ/BF
+                                City for the specific shipping location.
+  2      173-174       Yes      Distributor State                                                                                           Alphanumeric            Full
+                                Two character State or Province code for the specific shipping location.
+  9      175-183       Yes      Distributor Zip Code                                                                                        Alphanumeric           LJ/BF
+                                Zip Code/Postal Code for the specific shipping location.
+  3      184-186       No       Distributor Country                                                                                         Alphanumeric            Full
+                                Country for the specific shipping location.
+
+ LJ - Left Justify                          RJ – Right Justification                                 BF – Blank Fill                                            ZF – Zero Fill
+MSA Copyright©2019                                                             Page 17                                                             4/2019
+MULTICATTM Tobacco File Programming Specifications
+ 20      187-206       Yes      Distributor Contact Person Last Name                                                               Alphanumeric        LJ/BF
+                                Last name of the person to be contacted for answers to any data or format related questions.
+
+ 20      207-226       Yes      Distributor Contact Person First Name                                                              Alphanumeric        LJ/BF
+                                First name of the person to be contacted for answers to any data or format related questions.
+  5      227-231       N/A      Country/City Dialing Code Reserved field.                                                            Numeric            Full
+
+ 10      232-241       Yes      Distributor Contact Telephone Number                                                                 Numeric            Full
+                                Contact person's telephone number.
+                                Example: 800-555-1212 would be reported as 8005551212.
+  5      242-246       N/A      Country/City Dialing Code Reserved field.                                                            Numeric            Full
+
+ 10      247-256     Optional   Distributor Contact Fax Number                                                                       Numeric            Full
+                                Contact person's fax number.
+                                ** For example: 800-555-1212 would be reported as 8005551212.
+ 60      257-316     Optional   Distributor Contact Email Address                                                                  Alphanumeric        LJ/BF
+                                Contact person's business email address.
+
+  4      317-320       Yes      Number of Measures Reported on BID Record                                                            Numeric           RJ/ZF
+                                Number of unique Measure Codes reported for the BID records.
+                                All Tobacco = 0001
+
+  4      321-324       Yes      Number of Measures Reported on SID Record                                                            Numeric           RJ/ZF
+                                Number of unique Measure Codes reported for the SID records.
+                                All Tobacco = 0000
+
+  4      325-328       Yes      Number of Measures Reported on PUR                                                                   Numeric           RJ/ZF
+                                Number of unique Measure codes reported for the PUR records.
+                                All Tobacco = 0001 or 0002 **Dependent on Number of Measures reported**
+
+  8      329-336       Yes      Distributor File Creation Date                                                                  Date (YYYYMMDD)         Full
+                                Actual date when the specific data file was created.
+  1        337         Yes      Inventory Resubmission Flag                                                                       Numeric Literal       Full
+                                Code to indicate whether inventory on resubmitted file or original file should be processed.
+                                1 = Process resubmitted inventory (will overwrite original inventory)
+                                <blank> = DO NOT process resubmitted inventory (defaults to blank)
+
+
+
+
+ LJ - Left Justify                         RJ – Right Justification                                BF – Blank Fill                                  ZF – Zero Fill
+MSA Copyright©2019                                                            Page 18                                                    4/2019
+MULTICATTM Tobacco File Programming Specifications
+MULTICATTM Format - Brand Identification Record
+One BID record is required for each unique SKU sold, returned or inventoried. This record also contains the total distributor’s closing inventory
+for each SKU. Please refer to Appendix for some general notes and specific field details.
+                     Required                                                                                                               Technical
+ Size   Columns        Field                                             Master Description                                               Specifications     Justification
+   3       1-3         Yes      Brand Identification Record Type (BID)                                                                  Alphabetic Literal        Full
+
+  14       4-17        Yes      UPC Code                                                                                                    Numeric             RJ/BF
+                                Industry standard UPC of the selling unit.
+  14      18-31        Yes      Distributor SKU                                                                                          Alphanumeric            RJ/ZF
+                                Unique item code assigned exclusively for each product by the distributor. Used to link the
+                                purchases to this item.
+  50      32-81        Yes      Product Description                                                                                      Alphanumeric            LJ/BF
+                                Detailed description of the SKU. Must contain brand name and attributes of the item.
+                                See Appendix for more specific details.
+
+  50      82-131       Yes      Promotion Description                                                                                    Alphanumeric            LJ/BF
+                                Detailed description of the promotion for each SKU.
+                                If item is NOT promotional, blank fill.
+                                See Appendix for general requirements and the Manufacturer Programming Details for specific
+                                requirements.
+
+  6      132-137       Yes      Items per selling unit                                                                                      Numeric              RJ/ZF
+                                Number of cigarettes or "sticks" per selling unit or Number of cans per selling unit.
+                                See Appendix for more specific details.
+
+  1        138         Yes      Promotion Indicator                                                                                     Alphabetic Literal       Full
+                                Code to indicate if the SKU was sold as part of a promotion.
+                                Y = Yes this is a Promotion
+                                N = No this is Not a Promotion (defaults to N)
+                                See Appendix for more specific details.
+
+  6      139-144     Optional   NACS Standard Category Code                                                                                 Numeric              Full
+                                A six character numeric field organized into three groups of two digits. 1st two digits represent
+                                major category identifier. 2nd two digits represent sub-category identifier. 3rd two digits represent
+                                a “fine-line” category identifier. Information on the specific category definitions is available at
+                                www.nacsonline.com.
+
+
+
+
+ LJ - Left Justify                         RJ – Right Justification                                 BF – Blank Fill                                          ZF – Zero Fill
+MSA Copyright©2019                                                            Page 19                                                           4/2019
+MULTICATTM Tobacco File Programming Specifications
+  6      145-150       Yes      MSA Category Code                                                                                       Numeric Literal         Full
+                                Predefined Category Code to classify the SKU by product type. This information is supplied during
+                                the enrollment process.
+                                See Appendix for codes and more specific details.
+
+  10     151-160       N/A      Project identification                                                                                    Alphabetic            Full
+                                For future use. Not currently valid. Blank fill.
+  6      161-166     Optional   Distributor Product Unit Size                                                                              Numeric              RJ/ZF
+                                The size of the unit (can) purchased by the consumer.
+  10     167-176     Optional   Distributor Product Unit Size Description                                                               Alphanumeric            LJ/BF
+                                Description of the numeric value used in the Distributor Product Unit Size field.
+  1        177         Yes      Distributor Component Shipper Flag                                                                     Alphabetic Literal       Full
+                                Code to indicate if the SKU is a shipper or a component
+                                S = This is a shipper
+                                C = This is a component of a shipper
+                                <blank> = Not a shipper or component of a shipper
+                                See Appendix for more specific details.
+  10     178-187       Yes      Manufacturer Promotion Code                                                                             Alphanumeric            LJ/BF
+                                Specific code provided by the Manufacturer to track individual promotions. Contact Manufacturer
+                                Representative for this information. If item is NOT promotional, blank fill.
+                                See Appendix for general requirements and the Manufacturer Programming Details for specific
+                                requirements.
+  14     188-201     Optional   Manufacturer Product Identification Code Manufacturer product item number.                              Alphanumeric            LJ/BF
+
+  2      202-203       N/A      UPC Extension Reserved field.                                                                           Alphanumeric            LJ/BF
+
+  4      204-207       N/A      UPC year/issue extension Reserved field.                                                                Alphanumeric            LJ/BF
+
+  2      208-209     Optional   State Tax Jurisdiction                                                                                    Alphabetic            Full
+                                See Appendix for general requirement and the Manufacturer Programming Details for specific
+                                requirements.
+  16     210-225     Optional   Alternate UPC Code 1                                                                                       Numeric             RJ/BF
+                                This field should only be used to provide incremental UPCs that would help to identify this product.
+                                This field should not be used in place of and should never match the information being reporting in
+                                the UPC field (characters 4-17 of the BID record).
+
+
+
+
+ LJ - Left Justify                         RJ – Right Justification                                 BF – Blank Fill                                         ZF – Zero Fill
+MSA Copyright©2019                                                            Page 20                                                          4/2019
+MULTICATTM Tobacco File Programming Specifications
+
+                     Required                                                                                                              Technical
+ Size   Columns        Field                                              Master Description                                             Specifications     Justification
+  16    226-241      Optional   Alternate UPC Code 2                                                                                       Numeric             RJ/BF
+                                This field should only be used to provide incremental UPCs that would help to identify this product.
+                                This field should never match the information being reported in the UPC field (characters 4-17 of
+                                the BID record).
+  2      242-243     Optional   Spiral Size                                                                                                Numeric              RJ/ZF
+  4      244-247       N/A      MSA Reserved Field                                                                                       Blank spaces            Full
+  3      248-250       Yes      Measure Code 1 Inventory = (003)                                                                        Numeric Literal          Full
+  11     251-261        Yes     Measure Value 1                                                                                             Numeric             RJ/ZF
+                                The closing stock inventory (in selling units) for the unique SKU.                                     (Real Number with
+                                See Appendix for more specific details.                                                                 floating decimal)
+
+
+
+MULTICATTM Format Ship-To Identification Record (SID)
+One SID record is required for each unique ship to customer location that received or returned product. This includes retail stores, wholesalers;
+vend operators, manufacturer representatives and employee sales. Please refer to Appendix for some general notes and specific field details.
+                     Required                                                                                                             Technical
+ Size   Columns        Field                                            Master Description                                              Specifications      Justification
+   3       1-3          Yes     Ship To Identification Record Type (SID)                                                               Alphabetic Literal        Full
+
+  8       4-11         Yes      Ship To Customer Number                                                                                 Alphanumeric           LJ/BF
+                                Distributor assigned Customer identification number. All stores for a given chain should share the
+                                same Ship To Customer Number.
+
+  8       12-19        Yes      Ship To Customer Shipping Number                                                                        Alphanumeric           LJ/BF
+                                Distributor assigned Retail Outlet identification number. Each store for a chain should have a
+                                unique Ship To Customer Shipping Number.
+
+  8       20-27      Optional   Ship To Customer Shipping Number Ext                                                                    Alphanumeric           LJ/BF
+                                Use as needed to make a chain store unique when the Customer Shipping Number field is
+                                insufficient.
+
+ 32       28-59        Yes      Ship To Customer Name                                                                                   Alphanumeric           LJ/BF
+                                Specific banner name of the customer receiving shipment. See Appendix for more specific details.
+  8       60-67      Optional   Ship To Customer Store Number                                                                           Alphanumeric           LJ/BF
+                                Chain assigned store number. See Appendix for more specific details.
+
+
+
+ LJ - Left Justify                         RJ – Right Justification                                  BF – Blank Fill                                        ZF – Zero Fill
+MSA Copyright©2019                                                            Page 21                                                          4/2019
+MULTICATTM Tobacco File Programming Specifications
+ 90      68-157        Yes      Ship To Customer Address                                                                               Alphanumeric           LJ/BF
+                                Ship To address of the customer receiving shipment. See Appendix for more specific details.
+
+ 25      158-182       Yes      Ship To Customer City                                                                                  Alphanumeric           LJ/BF
+                                City of the customer receiving shipment. See Appendix for more specific details.
+
+  2      183-184       Yes      Ship To Customer State                                                                                   Alphabetic            Full
+                                State of the customer receiving shipment. See Appendix for more specific details.
+
+  9      185-193       Yes      Ship To Customer Zip Code + 4                                                                          Alphanumeric           LJ/BF
+                                Legal ZIP+4 Code of the customer receiving shipment. If the +4 numbers are not available, leave the
+                                last four positions blank. See Appendix for more specific details.
+
+  3      194-196     Optional   Ship To Customer Country                                                                                 Alphabetic            Full
+                                Country of the customer receiving shipment. If not provided, it will be defaulted to USA.
+
+  2      197-198     Optional   State Tax Jurisdiction                                                                                   Alphabetic            Full
+                                See Appendix for general requirements & Mfg Program Details for specific requirements.
+  3      199-201       N/A      MSA Reserved Field                                                                                      Blank spaces           Full
+ 10      202-211     Optional   Ship To Customer Telephone Number                                                                         Numeric              Full
+                                Telephone number of the customer receiving shipment.
+                                ** For example: 800-555-1212 would be reported as 8005551212.
+
+ 20      212-231       Yes      Ship To Customer Class Of Trade                                                                        Alphanumeric           LJ/BF
+                                Class of trade description of the customer receiving shipment. Some Manufacturer’s require
+                                this field. Refer to the Manufacturer’s Programming Details for specific reporting requirements.
+
+  7      232-238     Optional   Ship To Customer TDLinxTM Number                                                                          Numeric              Full
+                                Trade Dimensions assigned unique store identification number.
+  1        239       Optional   Ship To Customer Cash And Carry Indicator                                                             Alphabetic Literal       Full
+                                Code that indicates whether the customer is a Cash And Carry account.
+                                Y = Yes this is a Cash And Carry Account
+                                N = No this is NOT a Cash And Carry Account (defaults to an N)
+                                See Appendix for more specific details.
+ 16      240-255       N/A      Location Number Reserved field.                                                                        Alphanumeric           LJ/BF
+  2      256-257       N/A      Machine Type Reserved field.                                                                           Alphanumeric           LJ/BF
+  1        258         N/A      MSA Reserved Field                                                                                     Blank spaces            Full
+ 24      259-282     Optional   Bill To Customer Number                                                                                Alphanumeric           LJ/BF
+                                Customer number of the customer to be billed.
+
+ LJ - Left Justify                         RJ – Right Justification                                BF – Blank Fill                                         ZF – Zero Fill
+MSA Copyright©2019                                                           Page 22                                                          4/2019
+MULTICATTM Tobacco File Programming Specifications
+ 24      283-306       N/A      Bill To Customer Group Number Reserved field.                                                          Alphanumeric           LJ/BF
+
+ 32      307-338     Optional   Bill To Customer Name                                                                                  Alphanumeric           LJ/BF
+                                Name of the Customer to be billed.
+ 90      339-428     Optional   Bill To Customer Address                                                                               Alphanumeric           LJ/BF
+                                Address of the customer being billed.
+ 25      429-453     Optional   Bill To Customer City                                                                                  Alphanumeric           LJ/BF
+                                City of the customer to be billed.
+  2      454-455     Optional   Bill To Customer State                                                                                   Alphabetic            Full
+                                State of the Customer to be billed.
+  9      456-464     Optional   Bill To Customer Zip Code + 4                                                                          Alphanumeric           LJ/BF
+                                Legal ZIP+4 Code for the customer to be billed. If the +4 numbers are not available, leave the last
+                                four positions blank
+  3      465-467     Optional   Bill To Customer Country                                                                                 Alphabetic            Full
+                                Country of the customer to be billed.
+  5      468-472       N/A      MSA Reserved Field                                                                                      Blank spaces           Full
+ 10      473-482     Optional   Bill To Customer Telephone Number                                                                         Numeric              Full
+                                Telephone Number for the customer to be billed.
+                                ** For example: 800-555-1212 would be reported as 8005551212.
+
+  5      483-487       N/A      Retailer Product Category Square Feet Reserved field.                                                     Numeric             RJ/ZF
+
+  5      488-492       N/A      Retailer Product Category Linear Feet Reserved field.                                                     Numeric             RJ/ZF
+
+  5      493-497       N/A      Retailer Product Category Running Feet Reserved field.                                                    Numeric             RJ/ZF
+
+  1        498         Yes      Customer Product Promotion Acceptance Identifier                                                      Alphabetic Literal       Full
+                                Some Manufacturer’s require this field. Refer to the Manufacturer’s Programming Details for
+                                specific reporting requirements.
+                                N=No, this account will not accept promotional tobacco product Y=Yes,
+                                this account will accept promotional tobacco product
+ 10      499-508     Optional   Distributor Sales Rep ID #                                                                             Alphanumeric           LJ/BF
+
+ 29      509-537       N/A      MSA Reserved Field                                                                                      Blank spaces           Full
+  3      538-540       N/A      Measure Code 1 Reserved field.                                                                         Numeric Literal         Full
+
+ 11      541-551       N/A      Measure Value 1 Reserved field.                                                                           Numeric             RJ/ZF
+
+
+
+
+ LJ - Left Justify                         RJ – Right Justification                                 BF – Blank Fill                                        ZF – Zero Fill
+MSA Copyright©2019                                                            Page 23                                                         4/2019
+MULTICATTM Tobacco File Programming Specifications
+MULTICATTM Format - Purchase Record (PUR)
+One PUR record is required for each SKU being shipped to a customer. The PUR record contains the quantity information for each unique SKU
+purchased and/or returned by a ship to customer location. Please refer to Appendix for some general notes and specific field details.
+                     Required                                                                                                       Technical
+ Size   Columns        Field                                            Master Description                                        Specifications      Justification
+   3       1-3          Yes     Purchase Record Type (PUR)                                                                       Alphabetic Literal        Full
+
+  8       4-11         Yes      Ship To Customer Number                                                                            Alphanumeric          LJ/BF
+                                Distributor assigned Customer identification number.
+  8       12-19        Yes      Ship To Customer Shipping Number                                                                   Alphanumeric          LJ/BF
+                                Distributor assigned Retail Outlet identification number.
+  8       20-27      Optional   Ship To Customer Shipping Number Ext                                                               Alphanumeric          LJ/BF
+                                Distributor assigned Retail Outlet identification number extension.
+
+
+
+                     Required                                                                                                        Technical
+ Size   Columns        Field                                            Master Description                                         Specification      Justification
+  14     28-41          Yes     Distributor SKU                                                                                    Alphanumeric           RJ/ZF
+                                Unique item code assigned exclusively for each product by the distributor. Used to link the
+                                purchases to this item.
+
+  3       42-44        N/A      MSA Reserved Field                                                                                 Blank spaces           Full
+ 30       45-74      Optional   Invoice number                                                                                     Alphanumeric          LJ/BF
+
+  8       75-82      Optional   Transaction Date                                                                                Date (YYYYMMDD)           Full
+
+ 20      83-102        N/A      MSA Reserved Field                                                                                 Blank spaces           Full
+  3      103-105       Yes      Measure Code 1                                                                                    Numeric Literal         Full
+                                Quantity shipped = 001
+ 11      106-116       Yes      Measure Value 1                                                                                        Numeric           RJ/ZF
+                                Total number of selling units (cartons or sleeves) shipped of a particular SKU to a customer.    (Real Number with
+                                Returns must be reported as a negative. The negative sign must precede the quantity reported.     floating decimal)
+                                See Appendix for more specific details.
+
+  3      117-119     Optional   Measure Code 2                                                                                    Numeric Literal         Full
+                                Dollars Sold – 002
+
+
+
+
+ LJ - Left Justify                         RJ – Right Justification                                   BF – Blank Fill                                 ZF – Zero Fill
+MSA Copyright©2019                                                           Page 24                                                     4/2019
+MULTICATTM Tobacco File Programming Specifications
+ 11      120-130     Optional   Measure Value 2                                                                                                 Numeric            RJ/BF
+                                Total dollar amount charged for a particular SKU to a customer.                                           (Real Number with
+                                                                                                                                           floating decimal)
+
+
+
+
+MULTICATTM Format - Total Record (TOT)
+The TOT record is a single record that provides control total information for validation of the data contained in the previous record types.
+                     Required                                                                                                                Technical         Justification
+ Size   Columns        Field                                                  Master Description                                           Specifications
+   3       1-3          Yes     Total Record Type (TOT)                                                                                   Alphabetic Literal       Full
+  8       4-11         Yes      Distributor ID Number                                                                                       Alphanumeric           Full
+                                Pre-assigned 8 digit identification number to identify distributor shipping location. This information
+                                is supplied during the enrollment process.
+  8       12-19        Yes      End Date of Data In This File                                                                            Date (YYYYMMDD)           Full
+                                Date of the last day in the data period being reported.
+                                ** For example: 20040103 for data week ending on Saturday January 3, 2004.
+
+  9       20-28        Yes      Number of BID Records                                                                                          Numeric            RJ/ZF
+                                Count of all BID records in this data file.
+  9       29-37        Yes      Number of SID Records                                                                                          Numeric            RJ/ZF
+                                Count of all SID records in this data file.
+  9       38-46        Yes      Number of PUR Records                                                                                          Numeric            RJ/ZF
+                                Count of all PUR records in this data file.
+ 40       47-86        N/A      MSA Reserved Field                                                                                          Blank spaces           Full
+
+  3       87-89        Yes      Measure Code 1                                                                                             Numeric Literal         Full
+                                Quantity shipped = 001
+ 15      90-104        Yes      Measure Value 1                                                                                                 Numeric           RJ/ZF
+                                Sum of the Measure Value reported in the PUR record for Measure Code 1 (Quantity shipped).                (Real Number with
+                                                                                                                                           floating decimal)
+  3      105-107     Optional   Measure Code 2                                                                                             Numeric Literal         Full
+                                Dollars Sold = 002
+ 15      108-122     Optional   Measure Value 2                                                                                                 Numeric           RJ/BF
+                                Sum of the Measure Value reported in the PUR record for Measure Code 2 (Dollars Sold)                     (Real Number with
+                                                                                                                                           floating decimal)
+ LJ - Left Justify                          RJ – Right Justification                                BF – Blank Fill                                            ZF – Zero Fill
+MSA Copyright©2019                                                                Page 25                                                         4/2019
+                                          MULTICATTM All Tobacco File Format
+  3      123-125     Yes   Measure Code 3                                                                        Numeric Literal        Full
+                           Inventory = 003
+ 15      126-140     Yes   Measure Value 3                                                                            Numeric          RJ/ZF
+                           Sum of the Measure Value reported in the BID record for Measure Code 1 (Inventory)   (Real Number with
+                                                                                                                 floating decimal)
+
+
+
+
+ LJ - Left Justify                    RJ – Right Justification                             BF – Blank Fill                           ZF – Zero Fill
+MSA Copyright©2019                                                     Page 26                                                        April 2019
+This page left intentionally blank.
+
+
+
+
+      MSA Copyright©2019              Page 27
+

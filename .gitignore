@@ -1,0 +1,59 @@
+# --- secrets / environment ---
+secrets/
+.env
+.env.*
+!.env.example
+*.env
+vegatest1.env.*
+laravel-env-backup-*
+.token
+.upgrade_token
+upgrade-*.php
+auth.json
+*.key
+*.pem
+*_ed25519*
+
+# --- build output / staging ---
+*.zip
+stage/
+stage-up/
+hotfix72/
+dist/
+
+# --- logs, screenshots, local artefacts ---
+*.log
+*.png
+!laravel/public/**/*.png
+docs/pos-screenshots/
+.phpunit.result.cache
+.phpunit.cache/
+
+# --- dependencies ---
+vendor/
+node_modules/
+
+# --- Laravel runtime ---
+laravel/storage/*.key
+laravel/storage/pail
+laravel/public/build
+laravel/public/hot
+laravel/public/storage
+*.sqlite
+*.sqlite-journal
+*.sqlite3
+
+# --- editors / OS ---
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# storage: keep only the .gitignore placeholders
+laravel/storage/**
+!laravel/storage/**/
+!laravel/storage/**/.gitignore
+laravel/bootstrap/cache/*
+!laravel/bootstrap/cache/.gitignore
+.deploy-secret
+secrets/client_id

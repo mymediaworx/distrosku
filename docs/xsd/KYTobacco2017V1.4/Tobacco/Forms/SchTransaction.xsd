@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2017 (x64) (http://www.altova.com) by State of Nebraska - Department of Revenue (WSCA-NE Dept of Revenue) -->
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0">
+	<xsd:include schemaLocation="../TobaccoeFileTypes.xsd"/>
+	<xsd:include schemaLocation="../../CommonSO/efileTypes.xsd"/>
+	<xsd:include schemaLocation="../../CommonSO/StateeFileTypes.xsd"/>
+	<xsd:annotation>
+		<xsd:documentation>
+			<Description>Uniform Transaction Schedule</Description>
+			<MaturityLevel>Draft Release</MaturityLevel>
+			<ReleaseDate>April 1, 2013</ReleaseDate>
+		</xsd:documentation>
+	</xsd:annotation>
+	<xsd:element name="SchTransaction">
+		<xsd:annotation>
+			<xsd:documentation>Uniform Transaction Schedule</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:choice>
+				<xsd:element name="Schedule" type="TransactionScheduleType" maxOccurs="unbounded"/>
+				<xsd:element name="NoTransactions" type="CheckboxType"/>
+			</xsd:choice>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:complexType name="TransactionScheduleType">
+		<xsd:sequence>
+			<xsd:element name="TypeOfSchedule" type="TobScheduleType">
+				<xsd:annotation>
+					<xsd:documentation>Schedules of Receipts and Schedules of Disbursements</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="TransactionDocument" type="InvoiceType" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<!--Delivery Service Type-->
+	<xsd:complexType name="DeliveryServiceType">
+		<xsd:annotation>
+			<xsd:documentation>Identification of the delivery service used</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="Name" type="BusinessNameType">
+				<xsd:annotation>
+					<xsd:documentation>Name of delivery service</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="EIN" type="EINType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Federal Employer Identificaton Number of delivery service</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Address" type="TobAddressType">
+				<xsd:annotation>
+					<xsd:documentation>Address of delivery service</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Phone" type="PhoneNumberType">
+				<xsd:annotation>
+					<xsd:documentation>Phone number of delivery service</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<!--Invoice Type-->
+	<xsd:complexType name="InvoiceType">
+		<xsd:annotation>
+			<xsd:documentation>Used to identify who tobacco was purchased from or sold to</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="Date" type="DateType">
+				<xsd:annotation>
+					<xsd:documentation>Invoice date</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="TypeOfTransDoc" type="TobTransDocumentType">
+				<xsd:annotation>
+					<xsd:documentation>Type of transaction document</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="DocNumber" type="String20Type" minOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Document number</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="TypeOfCustomer" type="TobTypeOfCustomerType">
+				<xsd:annotation>
+					<xsd:documentation>Type of entity sold to or purchased from</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Name" type="BusinessNameType">
+				<xsd:annotation>
+					<xsd:documentation>Name of entity sold to or purchased from</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Address" type="TobAddressType" maxOccurs="4">
+				<xsd:annotation>
+					<xsd:documentation>Address of entity sold to or purchased from</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="EIN" type="EINType">
+				<xsd:annotation>
+					<xsd:documentation>Federal Employer Identification Number for entity sold to or purchased from</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="StateEIN" type="String20Type">
+				<xsd:annotation>
+					<xsd:documentation>State Identification Number for entity sold to or purchased from</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="CustomerID" type="String35Type" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Customer Identification Number for entity sold to or purchased from</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Transactions" type="TobInventoryType" maxOccurs="unbounded"/>
+			<!-- Is this is needed for the PA-1 form -->
+			<xsd:element name="DeliveryService" type="DeliveryServiceType" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+</xsd:schema>
