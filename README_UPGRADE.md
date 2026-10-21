@@ -1,7 +1,16 @@
-# Vega ERP — Phase 19.4 UPGRADE (existing install at vegatest1.distrosku.com)
+# Vega ERP — Phase 19.5 UPGRADE (existing install at vegatest1.distrosku.com)
 
 For a site already installed from `vega-erp-phase1.zip` and upgraded through phase 3 (a phase-2 site can also take this zip: seeders are cumulative). TEST data only. No secrets in this package.
 This zip contains **no `laravel/.env` and no `laravel/storage/`**, so extracting it over the live site keeps both.
+
+## What's new in 0.19.5 (includes everything through 0.19.4)
+
+- **Fix: POS ship-to blank.** Picking a customer on the POS now always selects a ship-to: the default one, else the only / oldest one. A ship-to that does not belong to the selected customer (left over from a saved cart, a recalled held sale or a stale screen) is replaced instead of showing blank.
+- If the customer has **no ship-to at all**, the POS shows **"No ship-to: add one"** with a link to the customer page (Ship-to addresses tab). Customers created in the admin or by import only get a billing address; a ship-to is a separate record.
+- The ship-to can still be changed from the list; the default is marked "(default)" and listed first.
+- **Van sale** (driver app) picks the default ship-to (it used to take an arbitrary one), always shows the ship-to, and shows "No ship-to" when there is none.
+- **Portal** opens on the customer's default ship-to (it used to take the first by name).
+- No migration in this release.
 
 ## What's new in 0.19.4 (includes everything through 0.19.3)
 - **Counter pickup is the default fulfillment.** New field **Fulfillment** on every ship-to (Counter pickup / Delivery (route)) and on every order (Counter pickup / Delivery / Ship).

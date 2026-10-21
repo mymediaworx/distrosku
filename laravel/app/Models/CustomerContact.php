@@ -37,7 +37,7 @@ class CustomerContact extends Authenticatable
     /** Ship-tos this contact may order for (the restricted one, or all of the customer's). */
     public function allowedShipTos()
     {
-        return ShipTo::where('customer_id', $this->customer_id)->when($this->ship_to_id, fn ($q) => $q->where('id', $this->ship_to_id))->orderBy('name')->get();
+        return ShipTo::where('customer_id', $this->customer_id)->when($this->ship_to_id, fn ($q) => $q->where('id', $this->ship_to_id))->orderByDesc('is_default')->orderBy('name')->get();
     }
 
     /** Issue a new one-time set-password link (invalidates any previous link). Returns the full URL to show the admin. */

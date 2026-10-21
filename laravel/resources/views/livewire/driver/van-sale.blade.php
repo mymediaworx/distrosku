@@ -4,7 +4,10 @@
         <select wire:model.live="vanId" data-test="van">@forelse($vans as $v)<option value="{{ $v->id }}">{{ $v->name }}</option>@empty<option value="">No van warehouse set up</option>@endforelse</select>
         <label>Customer</label>
         <select wire:model.live="customerId" data-test="customer"><option value="">Choose…</option>@foreach($customers as $c)<option value="{{ $c->id }}">{{ $c->name }} ({{ $c->terms }})</option>@endforeach</select>
-        @if($shipTos->count() > 1)<label>Ship-to</label><select wire:model.live="shipToId">@foreach($shipTos as $s)<option value="{{ $s->id }}">{{ $s->name }} · {{ $s->city }}</option>@endforeach</select>@endif
+        @if($customerId)<label>Ship-to</label>
+            @if($shipTos->isEmpty())<p class="err" data-test="no-ship-to">No ship-to: add one on the customer page in the office app.</p>
+            @else<select wire:model.live="shipToId" data-test="ship-to">@foreach($shipTos as $s)<option value="{{ $s->id }}">{{ $s->name }}{{ $s->is_default ? ' (default)' : '' }} · {{ $s->city }}</option>@endforeach</select>@endif
+        @endif
     </div>
     <div class="card"><form wire:submit="add" style="display:flex;gap:.5rem"><input wire:model="scan" placeholder="Scan or type UPC / SKU / name" autofocus><button style="width:auto">Add</button></form>
         <table class="tbl" style="margin-top:.5rem">

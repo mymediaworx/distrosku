@@ -85,13 +85,13 @@ class CounterPos extends Component
     {
         $cash = Customer::where('code', 'CASH')->first() ?? Customer::first();
         $this->customerId = $cash?->id;
-        $this->shipToId = $cash?->defaultShipTo()?->id;
+        $this->shipToId = $cash?->resolveShipToId();
         $this->warehouseId = Warehouse::where('code', 'MAIN')->value('id') ?? Warehouse::value('id');
         // 0.14.1: an in-progress sale survives the idle lock / employee switch (kept in this terminal's session).
         if ($held = session('pos_cart')) {
             $this->cart = $held['cart'] ?? [];
             $this->customerId = $held['customerId'] ?? $this->customerId;
-            $this->shipToId = $held['shipToId'] ?? $this->shipToId;
+            $this->shipToId = Customer::find($this->customerId)?->resolveShipToId($held['shipToId'] ?? null);
             $this->tender = $held['tender'] ?? $this->tender;
             $this->notes = $held['notes'] ?? '';
             if ($this->cart) {
@@ -159,13 +159,14 @@ class CounterPos extends Component
 
     public function updatedCustomerId(): void
     {
-        $this->shipToId = Customer::find($this->customerId)?->defaultShipTo()?->id;
+        $this->shipToId = Customer::find($this->customerId)?->resolveShipToId();
         $this->reprice(true);
         $this->recheck();
     }
 
     public function updatedShipToId(): void
     {
+        $this->shipToId = Customer::find($this->customerId)?->resolveShipToId($this->shipToId ?: null);
         $this->recheck();
     }
 
@@ -336,7 +337,7 @@ class CounterPos extends Component
         $this->resetSignature();
         $cash = Customer::where('code', 'CASH')->first() ?? Customer::first();
         $this->customerId = $cash?->id;
-        $this->shipToId = $cash?->defaultShipTo()?->id;
+        $this->shipToId = $cash?->resolveShipToId();
     }
 
     public function getHeldSalesProperty()
@@ -364,7 +365,7 @@ class CounterPos extends Component
             return;
         }
         $this->customerId = $h->customer_id ?? $this->customerId;
-        $this->shipToId = $h->ship_to_id ?? Customer::find($this->customerId)?->defaultShipTo()?->id;
+        $this->shipToId = Customer::find($this->customerId)?->resolveShipToId($h->ship_to_id);
         $this->tender = $h->tender ?: $this->tender;
         $this->notes = (string) $h->notes;
         $this->cart = array_map(fn ($l) => $l + ['reasons' => []], array_values(array_filter($h->cart ?? [], fn ($l) => Product::whereKey($l['product_id'] ?? 0)->where('active', true)->exists())));
@@ -543,7 +544,8 @@ class CounterPos extends Component
     {
         return view('livewire.counter-pos', [
             'customers' => Customer::where('active', true)->orderBy('name')->get(['id', 'name']),
-            'shipTos' => ShipTo::where('customer_id', $this->customerId)->get(),
+            'shipTos' => ShipTo::where('customer_id', $this->customerId)->orderByDesc('is_default')->orderBy('name')->get(),
+            'addShipToUrl' => $this->customerId ? \App\Filament\Resources\CustomerResource::getUrl('edit', ['record' => $this->customerId]) : null,
             'warehouses' => Warehouse::where('active', true)->get(),
             'operator' => auth()->user()?->name,
             'pinSession' => (bool) session(PosPin::SESSION_USER),

@@ -57,7 +57,7 @@ class VanSale extends Component
 
     public function updatedCustomerId(): void
     {
-        $this->shipToId = ShipTo::where('customer_id', $this->customerId)->value('id');
+        $this->shipToId = \App\Models\Customer::find($this->customerId)?->resolveShipToId();
         $this->reprice();
         $this->resetSignature();
     }
@@ -145,7 +145,7 @@ class VanSale extends Component
 
         return view('livewire.driver.van-sale', [
             'vans' => $this->vans()->get(), 'customers' => Customer::where('active', true)->orderBy('name')->get(['id', 'name', 'terms']),
-            'shipTos' => ShipTo::where('customer_id', $this->customerId)->get(), 'stock' => $stock, 'needsSig' => $needs && $c,
+            'shipTos' => ShipTo::where('customer_id', $this->customerId)->orderByDesc('is_default')->orderBy('name')->get(), 'stock' => $stock, 'needsSig' => $needs && $c,
             'acks' => $needs && $c ? $sig->acknowledgments($c->name, $this->total, $this->tender === 'account') : [],
         ]);
     }

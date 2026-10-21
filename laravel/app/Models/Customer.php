@@ -81,6 +81,19 @@ class Customer extends Model
         return $this->shipTos()->orderByDesc('is_default')->orderBy('id')->first();
     }
 
+    /**
+     * 0.19.5: the ship-to a POS / van / portal screen should show for this customer: the current pick if it
+     * still belongs to this customer, else the default, else the only / oldest one. Null when there are none.
+     */
+    public function resolveShipToId(int|string|null $current = null): ?int
+    {
+        if ($current && $this->shipTos()->whereKey((int) $current)->exists()) {
+            return (int) $current;
+        }
+
+        return $this->defaultShipTo()?->id;
+    }
+
     public function licenses()
     {
         return $this->hasMany(CustomerLicense::class);

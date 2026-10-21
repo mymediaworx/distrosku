@@ -41,7 +41,7 @@ case "$PHASE" in
   17.2) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
   17.3) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
   18) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
-  19|19.1|19.2|19.3|19.4) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
+  19|19.1|19.2|19.3|19.4|19.5) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
   18.2) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
   18.1) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
   *) echo "No seeder list for phase $PHASE"; exit 1 ;;
@@ -238,6 +238,30 @@ if [ "$PHASE" = "13" ]; then
       | cmp -s - $L/resources/ky-edi/KYTobacco2017V1.5-local/Documents/LOCAL-PATCH.lines || { echo "CHECK FAILED: tobacco XSD differs from docs/xsd beyond the documented patch"; exit 1; }
   fi
   echo "Phase 13 checks OK"
+fi
+if [ "$PHASE" = "19.5" ]; then
+  L=stage-up/laravel
+  for f in database/migrations/2026_11_12_000001_phase191_marketing_inbound.php database/migrations/2026_11_11_000001_phase19_overrides_ghl.php \
+           database/migrations/2026_11_13_000001_phase192_marketing_oneway.php app/Marketing/MarketingFields.php database/migrations/2026_11_14_000001_phase193_ship_to_default.php app/Filament/Resources/CustomerResource/RelationManagers/ShipTosRelationManager.php database/migrations/2026_11_14_000002_phase193_pos_held_sales.php app/Models/PosHeldSale.php database/migrations/2026_11_15_000001_phase194_counter_pickup_default.php app/Pricing/PricingEngine.php; do
+    test -f $L/$f || { echo "CHECK FAILED: $f missing"; exit 1; }
+  done
+  test -f $L/vendor/livewire/livewire/dist/livewire.min.js || { echo "CHECK FAILED: livewire dist missing"; exit 1; }
+  grep -q "'version' => '0.19.5'" $L/config/erp.php || { echo "CHECK FAILED: erp version is not 0.19.5"; exit 1; }
+  [ "$(ls $L/database/migrations | tail -1)" = "2026_11_15_000001_phase194_counter_pickup_default.php" ] || { echo "CHECK FAILED: last migration is not 19.4"; exit 1; }
+  grep -q "'enabled' => false, 'verify_with_counsel' => false" $L/database/migrations/2026_11_09_000001_phase181_ky_hemp_registry.php || { echo "CHECK FAILED: KY registry rule must seed disabled"; exit 1; }
+  ! has_val "$CLIENT_ID" $L/app $L/config $L/database $L/resources || { echo "CHECK FAILED: client MSA ID in package"; exit 1; }
+  ! grep -rqi "highlevel\|gohighlevel" $L/resources/views || { echo "CHECK FAILED: vendor name in UI"; exit 1; }
+  if [ -f secrets/ghl.env ]; then
+    PIT=$(sed -n 's/^GHL_PIT=//p' secrets/ghl.env | tr -d '\r\n')
+    [ -n "$PIT" ] && grep -rqF "$PIT" stage-up && { echo "CHECK FAILED: marketing token found in package"; exit 1; }
+  fi
+  for f in app/Marketing/MarketingInbound.php app/Http/Controllers/MarketingWebhookController.php app/Filament/Pages/MarketingInboundPage.php; do
+    test ! -f $L/$f || { echo "CHECK FAILED: inbound sync file $f still shipped"; exit 1; }
+  done
+  ! grep -q "hooks/marketing\|marketing:pull" $L/routes/web.php $L/routes/console.php || { echo "CHECK FAILED: inbound route/schedule still present"; exit 1; }
+  ! has_val "$GHL_LOC" $L/app $L/config $L/database $L/resources $L/routes || { echo "CHECK FAILED: live location id in package"; exit 1; }
+  grep -q "resolveShipToId" $L/app/Livewire/CounterPos.php $L/app/Livewire/Driver/VanSale.php || { echo "CHECK FAILED: ship-to fix missing"; exit 1; }
+  echo "Phase 19.5 checks OK"
 fi
 if [ "$PHASE" = "19.4" ]; then
   L=stage-up/laravel
