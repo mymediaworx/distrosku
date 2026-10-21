@@ -75,6 +75,12 @@ class Customer extends Model
         return $this->hasMany(ShipTo::class);
     }
 
+    /** 0.19.3: the default ship-to (falls back to the oldest). */
+    public function defaultShipTo(): ?ShipTo
+    {
+        return $this->shipTos()->orderByDesc('is_default')->orderBy('id')->first();
+    }
+
     public function licenses()
     {
         return $this->hasMany(CustomerLicense::class);

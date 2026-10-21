@@ -29,6 +29,14 @@ class ShipToResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Select::make('customer_id')->relationship('customer', 'name')->searchable()->preload()->required(),
+                ...static::addressFields(),
+            ]);
+    }
+
+    /** 0.19.3: shared by this resource and the Customer > Ship-to addresses tab. */
+    public static function addressFields(): array
+    {
+        return [
                 Forms\Components\TextInput::make('name')
                     ->required(),
                 Forms\Components\TextInput::make('address'),
@@ -49,7 +57,15 @@ class ShipToResource extends Resource
                     Forms\Components\TextInput::make('msa_tdlinx')->label('TDLinx #')->maxLength(7),
                     Forms\Components\Toggle::make('msa_cash_and_carry')->label('Cash and carry'),
                 ])->columns(5),
-            ]);
+                Forms\Components\Toggle::make('is_default')->label('Default ship-to')
+                    ->helperText('Used first on new orders, POS and marketing. Only one per customer.'),
+        ];
+    }
+
+    /** 0.19.3: ship-tos are managed on the customer page; this list stays reachable by URL but is not in the menu. */
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
     }
 
     public static function table(Table $table): Table
@@ -70,6 +86,7 @@ class ShipToResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('zip')
                     ->searchable(),
+                Tables\Columns\IconColumn::make('is_default')->label('Default')->boolean(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -83,13 +100,11 @@ class ShipToResource extends Resource
                 //
             ])
             ->actions([
+                Tables\Actions\Action::make('customer')->label('Open customer')->icon('heroicon-o-user')
+                    ->url(fn (ShipTo $r) => CustomerResource::getUrl('edit', ['record' => $r->customer_id])),
                 Tables\Actions\EditAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
-            ]);
+            ->bulkActions([]);
     }
 
     public static function getRelations(): array

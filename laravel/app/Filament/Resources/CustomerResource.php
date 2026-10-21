@@ -168,6 +168,7 @@ class CustomerResource extends Resource
     public static function getRelations(): array
     {
         return [
+            CustomerResource\RelationManagers\ShipTosRelationManager::class,
             CustomerResource\RelationManagers\ContactsRelationManager::class,
             HistoryRelationManager::class,
         ];

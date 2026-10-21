@@ -54,7 +54,7 @@ class CounterPos extends Component
     {
         $cash = Customer::where('code', 'CASH')->first() ?? Customer::first();
         $this->customerId = $cash?->id;
-        $this->shipToId = $cash?->shipTos()->value('id');
+        $this->shipToId = $cash?->defaultShipTo()?->id;
         $this->warehouseId = Warehouse::where('code', 'MAIN')->value('id') ?? Warehouse::value('id');
         // 0.14.1: an in-progress sale survives the idle lock / employee switch (kept in this terminal's session).
         if ($held = session('pos_cart')) {

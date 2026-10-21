@@ -1,7 +1,14 @@
-# Vega ERP — Phase 19.2 UPGRADE (existing install at vegatest1.distrosku.com)
+# Vega ERP — Phase 19.3 UPGRADE (existing install at vegatest1.distrosku.com)
 
 For a site already installed from `vega-erp-phase1.zip` and upgraded through phase 3 (a phase-2 site can also take this zip: seeders are cumulative). TEST data only. No secrets in this package.
 This zip contains **no `laravel/.env` and no `laravel/storage/`**, so extracting it over the live site keeps both.
+
+## What's new in 0.19.3 (includes everything through 0.19.2)
+- **Ship-to addresses now live on the customer page.** *Customers > (customer) > Ship-to addresses* tab: add, edit and delete ship-tos inline with all fields (address, city, **county**, state, zip, delivery days, route, phone, MSA fields) and a licenses count. **Default ship-to**: one per customer (the first is default automatically; **Make default** on any row). New orders, POS and marketing use the default.
+- *Ship Tos* is gone from the menu; the old screen still opens by URL and has an **Open customer** button. Bulk delete removed there.
+- A ship-to used on orders cannot be deleted (message shown).
+- Permissions unchanged (Sales view/manage; Warehouse/Driver none; full roles all).
+- Migration `2026_11_14_000001_phase193_ship_to_default` (adds the default flag and sets each customer's oldest ship-to as default; re-runnable). Run the upgrade page as usual.
 
 ## What's new in 0.19.2 (includes everything through 0.19.1)
 - **BrandWorx Marketing sync is ONE-WAY: ERP -> Marketing.** The 0.19.1 inbound pull, Preview/Sync-now page, Leads list and `/hooks/marketing` webhook are removed (the migration drops `marketing_leads` and the old inbound settings; re-runnable).

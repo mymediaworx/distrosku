@@ -62,7 +62,7 @@ class MarketingSync
 
     public static function tags(Customer $c): array
     {
-        $st = $c->shipTos()->orderBy('id')->first();
+        $st = $c->defaultShipTo();
         $t = ['vega', 'type:'.Str::slug((string) $c->type)];
         if ($st?->state) {
             $t[] = 'state:'.strtolower($st->state);
@@ -76,7 +76,7 @@ class MarketingSync
 
     public static function contactPayload(Customer $c): array
     {
-        $st = $c->shipTos()->orderBy('id')->first();
+        $st = $c->defaultShipTo();
         $p = array_filter([
             'name' => $c->name, 'companyName' => $c->name, 'email' => $c->email ?: null, 'phone' => $c->phone ?: null,
             'address1' => $st?->address, 'city' => $st?->city, 'state' => $st?->state, 'postalCode' => $st?->zip,
