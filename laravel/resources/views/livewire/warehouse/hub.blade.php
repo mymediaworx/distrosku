@@ -1,11 +1,53 @@
 <div>
-    <div class="card"><a href="{{ route('wh.putaway') }}"><button>Put-away ({{ $putaway }} open)</button></a></div>
-    <div class="card"><h3>Receive against a PO</h3>
-        <table class="tbl">@forelse($pos as $po)<tr><td>{{ $po->number }}</td><td>{{ $po->vendor->name }}</td><td><span class="pill">{{ $po->status }}</span></td><td>{{ $po->expected_at?->format('M j') }}</td><td>{!! \App\Purchasing\InboundTracking::html($po) !!}</td><td><a href="{{ route('wh.receive', $po) }}">Scan receive</a></td></tr>@empty<tr><td>No open POs.</td></tr>@endforelse</table></div>
-    <div class="card"><h3>Pick (confirmed orders)</h3>
-        <table class="tbl">@forelse($toPick as $so)<tr><td>{{ $so->number }}</td><td>{{ $so->customer->name }}</td><td><a href="{{ route('wh.pick', $so) }}">Scan pick</a></td><td><a href="{{ route('wh.print.pick', $so) }}" target="_blank">Print pick list</a></td></tr>@empty<tr><td>Nothing to pick.</td></tr>@endforelse</table></div>
-    <div class="card"><h3>Counts in progress</h3>
-        <table class="tbl">@forelse($counts as $c)<tr><td>{{ $c->number }}</td><td>{{ $c->warehouse->code }} · {{ $c->type }}@if($c->blind) · blind @endif</td><td><a href="{{ route('wh.count', $c) }}">Scan count</a></td></tr>@empty<tr><td>No open counts.</td></tr>@endforelse</table></div>
-    <div class="card"><h3>Pack (picked)</h3>
-        <table class="tbl">@forelse($toPack as $pl)<tr><td>{{ $pl->number }}</td><td>{{ $pl->salesOrder->number }} · {{ $pl->salesOrder->customer->name }}</td><td><a href="{{ route('wh.pack', $pl->salesOrder) }}">Scan pack</a></td></tr>@empty<tr><td>Nothing to pack.</td></tr>@endforelse</table></div>
+    {{-- One card per document with full-size buttons: these screens are used one-handed on handhelds, often with gloves. --}}
+    <div class="card"><a class="btn wide" href="{{ route('wh.putaway') }}" data-test="putaway">Put-away ({{ $putaway }} open)</a></div>
+
+    <section class="card"><h2>Receive against a PO</h2>
+        @forelse($pos as $po)
+            <div class="item" data-test="hub-po">
+                <div class="meta"><strong>{{ $po->number }}</strong> <span class="pill">{{ $po->status }}</span>
+                    <span class="sub">{{ $po->vendor->name }}</span>
+                    @php($track = \App\Purchasing\InboundTracking::html($po))
+                    @if($po->expected_at || $track)<span class="sub small">@if($po->expected_at)Expected {{ $po->expected_at->format('M j') }}@endif @if($po->expected_at && $track) · @endif{!! $track !!}</span>@endif
+                </div>
+                <div class="acts"><a class="btn" href="{{ route('wh.receive', $po) }}">Scan receive</a></div>
+            </div>
+        @empty
+            <p class="none">No open POs.</p>
+        @endforelse
+    </section>
+
+    <section class="card"><h2>Pick (confirmed orders)</h2>
+        @forelse($toPick as $so)
+            <div class="item" data-test="hub-pick">
+                <div class="meta"><strong>{{ $so->number }}</strong><span class="sub">{{ $so->customer->name }}</span></div>
+                <div class="acts"><a class="btn" href="{{ route('wh.pick', $so) }}">Scan pick</a>
+                    <a class="btn sec" href="{{ route('wh.print.pick', $so) }}" target="_blank">Print pick list</a></div>
+            </div>
+        @empty
+            <p class="none">Nothing to pick.</p>
+        @endforelse
+    </section>
+
+    <section class="card"><h2>Counts in progress</h2>
+        @forelse($counts as $c)
+            <div class="item">
+                <div class="meta"><strong>{{ $c->number }}</strong><span class="sub">{{ $c->warehouse->code }} · {{ $c->type }}@if($c->blind) · blind @endif</span></div>
+                <div class="acts"><a class="btn" href="{{ route('wh.count', $c) }}">Scan count</a></div>
+            </div>
+        @empty
+            <p class="none">No open counts.</p>
+        @endforelse
+    </section>
+
+    <section class="card"><h2>Pack (picked)</h2>
+        @forelse($toPack as $pl)
+            <div class="item">
+                <div class="meta"><strong>{{ $pl->number }}</strong><span class="sub">{{ $pl->salesOrder->number }} · {{ $pl->salesOrder->customer->name }}</span></div>
+                <div class="acts"><a class="btn" href="{{ route('wh.pack', $pl->salesOrder) }}">Scan pack</a></div>
+            </div>
+        @empty
+            <p class="none">Nothing to pack.</p>
+        @endforelse
+    </section>
 </div>
