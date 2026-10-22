@@ -87,60 +87,63 @@ class PurchaseOrderResource extends Resource
         return $table->defaultSort('id', 'desc')
             ->columns([
                 Tables\Columns\TextColumn::make('number')->searchable(),
-                Tables\Columns\TextColumn::make('vendor.name')->searchable()->wrap(),
+                Tables\Columns\TextColumn::make('vendor.name')->searchable()->wrap()->extraAttributes(['style' => 'min-width:12rem']), // UI audit #7: wraps to 2 lines, not 4
                 Tables\Columns\TextColumn::make('status')->badge(),
                 Tables\Columns\TextColumn::make('total')->money('USD'),
-                Tables\Columns\TextColumn::make('order_date')->date()->toggleable(),
-                Tables\Columns\TextColumn::make('warehouse.code')->label('WH')->toggleable(),
-                Tables\Columns\TextColumn::make('expected_at')->label('Expected')->date()->sortable()->toggleable(),
-                Tables\Columns\TextColumn::make('track')->label('Tracking')->html()->toggleable()
+                Tables\Columns\TextColumn::make('order_date')->date()->toggleable()->visibleFrom('md'),
+                Tables\Columns\TextColumn::make('warehouse.code')->label('WH')->toggleable()->visibleFrom('lg'),
+                Tables\Columns\TextColumn::make('expected_at')->label('Expected')->date()->sortable()->toggleable()->visibleFrom('sm'),
+                Tables\Columns\TextColumn::make('track')->label('Tracking')->html()->toggleable()->visibleFrom('lg')
                     ->getStateUsing(fn (PurchaseOrder $r) => trim((\App\Purchasing\InboundTracking::carrierLabel($r) ?? '').' '.\App\Purchasing\InboundTracking::html($r))),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
-                \App\Filament\Support\UpdateTrackingAction::table(),
-                Tables\Actions\Action::make('scanReceive')->label('Scan receive')->icon('heroicon-o-qr-code')
-                    ->visible(fn (PurchaseOrder $r) => in_array($r->status, ['draft', 'ordered', 'partial'], true) && auth()->user()->canModule('warehouse_scan', 'manage'))
-                    ->url(fn (PurchaseOrder $r) => route('wh.receive', $r)),
-                Tables\Actions\Action::make('bill')->label('Create bill')->icon('heroicon-o-document-text')
-                    ->visible(fn (PurchaseOrder $r) => auth()->user()->canModule('ap', 'manage')
-                        && $r->lines()->whereColumn('qty_billed', '<', 'qty_received')->exists())
-                    ->modalDescription('Creates a DRAFT vendor bill for everything received and not yet billed, at PO cost. Adjust quantities/costs to the vendor invoice; differences are flagged by the 3-way match.')
-                    ->form([
-                        Forms\Components\TextInput::make('vendor_invoice')->label('Vendor invoice #'),
-                        Forms\Components\DatePicker::make('bill_date')->default(now())->required(),
-                        Forms\Components\TextInput::make('terms_days')->label('Due in (days)')->integer()->default(30)->required(),
-                    ])
-                    ->action(function (PurchaseOrder $r, array $data) {
-                        try {
-                            $b = app(ApService::class)->draftFromPurchaseOrder($r, $data['vendor_invoice'] ?? null, $data['bill_date'], (int) $data['terms_days']);
+                // UI audit #7: secondary row actions in one menu so the vendor column isn't squeezed.
+                Tables\Actions\ActionGroup::make([
+                    \App\Filament\Support\UpdateTrackingAction::table(),
+                    Tables\Actions\Action::make('scanReceive')->label('Scan receive')->icon('heroicon-o-qr-code')
+                        ->visible(fn (PurchaseOrder $r) => in_array($r->status, ['draft', 'ordered', 'partial'], true) && auth()->user()->canModule('warehouse_scan', 'manage'))
+                        ->url(fn (PurchaseOrder $r) => route('wh.receive', $r)),
+                    Tables\Actions\Action::make('bill')->label('Create bill')->icon('heroicon-o-document-text')
+                        ->visible(fn (PurchaseOrder $r) => auth()->user()->canModule('ap', 'manage')
+                            && $r->lines()->whereColumn('qty_billed', '<', 'qty_received')->exists())
+                        ->modalDescription('Creates a DRAFT vendor bill for everything received and not yet billed, at PO cost. Adjust quantities/costs to the vendor invoice; differences are flagged by the 3-way match.')
+                        ->form([
+                            Forms\Components\TextInput::make('vendor_invoice')->label('Vendor invoice #'),
+                            Forms\Components\DatePicker::make('bill_date')->default(now())->required(),
+                            Forms\Components\TextInput::make('terms_days')->label('Due in (days)')->integer()->default(30)->required(),
+                        ])
+                        ->action(function (PurchaseOrder $r, array $data) {
+                            try {
+                                $b = app(ApService::class)->draftFromPurchaseOrder($r, $data['vendor_invoice'] ?? null, $data['bill_date'], (int) $data['terms_days']);
 
-                            return redirect(VendorBillResource::getUrl('edit', ['record' => $b]));
-                        } catch (Throwable $e) {
-                            Notification::make()->danger()->title('No bill created')->body($e->getMessage())->persistent()->send();
-                        }
-                    }),
-                Tables\Actions\Action::make('receive')->label('Receive')->icon('heroicon-o-inbox-arrow-down')
-                    ->modalDescription('Enter quantities received now (partial receipts allowed). Posts Dr Inventory / Cr 2050 Received Not Billed (cleared by the vendor bill), and KY excise on untaxed snuff/chew from non-KY-licensed vendors.')
-                    ->visible(fn (PurchaseOrder $r) => in_array($r->status, ['draft', 'ordered', 'partial'], true) && auth()->user()->canModule('purchase_orders', 'receive'))
-                    ->form(fn (PurchaseOrder $r) => $r->lines()->with('product')->get()
-                        ->filter(fn ($l) => bccomp($l->qty, $l->qty_received, 4) > 0)
-                        ->map(fn ($l) => Forms\Components\TextInput::make("q{$l->id}")
-                            ->label("{$l->product->sku} {$l->product->name} (open ".rtrim(rtrim(bcsub($l->qty, $l->qty_received, 4), '0'), '.').')')
-                            ->numeric()->minValue(0)->default(bcsub($l->qty, $l->qty_received, 4)))
-                        ->values()->all())
-                    ->action(function (PurchaseOrder $r, array $data) {
-                        $q = [];
-                        foreach ($data as $k => $v) {
-                            $q[(int) substr($k, 1)] = $v === null || $v === '' ? 0 : $v;
-                        }
-                        try {
-                            app(PurchaseOrderService::class)->receive($r, $q);
-                            Notification::make()->success()->title("PO {$r->number}: ".$r->fresh()->status)->send();
-                        } catch (Throwable $e) {
-                            Notification::make()->danger()->title('Not received')->body($e->getMessage())->persistent()->send();
-                        }
-                    }),
+                                return redirect(VendorBillResource::getUrl('edit', ['record' => $b]));
+                            } catch (Throwable $e) {
+                                Notification::make()->danger()->title('No bill created')->body($e->getMessage())->persistent()->send();
+                            }
+                        }),
+                    Tables\Actions\Action::make('receive')->label('Receive')->icon('heroicon-o-inbox-arrow-down')
+                        ->modalDescription('Enter quantities received now (partial receipts allowed). Posts Dr Inventory / Cr 2050 Received Not Billed (cleared by the vendor bill), and KY excise on untaxed snuff/chew from non-KY-licensed vendors.')
+                        ->visible(fn (PurchaseOrder $r) => in_array($r->status, ['draft', 'ordered', 'partial'], true) && auth()->user()->canModule('purchase_orders', 'receive'))
+                        ->form(fn (PurchaseOrder $r) => $r->lines()->with('product')->get()
+                            ->filter(fn ($l) => bccomp($l->qty, $l->qty_received, 4) > 0)
+                            ->map(fn ($l) => Forms\Components\TextInput::make("q{$l->id}")
+                                ->label("{$l->product->sku} {$l->product->name} (open ".rtrim(rtrim(bcsub($l->qty, $l->qty_received, 4), '0'), '.').')')
+                                ->numeric()->minValue(0)->default(bcsub($l->qty, $l->qty_received, 4)))
+                            ->values()->all())
+                        ->action(function (PurchaseOrder $r, array $data) {
+                            $q = [];
+                            foreach ($data as $k => $v) {
+                                $q[(int) substr($k, 1)] = $v === null || $v === '' ? 0 : $v;
+                            }
+                            try {
+                                app(PurchaseOrderService::class)->receive($r, $q);
+                                Notification::make()->success()->title("PO {$r->number}: ".$r->fresh()->status)->send();
+                            } catch (Throwable $e) {
+                                Notification::make()->danger()->title('Not received')->body($e->getMessage())->persistent()->send();
+                            }
+                        }),
+                ]),
             ]);
     }
 

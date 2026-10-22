@@ -164,41 +164,46 @@ class ProductResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\ImageColumn::make('image_path')->label('')->disk('public')->width(60)->height(60)
+                Tables\Columns\ImageColumn::make('image_path')->label('')->disk('public')->width(60)->height(60)->visibleFrom('sm') // UI audit #7: phones show SKU, name, price
                     ->extraImgAttributes(['style' => 'object-fit:contain;width:60px;height:60px;background:#f1f5f9;border-radius:4px']),
-                Tables\Columns\TextColumn::make('department.name')->label('Dept')->sortable()->toggleable(),
+                Tables\Columns\TextColumn::make('department.name')->label('Dept')->sortable()->toggleable()->visibleFrom('lg'),
+                // Phones: name over SKU in one column so the price stays on screen.
+                Tables\Columns\TextColumn::make('phone_summary')->label('Product')
+                    ->getStateUsing(fn (Product $r) => \Illuminate\Support\Str::limit((string) $r->name, 24))
+                    ->description(fn (Product $r) => $r->sku)
+                    ->hiddenFrom('sm'),
                 Tables\Columns\TextColumn::make('sku')
                     ->label('SKU')
-                    ->searchable(),
+                    ->searchable()->visibleFrom('sm'),
                 Tables\Columns\TextColumn::make('upc')
-                    ->searchable(),
+                    ->searchable()->visibleFrom('lg'),
                 Tables\Columns\TextColumn::make('name')
-                    ->searchable(),
+                    ->searchable()->wrap()->extraAttributes(['style' => 'min-width:14rem'])->visibleFrom('sm'),
                 Tables\Columns\TextColumn::make('brand')
                     ->searchable()->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('manufacturer')
                     ->searchable()->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('category')
                     ->searchable()->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('tax_class')->badge()->formatStateUsing(fn ($state) => $state->label()),
+                Tables\Columns\TextColumn::make('tax_class')->badge()->formatStateUsing(fn ($state) => $state->label())->visibleFrom('md'),
                 Tables\Columns\IconColumn::make('pact_covered')
-                    ->boolean(),
+                    ->boolean()->visibleFrom('lg'),
                 Tables\Columns\TextColumn::make('hemp_type')
                     ->searchable()->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('thc_mg')
                     ->numeric()
-                    ->sortable(),
+                    ->sortable()->visibleFrom('lg'),
                 Tables\Columns\TextColumn::make('unit')
-                    ->searchable(),
+                    ->searchable()->visibleFrom('lg'),
                 Tables\Columns\TextColumn::make('cost')
                     ->money()
-                    ->sortable(),
+                    ->sortable()->visibleFrom('md'),
                 Tables\Columns\TextColumn::make('price')
                     ->money()
                     ->sortable(),
                 Tables\Columns\IconColumn::make('active')
-                    ->boolean(),
-                Tables\Columns\TextColumn::make('archived_at')->label('Archived')->dateTime()->placeholder('—')->toggleable(),
+                    ->boolean()->visibleFrom('md'),
+                Tables\Columns\TextColumn::make('archived_at')->label('Archived')->dateTime()->placeholder('—')->toggleable()->visibleFrom('xl'),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

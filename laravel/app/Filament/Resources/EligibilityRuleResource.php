@@ -83,15 +83,15 @@ class EligibilityRuleResource extends Resource
     {
         return $table->defaultSort('effective_from')
             ->columns([
-                Tables\Columns\TextColumn::make('name')->searchable()->wrap(),
+                Tables\Columns\TextColumn::make('name')->searchable()->wrap()->extraAttributes(['style' => 'min-width:16rem']), // UI audit #7: was 1-2 words per line
                 Tables\Columns\TextColumn::make('jurisdiction')->state(fn (EligibilityRule $r) => $r->jurisdictionLabel()),
-                Tables\Columns\TextColumn::make('subtype')->placeholder('Any'),
+                Tables\Columns\TextColumn::make('subtype')->placeholder('Any')->visibleFrom('lg'),
                 Tables\Columns\TextColumn::make('action')->badge()->color(fn ($state) => $state === 'block' ? 'danger' : 'warning'),
                 Tables\Columns\TextColumn::make('effective_from')->date()->sortable(),
-                Tables\Columns\TextColumn::make('effective_to')->date()->placeholder('Open'),
+                Tables\Columns\TextColumn::make('effective_to')->date()->placeholder('Open')->visibleFrom('lg'),
                 Tables\Columns\IconColumn::make('enabled')->boolean(),
-                Tables\Columns\IconColumn::make('verify_with_counsel')->label('Counsel')->boolean()->trueIcon('heroicon-o-exclamation-triangle')->trueColor('warning')->falseColor('gray'),
-                Tables\Columns\TextColumn::make('version')->prefix('v'),
+                Tables\Columns\IconColumn::make('verify_with_counsel')->label('Counsel')->visibleFrom('md')->boolean()->trueIcon('heroicon-o-exclamation-triangle')->trueColor('warning')->falseColor('gray'),
+                Tables\Columns\TextColumn::make('version')->prefix('v')->visibleFrom('xl'),
             ])
             ->filters([
                 Tables\Filters\TernaryFilter::make('enabled'),
