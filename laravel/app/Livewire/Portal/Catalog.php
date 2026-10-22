@@ -29,6 +29,13 @@ class Catalog extends Component
     #[Url(as: 'cart')]
     public bool $showCart = false;
 
+    /** 0.20.3: 'shop' (sections + catalog by category) or 'again' (Buy again). */
+    #[Url(as: 'view')]
+    public string $view = 'shop';
+
+    /** Buy again qty inputs: product_id => qty. */
+    public array $againQty = [];
+
     public string $note = '';
 
     public ?string $message = null;
@@ -52,6 +59,26 @@ class Catalog extends Component
         $this->cart[$productId] = (string) ((float) ($this->cart[$productId] ?? 0) + max(1, (float) $qty));
         $this->saveCart();
         $this->message = "Added {$p->sku}.";
+    }
+
+    public function addAgain(int $productId): void
+    {
+        $this->add($productId, max(1, (int) ($this->againQty[$productId] ?? 1)));
+    }
+
+    /** 0.20.3: add every still-available line of a past order to the cart. */
+    public function reorderOrder(int $id): void
+    {
+        $this->reset('message', 'error');
+        $so = \App\Models\SalesOrder::where('customer_id', $this->contact()->customer_id)->find($id) ?? abort(404);
+        if (! $this->location()) {
+            $this->error = 'Choose a ship-to for delivery, or switch to Counter pickup.';
+
+            return;
+        }
+        [$this->cart, $skipped] = app(PortalService::class)->reorder($this->contact(), $so, $this->location(), $this->cart);
+        $this->saveCart();
+        $this->message = "Items from {$so->number} added to your cart.".($skipped ? ' Skipped: '.implode('; ', $skipped) : '');
     }
 
     public function setQty(int $productId, $qty): void
@@ -107,9 +134,22 @@ class Catalog extends Component
             }
         }
 
+        $again = $this->view === 'again' && $s ? $svc->buyAgain($c, $s) : collect();
+        foreach ($again as $a) {
+            $this->againQty[$a['product']->id] ??= (string) max(1, (int) $a['last_qty']);
+        }
+        $rows = $s && $this->view !== 'again' ? $svc->catalog($c, $s, $this->q, $this->departmentId) : collect();
+
         return view('livewire.portal.catalog', [
+            'sections' => $s && $this->view !== 'again' && trim($this->q) === '' && ! $this->departmentId ? $svc->sections($c, $s) : [],
+            'groups' => $rows->groupBy(fn ($r) => $r['product']->department?->name ?: ($r['product']->category ?: 'Other'))->sortKeys()
+                ->sortBy(fn ($g, $k) => $k === 'Other' ? 1 : 0),
+            'again' => $again, 'pastOrders' => $this->view === 'again' ? \App\Models\SalesOrder::where('customer_id', $c->customer_id)
+                ->whereIn('status', [\App\Enums\SalesOrderStatus::Delivered, \App\Enums\SalesOrderStatus::Invoiced])
+                ->when($c->ship_to_id, fn ($q) => $q->where('ship_to_id', $c->ship_to_id))->latest('order_date')->latest('id')->limit(10)->get() : collect(),
+            'searching' => trim($this->q) !== '' || $this->departmentId,
             'contact' => $c, 'shipTos' => $c->allowedShipTos(), 'shipTo' => $this->shipTo(), 'location' => $s, 'delivery' => $this->isDelivery(),
-            'rows' => $s ? $svc->catalog($c, $s, $this->q, $this->departmentId) : collect(),
+            'rows' => $rows,
             'departments' => Department::where('active', true)->orderBy('name')->get(),
             'lines' => $lines, 'total' => $total, 'blocked' => collect($lines)->contains(fn ($l) => $l['reasons']),
         ]);

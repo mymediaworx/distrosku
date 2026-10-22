@@ -19,6 +19,7 @@ input,select,button,textarea{font-size:1rem;padding:.65rem;border:1px solid #ccc
 button{background:#1e3a8a;color:#fff;border:0;font-weight:600;cursor:pointer}button.sec{background:#475569}button[disabled]{opacity:.45;cursor:not-allowed}
 .inline{display:flex;gap:.5rem}.inline>*{flex:1}.inline button{flex:0 0 auto;width:auto}
 .grid{display:grid;grid-template-columns:1fr;gap:.75rem}@media(min-width:640px){.grid{grid-template-columns:repeat(2,1fr)}}@media(min-width:900px){.grid{grid-template-columns:repeat(3,1fr)}}
+.cat{background:#fff;border-radius:10px;padding:.5rem .7rem;margin:.4rem 0;box-shadow:0 1px 2px #0001}.cat summary{cursor:pointer;padding:.4rem 0;font-size:1.05rem}
 .item{display:grid;grid-template-columns:64px 1fr;gap:.6rem;background:#fff;border-radius:10px;padding:.7rem;box-shadow:0 1px 2px #0001}
 .thumb{width:64px;height:64px;object-fit:contain;background:#f1f5f9;border-radius:6px}
 .price{font-weight:700}.ok{color:#047857}.err{color:#b91c1c;font-size:.9rem}.na{color:#b91c1c;font-size:.85rem}.muted{color:#64748b;font-size:.85rem}
@@ -36,6 +37,7 @@ table{width:100%;border-collapse:collapse}td,th{padding:.45rem .3rem;border-bott
     @if($contact)
         <nav>
             <a href="{{ route('portal.catalog') }}">Catalog</a>
+            <a href="{{ route('portal.catalog', ['view' => 'again']) }}">Buy again</a>
             <a href="{{ route('portal.orders') }}">Orders</a>
             <a href="{{ route('portal.pay') }}">Pay</a>
             <form method="POST" action="{{ route('portal.logout') }}" style="display:inline">@csrf<button class="link" type="submit">Sign out</button></form>

@@ -31,7 +31,7 @@ class PortalService
     }
 
     /** Orderable catalog: active, not archived. Each row: product, price, reasons (empty = available). */
-    public function catalog(CustomerContact $c, ShipTo $shipTo, string $q = '', ?int $departmentId = null, int $limit = 60)
+    public function catalog(CustomerContact $c, ShipTo $shipTo, string $q = '', ?int $departmentId = null, int $limit = 500)
     {
         $q = trim($q);
 
@@ -41,6 +41,51 @@ class PortalService
                 ->orWhere('sku', strtoupper($q))->orWhere('upc', preg_replace('/\D/', '', $q) ?: '-')))
             ->orderBy('name')->limit($limit)->get()
             ->map(fn (Product $p) => ['product' => $p, 'price' => $this->pricing->price($p, $c->customer), 'reasons' => $this->reasons($p, $c, $shipTo)]);
+    }
+
+    /**
+     * 0.20.3: portal home sections. Promotions = ticked "Show in Promotions" OR a product-specific active promotion
+     * that applies to this customer today; New = ticked and (no "new until" or not yet past); Featured = ticked.
+     * Same rules as the catalog: active, not archived, customer price (lowest wins), compliance reasons per row.
+     */
+    public function sections(CustomerContact $c, ShipTo $shipTo, int $limit = 12): array
+    {
+        $today = now()->toDateString();
+        $cust = $c->customer;
+        $promoIds = \App\Models\Promotion::query()->where('active', true)->whereNotNull('product_id')
+            ->whereDate('starts_on', '<=', $today)->whereDate('ends_on', '>=', $today)
+            ->where(fn ($q) => $q->whereNull('customer_id')->orWhere('customer_id', $cust->id))
+            ->where(fn ($q) => $q->whereNull('customer_group_id')->when($cust->customer_group_id, fn ($w) => $w->orWhere('customer_group_id', $cust->customer_group_id)))
+            ->pluck('product_id')->unique()->all();
+        $base = fn () => Product::with('department')->where('active', true)->notArchived()->orderBy('portal_sort')->orderBy('name')->limit($limit);
+        $row = fn (Product $p) => ['product' => $p, 'price' => $this->pricing->price($p, $cust), 'reasons' => $this->reasons($p, $c, $shipTo)];
+
+        return [
+            'promotions' => $base()->where(fn ($q) => $q->where('portal_promo', true)->orWhereIn('id', $promoIds ?: [0]))->get()->map($row),
+            'new' => $base()->where('portal_new', true)->where(fn ($q) => $q->whereNull('portal_new_until')->orWhereDate('portal_new_until', '>=', $today))->get()->map($row),
+            'featured' => $base()->where('portal_featured', true)->get()->map($row),
+        ];
+    }
+
+    /**
+     * 0.20.3: products this customer bought before (delivered or invoiced orders), newest first, with last date and qty.
+     * Respects a contact limited to one ship-to. Inactive/archived products are left out.
+     */
+    public function buyAgain(CustomerContact $c, ShipTo $shipTo, int $limit = 100)
+    {
+        $lines = \App\Models\SalesOrderLine::query()->select('sales_order_lines.product_id', 'sales_order_lines.qty', 'sales_orders.order_date', 'sales_orders.number', 'sales_orders.id as so_id')
+            ->join('sales_orders', 'sales_orders.id', '=', 'sales_order_lines.sales_order_id')
+            ->where('sales_orders.customer_id', $c->customer_id)
+            ->whereIn('sales_orders.status', [\App\Enums\SalesOrderStatus::Delivered->value, \App\Enums\SalesOrderStatus::Invoiced->value])
+            ->when($c->ship_to_id, fn ($q) => $q->where('sales_orders.ship_to_id', $c->ship_to_id))
+            ->orderByDesc('sales_orders.order_date')->orderByDesc('sales_orders.id')->orderByDesc('sales_order_lines.id')
+            ->limit(2000)->get()->unique('product_id')->take($limit);
+        $products = Product::with('department')->whereIn('id', $lines->pluck('product_id'))->where('active', true)->notArchived()->get()->keyBy('id');
+
+        return $lines->filter(fn ($l) => $products->has($l->product_id))->map(fn ($l) => [
+            'product' => $p = $products[$l->product_id], 'price' => $this->pricing->price($p, $c->customer),
+            'reasons' => $this->reasons($p, $c, $shipTo), 'last_date' => $l->order_date, 'last_qty' => $l->qty, 'last_order' => $l->number, 'last_order_id' => $l->so_id,
+        ])->values();
     }
 
     public function reasons(Product $p, CustomerContact $c, ShipTo $shipTo): array

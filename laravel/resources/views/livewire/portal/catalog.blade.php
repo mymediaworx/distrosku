@@ -46,26 +46,75 @@
         </div>
     @endif
 
-    <div class="grid">
-        @forelse($rows as $r)
-            @php($p = $r['product'])
-            <div class="item" wire:key="p{{ $p->id }}">
-                @if($p->imageUrl())<img class="thumb" src="{{ $p->imageUrl() }}" alt="" loading="lazy">@else<div class="thumb"></div>@endif
-                <div>
-                    <strong>{{ $p->name }}</strong><br><span class="muted">{{ $p->sku }}@if($p->upc) · UPC {{ $p->upc }}@endif</span><br>
-                    <span class="price">${{ number_format((float) $r['price'], 2) }}</span> <span class="muted">/ {{ $p->unit }}</span>
-                    @if($r['reasons'])
-                        @foreach($r['reasons'] as $why)<div class="na" data-test="unavailable">Unavailable: {{ $why }}</div>@endforeach
+    <nav class="tabs" style="margin:.5rem 0">
+        <button type="button" class="{{ $view === 'again' ? 'sec' : '' }}" wire:click="$set('view', 'shop')" data-test="tab-shop">Shop</button>
+        <button type="button" class="{{ $view === 'again' ? '' : 'sec' }}" wire:click="$set('view', 'again')" data-test="tab-again">Buy again</button>
+    </nav>
+
+    @if($view === 'again')
+        <div class="card" data-test="buy-again">
+            <h3>Buy again</h3>
+            @forelse($again as $a)
+                @php($p = $a['product'])
+                <div style="border-bottom:1px solid #eee;padding:.5rem 0" wire:key="a{{ $p->id }}">
+                    <strong>{{ $p->name }}</strong> <span class="muted">{{ $p->sku }}</span><br>
+                    <span class="muted">Last ordered {{ \Illuminate\Support\Carbon::parse($a['last_date'])->format('M j, Y') }} · qty {{ (float) $a['last_qty'] + 0 }} ({{ $a['last_order'] }})</span><br>
+                    <span class="price">${{ number_format((float) $a['price'], 2) }}</span> <span class="muted">/ {{ $p->unit }}</span>
+                    @if($a['reasons'])
+                        @foreach($a['reasons'] as $why)<div class="na">Unavailable: {{ $why }}</div>@endforeach
                     @else
-                        <div class="inline" style="margin-top:.4rem"><button type="button" wire:click="add({{ $p->id }})">Add</button>
-                            @if(isset($cart[$p->id]))<span class="badge">{{ (int) $cart[$p->id] }} in cart</span>@endif</div>
+                        <div class="inline" style="margin-top:.4rem;align-items:center">
+                            <input type="number" min="1" step="1" wire:model="againQty.{{ $p->id }}" aria-label="Qty" style="max-width:90px">
+                            <button type="button" wire:click="addAgain({{ $p->id }})">Add to cart</button>
+                            @if(isset($cart[$p->id]))<span class="badge">{{ (int) $cart[$p->id] }} in cart</span>@endif
+                        </div>
                     @endif
                 </div>
+            @empty
+                <p>No past purchases yet.</p>
+            @endforelse
+        </div>
+        @if($pastOrders->isNotEmpty())
+            <div class="card"><h3>Past orders</h3>
+                @foreach($pastOrders as $o)
+                    <div class="inline" style="justify-content:space-between;align-items:center;border-bottom:1px solid #eee;padding:.4rem 0" wire:key="o{{ $o->id }}">
+                        <span>{{ $o->number }} · {{ $o->order_date?->format('M j, Y') }} · ${{ number_format((float) $o->total, 2) }}</span>
+                        <button type="button" class="sec" wire:click="reorderOrder({{ $o->id }})">Reorder all from {{ $o->number }}</button>
+                    </div>
+                @endforeach
             </div>
+        @endif
+    @else
+        @foreach(['promotions' => 'Promotions', 'new' => 'New products', 'featured' => 'Featured'] as $key => $title)
+            @if(! empty($sections[$key]) && $sections[$key]->isNotEmpty())
+                <h3 data-test="section-{{ $key }}">{{ $title }}</h3>
+                <div class="grid" style="margin-bottom:1rem">
+                    @foreach($sections[$key] as $r)
+                        @include('livewire.portal.partials.item', ['r' => $r, 'k' => $key])
+                    @endforeach
+                </div>
+            @endif
+        @endforeach
+
+        @if($groups->isNotEmpty())
+            <div class="inline" style="justify-content:flex-end;margin:.25rem 0">
+                <button type="button" class="sec" onclick="document.querySelectorAll('details.cat').forEach(d => d.open = true)">Expand all</button>
+                <button type="button" class="sec" onclick="document.querySelectorAll('details.cat').forEach(d => d.open = false)">Collapse all</button>
+            </div>
+        @endif
+        @forelse($groups as $name => $items)
+            <details class="cat" wire:ignore.self wire:key="cat-{{ md5($name.'|'.$q.'|'.$departmentId) }}" @if($searching || $groups->count() === 1) open @endif data-test="category">
+                <summary><strong>{{ $name }}</strong> <span class="muted">({{ $items->count() }})</span></summary>
+                <div class="grid" style="margin:.5rem 0 1rem">
+                    @foreach($items as $r)
+                        @include('livewire.portal.partials.item', ['r' => $r, 'k' => 'c'])
+                    @endforeach
+                </div>
+            </details>
         @empty
             <p>No products found.</p>
         @endforelse
-    </div>
+    @endif
 
     <div class="cartbar" style="margin-top:1rem"><span>{{ count($cart) }} item(s) · ${{ number_format((float) $total, 2) }}</span>
         <button type="button" wire:click="$toggle('showCart')">{{ $showCart ? 'Hide cart' : 'View cart' }}</button></div>

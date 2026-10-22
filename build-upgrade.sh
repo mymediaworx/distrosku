@@ -41,7 +41,7 @@ case "$PHASE" in
   17.2) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
   17.3) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
   18) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
-  19|19.1|19.2|19.3|19.4|19.5|19.6|20.0|20.1|20.2) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
+  19|19.1|19.2|19.3|19.4|19.5|19.6|20.0|20.1|20.2|20.3) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
   18.2) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
   18.1) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
   *) echo "No seeder list for phase $PHASE"; exit 1 ;;

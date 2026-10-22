@@ -69,7 +69,7 @@ class KySubjobberCigaretteReport extends TaxReport
             } elseif ($m->type === 'sale' && $m->reference_type === (new SalesOrder)->getMorphClass()) {
                 $so = SalesOrder::with('customer', 'shipTo')->find($m->reference_id);
                 $c = $so?->customer;
-                $licensee = in_array($c?->type, ['wholesaler', 'subjobber', 'distributor'], true);
+                $licensee = \App\Support\CustomerType::isLicensee($c?->type);
                 $disb[] = $row($licensee ? '2B' : '2C', $so?->number, $c?->name, $licensee ? 'Licensee' : 'Retailer', $c?->fein,
                     trim(($so?->shipTo?->address ?? '').' '.($so?->shipTo?->city ?? '')), $so?->shipTo?->state);
                 $refs['out'][] = $mk('so', $so, $m->created_at->toDateString(), $c?->name, $m->product, Money::of($m->qty)->abs());
@@ -85,7 +85,7 @@ class KySubjobberCigaretteReport extends TaxReport
             $cm = $l->creditMemo;
             $per = (int) ($l->product->sticks_per_unit ?: 200);
             $st = Money::of($l->qty)->multipliedBy($per);
-            $licensee = in_array($cm->customer->type, ['wholesaler', 'subjobber', 'distributor'], true);
+            $licensee = \App\Support\CustomerType::isLicensee($cm->customer->type);
             $receipts[] = [$licensee ? '1B' : '1C', $cm->memo_date->toDateString(), 'Credit Memo', $cm->number, $cm->customer->name, $licensee ? 'Licensee' : 'Retailer',
                 $cm->customer->fein, trim(($cm->salesOrder->location()->address ?? '').' '.($cm->salesOrder->location()->city ?? '')), $cm->salesOrder->location()->state ?? '',
                 $l->product->upc, $l->product->name.($l->disposition === 'damage' ? ' (damaged)' : ''), Money::s($l->qty), (string) $st->dividedBy(200, 2, RoundingMode::HALF_UP), (string) $st->toScale(0)];
@@ -117,7 +117,7 @@ class KySubjobberCigaretteReport extends TaxReport
             'notes' => array_values($notes + [
                 'guide' => 'Layout follows the KY Resident Subjobber Filer Guide (schedules 1B/1C/2B/2C, header: FEIN, KY cigarette license #, period end). The summary lines A-F are an internal reconciliation, not form line numbers.',
                 'dates' => 'Transaction date = stock movement date (receipt / delivery). Customer returns come from posted credit memos (1C; 1B if the customer is a licensee); damaged returns are not restocked, so they show up in line D.',
-                'type' => 'Customer type wholesaler/subjobber/distributor => 2B, everyone else => 2C.',
+                'type' => 'Customer type Wholesale distributor (or legacy wholesaler/subjobber/distributor) => 2B, everyone else => 2C.',
             ]),
         ];
     }

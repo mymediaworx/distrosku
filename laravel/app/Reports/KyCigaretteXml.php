@@ -47,7 +47,7 @@ class KyCigaretteXml extends KyTobaccoXml
         foreach ($mv->where('type', 'sale')->where('reference_type', (new SalesOrder)->getMorphClass())->groupBy('reference_id') as $soId => $ms) {
             $so = SalesOrder::with(['customer', 'shipTo', 'lines'])->find($soId);
             $c = $so->customer;
-            $code = in_array($c->type, ['wholesaler', 'subjobber', 'distributor'], true) ? '2B' : '2C';
+            $code = \App\Support\CustomerType::isLicensee($c->type) ? '2B' : '2C';
             $out[$code][] = $this->customerDoc($c, $so->location(), $ms->first()->created_at->toDateString(), 'Invoice', $so->number,
                 $ms->map(function ($m) use ($so) {
                     $line = $so->lines->firstWhere('product_id', $m->product_id);
@@ -61,7 +61,7 @@ class KyCigaretteXml extends KyTobaccoXml
             ->whereHas('creditMemo', fn ($q) => $q->where('status', 'posted')->whereBetween('memo_date', [$start->toDateString(), $end->toDateString()]))->get();
         foreach ($cml->groupBy('credit_memo_id') as $lines) {
             $cm = $lines->first()->creditMemo;
-            $code = in_array($cm->customer->type, ['wholesaler', 'subjobber', 'distributor'], true) ? '1B' : '1C';
+            $code = \App\Support\CustomerType::isLicensee($cm->customer->type) ? '1B' : '1C';
             $out[$code][] = $this->customerDoc($cm->customer, $cm->salesOrder->location(), $cm->memo_date->toDateString(), 'Credit Memo', $cm->number,
                 $lines->map(fn ($l) => [$l->product, $l->qty, $l->line_total, 'KY'])->all());
         }

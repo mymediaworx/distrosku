@@ -50,8 +50,10 @@ class CustomerResource extends Resource
                     ->required(),
                 Forms\Components\TextInput::make('name')
                     ->required(),
-                Forms\Components\TextInput::make('type')
-                    ->required(),
+                Forms\Components\Select::make('type')->label('Customer type')
+                    ->options(\App\Support\CustomerType::OPTIONS)->default('retailer')
+                    ->required()
+                    ->helperText(fn ($record) => $record?->type_legacy ? 'Before 0.20.3 this was: '.$record->type_legacy : null),
                 Forms\Components\TextInput::make('email')
                     ->email(),
                 Forms\Components\TextInput::make('phone')
@@ -113,8 +115,8 @@ class CustomerResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('name')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('type')
-                    ->searchable(),
+                Tables\Columns\TextColumn::make('type')->label('Type')
+                    ->formatStateUsing(fn ($state) => \App\Support\CustomerType::label($state))->searchable()->sortable(),
                 Tables\Columns\TextColumn::make('email')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('phone')
@@ -142,7 +144,7 @@ class CustomerResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('type')->label('Customer type')->options(\App\Support\CustomerType::OPTIONS),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

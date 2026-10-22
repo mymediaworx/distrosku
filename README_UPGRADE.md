@@ -1,7 +1,20 @@
-# Vega ERP — Phase 20.2 UPGRADE (existing install at vegatest1.distrosku.com)
+# Vega ERP — Phase 20.3 UPGRADE (existing install at vegatest1.distrosku.com)
 
 For a site already installed from `vega-erp-phase1.zip` and upgraded through phase 3 (a phase-2 site can also take this zip: seeders are cumulative). TEST data only. No secrets in this package.
 This zip contains **no `laravel/.env` and no `laravel/storage/`**, so extracting it over the live site keeps both.
+
+## What's new in 0.20.3 (includes everything through 0.20.2)
+
+**Customer portal: sections, Buy again, catalog by category; fixed customer types.**
+
+- **Products > edit > Customer portal sections**: *Show in Promotions*, *Show in New products* (optional *New until* date; blank = until unticked), *Show in Featured*, and a *Section sort order* (lower first). Changes are in the Activity log (Product *updated*).
+- **Portal home** shows **Promotions**, **New products** and **Featured** above the catalog (hidden while searching or filtering). Promotions = ticked products **plus** products with an active product-specific promotion (Pricing > Promotions) that applies to this customer today. Same rules as the catalog: inactive/archived hidden, customer price (lowest wins), compliance shown as *Unavailable*.
+- **Buy again** (portal menu, or the *Buy again* tab): products the customer bought on Delivered/Invoiced orders, with last ordered date, last qty, current price, a qty box and *Add to cart*; plus the last 10 orders with **Reorder all from SO…**.
+- **Catalog grouped by category** (department, else product category, else Other), each collapsible, with *Expand all* / *Collapse all*. Search and the department filter still work across categories and open the matching groups.
+- **Customer type** is now a dropdown: C-store, Liquor store, Smoke shop, Retailer, Restaurant, Food truck, Wholesale distributor, Other. Existing values are mapped by the migration (wholesaler/subjobber/distributor => Wholesale distributor; retailer => Retailer; close matches to C-store/Liquor/Smoke shop/Restaurant/Food truck; anything else => Other). The original value is kept in `type_legacy` and shown under the field. Customers list has a *Customer type* filter.
+- KY 73A422 / subjobber cigarette reports: Wholesale distributor (and legacy wholesaler/subjobber/distributor) = licensee (1B/2B); others 1C/2C as before. MSA class of trade: C-store/Liquor/Smoke shop/Retailer => Retailer, Wholesale distributor => Distributor. Customer imports accept the new names.
+- BrandWorx Marketing tag becomes `type:<new type>` (e.g. `type:wholesale-distributor`); old `type:` tags are not removed.
+- **Migration** (re-runnable): new product portal columns, `customers.type_legacy`, type mapping. Run the upgrade page as usual.
 
 ## What's new in 0.20.2 (includes everything through 0.20.1)
 

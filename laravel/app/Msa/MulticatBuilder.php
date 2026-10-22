@@ -79,8 +79,8 @@ class MulticatBuilder
         }
 
         return match (strtolower((string) $c->type)) {
-            'retailer', 'retail' => 'Retailer',
-            'wholesaler', 'subjobber', 'sub_jobber', 'distributor' => 'Distributor',
+            'retailer', 'retail', 'c_store', 'liquor_store', 'smoke_shop' => 'Retailer',
+            'wholesale_distributor', 'wholesaler', 'subjobber', 'sub_jobber', 'distributor' => 'Distributor',
             default => 'Other',
         };
     }

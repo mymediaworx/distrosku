@@ -163,7 +163,7 @@ class KyTobaccoXml
         foreach ($cml->groupBy('credit_memo_id') as $lines) {
             $cm = $lines->first()->creditMemo;
             $c = $cm->customer;
-            $code = in_array($c->type, ['wholesaler', 'subjobber', 'distributor'], true) ? '1B' : '1C';
+            $code = \App\Support\CustomerType::isLicensee($c->type) ? '1B' : '1C';
             $out[$code][] = $this->customerDoc($c, $cm->salesOrder->location(), $cm->memo_date->toDateString(), 'Credit Memo', $cm->number,
                 $lines->map(fn ($l) => [$l->product, $l->qty, $l->line_total, 'KY'])->all());
         }
@@ -176,7 +176,7 @@ class KyTobaccoXml
         foreach ($sol->groupBy('sales_order_id') as $lines) {
             $so = $lines->first()->salesOrder;
             $c = $so->customer;
-            $code = in_array($c->type, ['wholesaler', 'subjobber', 'distributor'], true) ? '2B' : '2C';
+            $code = \App\Support\CustomerType::isLicensee($c->type) ? '2B' : '2C';
             $out[$code][] = $this->customerDoc($c, $so->location(), $so->delivered_at->toDateString(), 'Invoice', $so->number,
                 $lines->map(fn ($l) => [$l->product, $l->qty, $l->line_total, 'KY'])->all());
         }
@@ -190,8 +190,8 @@ class KyTobaccoXml
         $lic = $c->licenses()->where('state', 'KY')->whereIn('type', ['tobacco_retail', 'tobacco_wholesale'])->value('number');
 
         return ['date' => $date, 'doc' => $docType, 'number' => $number,
-            'ctype' => match ($c->type) {
-                'retailer' => 'Retailer', 'wholesaler' => 'Wholesaler', 'subjobber' => 'Subjobber', 'distributor' => 'Distributor', default => 'Customer'
+            'ctype' => match ($c->type === 'wholesale_distributor' && in_array($c->type_legacy, ['subjobber', 'distributor'], true) ? $c->type_legacy : $c->type) {
+                'retailer', 'c_store', 'liquor_store', 'smoke_shop' => 'Retailer', 'wholesale_distributor' => 'Wholesaler', 'wholesaler' => 'Wholesaler', 'subjobber' => 'Subjobber', 'distributor' => 'Distributor', default => 'Customer'
             },
             'name' => $c->name, 'addr' => [$shipTo?->address, $shipTo?->city, $shipTo?->state, $shipTo?->zip],
             // Guide Table 1: EIN 999999999 / StateEIN 999999999 for end consumers or when not available.

@@ -120,6 +120,6 @@ class Phase202UpdateTrackingTest extends TestCase
         $this->actingAs($this->owner);
         $this->assertTrue(PurchaseOrderResource::canEdit($po));
         Livewire::test(EditPurchaseOrder::class, ['record' => $po->getRouteKey()])->assertActionVisible('updateTracking');
-        $this->assertSame('0.20.2', config('erp.version'));
+        $this->assertTrue(version_compare(config('erp.version'), '0.20.2', '>='));
     }
 }

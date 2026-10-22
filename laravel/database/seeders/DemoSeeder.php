@@ -59,15 +59,15 @@ class DemoSeeder extends Seeder
         Vendor::firstOrCreate(['code' => 'VTEST1'], ['name' => 'TEST Tobacco Manufacturer Co', 'is_manufacturer' => true, 'state' => 'NC']);
         Vendor::firstOrCreate(['code' => 'VTEST2'], ['name' => 'TEST Beverage Supply', 'state' => 'KY']);
 
-        $ky = Customer::firstOrCreate(['code' => 'CTEST-KY'], ['name' => 'TEST Corner Market (KY)', 'type' => 'retailer']);
+        $ky = Customer::firstOrCreate(['code' => 'CTEST-KY'], ['name' => 'TEST Corner Market (KY)', 'type' => 'c_store']);
         $kyShip = ShipTo::firstOrCreate(['customer_id' => $ky->id, 'name' => 'Main store'], ['address' => '1 Test St', 'city' => 'Lexington', 'state' => 'KY', 'zip' => '40505']);
         CustomerLicense::firstOrCreate(['customer_id' => $ky->id, 'type' => 'tobacco_retail'], ['number' => 'TEST-KY-0001', 'state' => 'KY', 'expires_at' => now()->addYear()]);
 
-        $il = Customer::firstOrCreate(['code' => 'CTEST-IL'], ['name' => 'TEST Wholesale (IL)', 'type' => 'wholesaler']);
+        $il = Customer::firstOrCreate(['code' => 'CTEST-IL'], ['name' => 'TEST Wholesale (IL)', 'type' => 'wholesale_distributor']);
         ShipTo::firstOrCreate(['customer_id' => $il->id, 'name' => 'IL warehouse'], ['address' => '2 Test Ave', 'city' => 'Springfield', 'state' => 'IL', 'zip' => '62701']);
         CustomerLicense::firstOrCreate(['customer_id' => $il->id, 'type' => 'tobacco_wholesale'], ['number' => 'TEST-IL-0001', 'state' => 'IL', 'expires_at' => now()->addYear()]);
 
-        $in = Customer::firstOrCreate(['code' => 'CTEST-IN'], ['name' => 'TEST Wholesale (IN)', 'type' => 'wholesaler']);
+        $in = Customer::firstOrCreate(['code' => 'CTEST-IN'], ['name' => 'TEST Wholesale (IN)', 'type' => 'wholesale_distributor']);
         ShipTo::firstOrCreate(['customer_id' => $in->id, 'name' => 'IN warehouse'], ['address' => '3 Test Rd', 'city' => 'Evansville', 'state' => 'IN', 'zip' => '47708']);
 
         $walk = Customer::firstOrCreate(['code' => 'CASH'], ['name' => 'TEST Counter / Cash Customer', 'type' => 'retailer', 'terms' => 'COD']);

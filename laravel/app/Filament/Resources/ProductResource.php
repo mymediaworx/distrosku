@@ -123,6 +123,15 @@ class ProductResource extends Resource
                     ->prefix('$'),
                 Forms\Components\Toggle::make('active')
                     ->default(true),
+                Forms\Components\Section::make('Customer portal sections')->collapsible()->columns(3)->schema([
+                    Forms\Components\Checkbox::make('portal_promo')->label('Show in Promotions'),
+                    Forms\Components\Checkbox::make('portal_new')->label('Show in New products')->live(),
+                    Forms\Components\Checkbox::make('portal_featured')->label('Show in Featured'),
+                    Forms\Components\DatePicker::make('portal_new_until')->label('New until (optional)')
+                        ->helperText('Leave blank to keep it in New products until unticked.')->visible(fn (Forms\Get $get) => (bool) $get('portal_new')),
+                    Forms\Components\TextInput::make('portal_sort')->label('Section sort order')->numeric()->integer()->default(0)
+                        ->helperText('Lower shows first in portal sections.'),
+                ]),
                 Forms\Components\Section::make('Reordering')->collapsible()->columns(3)->schema([
                     Forms\Components\TextInput::make('reorder_qty')->label('Order multiple')->numeric()->minValue(0)->helperText('Suggested qty rounds up to this (e.g. a case).'),
                     Forms\Components\Select::make('preferred_vendor_id')->label('Preferred vendor')->relationship('preferredVendor', 'name')->searchable()->preload(),
