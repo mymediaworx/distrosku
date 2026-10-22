@@ -24,6 +24,9 @@ class MsaDirectoryImportResource extends Resource
 
     protected static ?string $model = MsaDirectoryImport::class;
 
+    protected static ?string $modelLabel = 'MSA state directory import';
+    protected static ?string $pluralModelLabel = 'MSA state directories'; // page title matches the sidebar (UI audit #6)
+
     protected static ?string $navigationGroup = 'Tax Filings';
 
     protected static ?int $navigationSort = 22;

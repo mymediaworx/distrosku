@@ -23,6 +23,8 @@ class ShipmentResource extends Resource
 
     protected static ?string $model = Package::class;
 
+    protected static ?string $pluralModelLabel = 'shipments'; // page title matches the sidebar (UI audit #6)
+
     protected static ?string $navigationGroup = 'Delivery';
 
     protected static ?int $navigationSort = 2;

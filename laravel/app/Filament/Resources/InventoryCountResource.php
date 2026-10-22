@@ -27,6 +27,9 @@ class InventoryCountResource extends Resource
 
     protected static ?string $model = InventoryCount::class;
 
+    protected static ?string $modelLabel = 'count';
+    protected static ?string $pluralModelLabel = 'counts'; // page title matches the sidebar (UI audit #6)
+
     protected static ?string $navigationGroup = 'Inventory';
 
     protected static ?string $navigationLabel = 'Counts';

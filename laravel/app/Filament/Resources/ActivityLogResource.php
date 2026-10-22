@@ -21,6 +21,9 @@ class ActivityLogResource extends Resource
 {
     protected static ?string $model = ActivityLog::class;
 
+    protected static ?string $modelLabel = 'activity entry';
+    protected static ?string $pluralModelLabel = 'activity log'; // page title matches the sidebar (UI audit #6)
+
     protected static ?string $navigationGroup = 'Admin';
 
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-check';

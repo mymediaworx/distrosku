@@ -19,6 +19,9 @@ class PosPinLoginResource extends Resource
 
     protected static ?string $model = PosPinLogin::class;
 
+    protected static ?string $modelLabel = 'POS PIN login';
+    protected static ?string $pluralModelLabel = 'POS PIN log'; // page title matches the sidebar (UI audit #6)
+
     protected static ?string $navigationGroup = 'Settings';
 
     protected static ?string $navigationLabel = 'POS PIN log';

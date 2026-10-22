@@ -23,6 +23,8 @@ class PriceRuleResource extends Resource
 
     protected static ?string $model = PriceRule::class;
 
+    protected static ?string $pluralModelLabel = 'price lists'; // page title matches the sidebar (UI audit #6)
+
     protected static ?string $navigationGroup = 'Pricing';
 
     protected static ?string $navigationLabel = 'Price lists';

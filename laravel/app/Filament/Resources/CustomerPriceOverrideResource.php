@@ -23,6 +23,8 @@ class CustomerPriceOverrideResource extends Resource
 
     protected static ?string $model = CustomerPriceOverride::class;
 
+    protected static ?string $pluralModelLabel = 'customer special prices'; // page title matches the sidebar (UI audit #6)
+
     protected static ?string $navigationGroup = 'Pricing';
 
     protected static ?string $navigationLabel = 'Customer special prices';
