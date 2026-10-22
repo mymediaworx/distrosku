@@ -88,7 +88,7 @@ class OrderActions
     public static function deliver(string $cls)
     {
         return $cls::make('deliver')->label('Deliver & invoice')->icon('heroicon-o-truck')->requiresConfirmation()
-            ->modalDescription('Stock goes out and the invoice is posted in one step.')
+            ->modalDescription(fn (SalesOrder $record) => 'Stock goes out and the invoice is posted in one step. Order total $'.number_format((float) $record->total, 2).'.')
             ->visible(fn (SalesOrder $record) => in_array($record->status, [S::Confirmed, S::Picked], true) && self::canManage())
             ->action(fn (SalesOrder $record, $livewire) => self::run(fn () => [app(SalesOrderService::class)->deliver($record), "Delivered and invoiced ({$record->number})."][1], $livewire));
     }
@@ -96,7 +96,7 @@ class OrderActions
     public static function deliverCollect(string $cls)
     {
         return $cls::make('deliverCollect')->label('Deliver, invoice & collect')->icon('heroicon-o-banknotes')->color('success')
-            ->modalDescription('Cash on delivery: stock out, invoice and payment in one step.')
+            ->modalDescription(fn (SalesOrder $record) => 'Cash on delivery: stock out, invoice and payment in one step. Order total $'.number_format((float) $record->total, 2).', balance due $'.number_format((float) $record->balance(), 2).'.')
             ->visible(fn (SalesOrder $record) => in_array($record->status, [S::Confirmed, S::Picked], true) && self::canManage())
             ->fillForm(fn (SalesOrder $record) => ['method' => 'cash', 'amount' => number_format((float) $record->balance(), 2, '.', '')])
             ->form(self::paymentFields())
