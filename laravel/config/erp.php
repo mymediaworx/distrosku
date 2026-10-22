@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'version' => '0.20.1',
+    'version' => '0.20.2',
     // 0.15: signature required for regulated deliveries/pickups. Always on in production (no env switch); pre-0.15 tests turn it off.
     'require_signature' => true,
     'company' => env('ERP_COMPANY', 'Vega Distribution LLC'),
@@ -38,7 +38,7 @@ return [
         'sales_orders' => ['view' => ['sales'], 'manage' => ['sales']],
         'payments' => ['view' => ['sales'], 'manage' => []],
         'pos' => ['view' => ['sales'], 'manage' => ['sales']],
-        'purchase_orders' => ['view' => ['warehouse'], 'manage' => [], 'receive' => ['warehouse']],
+        'purchase_orders' => ['view' => ['warehouse'], 'manage' => [], 'receive' => ['warehouse'], 'update_tracking' => ['warehouse']], // 0.20.2: inbound shipping fields only
         'vendors' => ['view' => [], 'manage' => []],
         'delivery_manifests' => ['view' => ['warehouse', 'driver'], 'manage' => ['warehouse', 'driver']],
         // 0.17 imports: owners/admins only by default; add roles here to delegate (e.g. 'manage' => ['warehouse']).

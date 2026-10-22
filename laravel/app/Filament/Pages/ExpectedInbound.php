@@ -66,7 +66,7 @@ class ExpectedInbound extends Page implements HasTable
             ->defaultSort(fn (Builder $q) => $q->orderByRaw('expected_at IS NULL')->orderBy('expected_at')->orderBy('id'))
             ->columns([
                 Tables\Columns\TextColumn::make('number')->searchable()
-                    ->url(fn (PurchaseOrder $r) => PurchaseOrderResource::getUrl('edit', ['record' => $r])),
+                    ->url(fn (PurchaseOrder $r) => PurchaseOrderResource::getUrl(PurchaseOrderResource::canEdit($r) ? 'edit' : 'view', ['record' => $r])),
                 Tables\Columns\TextColumn::make('when')->label('Due')->badge()
                     ->getStateUsing(fn (PurchaseOrder $r) => self::BUCKETS[ReceivingAlerts::bucket($r)])
                     ->color(fn (PurchaseOrder $r) => self::COLORS[ReceivingAlerts::bucket($r)]),
@@ -98,12 +98,13 @@ class ExpectedInbound extends Page implements HasTable
                 Tables\Filters\SelectFilter::make('warehouse_id')->label('Warehouse')->options(fn () => Warehouse::orderBy('code')->pluck('code', 'id')),
             ])
             ->actions([
+                \App\Filament\Support\UpdateTrackingAction::table(),
                 Tables\Actions\Action::make('startReceiving')->label('Start receiving')->icon('heroicon-o-qr-code')->button()
                     ->visible(fn () => auth()->user()->canModule('warehouse_scan', 'manage'))
                     ->url(fn (PurchaseOrder $r) => route('wh.receive', $r)),
                 Tables\Actions\Action::make('openPo')->label('Open PO')->icon('heroicon-o-inbox-arrow-down')
                     ->visible(fn () => ! auth()->user()->canModule('warehouse_scan', 'manage'))
-                    ->url(fn (PurchaseOrder $r) => PurchaseOrderResource::getUrl('edit', ['record' => $r])),
+                    ->url(fn (PurchaseOrder $r) => PurchaseOrderResource::getUrl(PurchaseOrderResource::canEdit($r) ? 'edit' : 'view', ['record' => $r])),
             ]);
     }
 }

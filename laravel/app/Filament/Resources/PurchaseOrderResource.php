@@ -98,6 +98,7 @@ class PurchaseOrderResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                \App\Filament\Support\UpdateTrackingAction::table(),
                 Tables\Actions\Action::make('scanReceive')->label('Scan receive')->icon('heroicon-o-qr-code')
                     ->visible(fn (PurchaseOrder $r) => in_array($r->status, ['draft', 'ordered', 'partial'], true) && auth()->user()->canModule('warehouse_scan', 'manage'))
                     ->url(fn (PurchaseOrder $r) => route('wh.receive', $r)),
@@ -153,6 +154,7 @@ class PurchaseOrderResource extends Resource
         return [
             'index' => Pages\ListPurchaseOrders::route('/'),
             'create' => Pages\CreatePurchaseOrder::route('/create'),
+            'view' => Pages\ViewPurchaseOrder::route('/{record}'),
             'edit' => Pages\EditPurchaseOrder::route('/{record}/edit'),
         ];
     }

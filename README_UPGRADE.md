@@ -1,7 +1,18 @@
-# Vega ERP — Phase 20.1 UPGRADE (existing install at vegatest1.distrosku.com)
+# Vega ERP — Phase 20.2 UPGRADE (existing install at vegatest1.distrosku.com)
 
 For a site already installed from `vega-erp-phase1.zip` and upgraded through phase 3 (a phase-2 site can also take this zip: seeders are cumulative). TEST data only. No secrets in this package.
 This zip contains **no `laravel/.env` and no `laravel/storage/`**, so extracting it over the live site keeps both.
+
+## What's new in 0.20.2 (includes everything through 0.20.1)
+
+**Warehouse users can update inbound tracking.**
+
+- New **Update tracking** button on the purchase order page, on each row of the Purchase orders list and on **Purchasing > Expected inbound**.
+- It edits **only** the inbound shipping fields: *Expected arrival*, *Carrier*, *Carrier name*, *Tracking number(s)* and *Custom tracking URL*. Prices, lines, vendor, warehouse and status cannot be changed from it.
+- Who: **Warehouse**-role users (permission `purchase_orders.update_tracking` in `config/erp.php`) and members of the PO warehouse's **Receiving team**. Owners/admins keep full edit.
+- Warehouse users now open POs on a read-only PO page (with Update tracking) instead of the edit screen.
+- Changes are still in the Activity log and still send the receiving-team alert.
+- No migration. Run the upgrade page as usual.
 
 ## What's new in 0.20.1 (includes everything through 0.20.0)
 

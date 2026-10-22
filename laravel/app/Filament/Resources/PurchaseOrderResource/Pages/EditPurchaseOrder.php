@@ -14,6 +14,7 @@ class EditPurchaseOrder extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            \App\Filament\Support\UpdateTrackingAction::page(),
             Actions\DeleteAction::make()->visible(fn () => in_array($this->record->status instanceof \BackedEnum ? $this->record->status->value : $this->record->status, ['draft'], true)),
         ];
     }
