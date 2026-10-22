@@ -51,7 +51,7 @@ class Phase203PortalSectionsTest extends TestCase
 
     public function test_version(): void
     {
-        $this->assertSame('0.20.3', config('erp.version'));
+        $this->assertTrue(version_compare(config('erp.version'), '0.20.3', '>='));
     }
 
     public function test_sections_follow_flags_and_new_until_and_promotions(): void

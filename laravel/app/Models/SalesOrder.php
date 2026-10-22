@@ -4,10 +4,12 @@ namespace App\Models;
 
 use App\Enums\SalesOrderStatus;
 use App\Models\Concerns\HasActivity;
+use App\Sales\PickupBoard;
 use App\Services\Money;
 use App\Services\Sequence;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Validation\ValidationException;
 
 class SalesOrder extends Model
 {
@@ -37,9 +39,11 @@ class SalesOrder extends Model
                 $m->fulfillment = self::PICKUP;
             }
             if ($m->needsShipTo() && blank($m->ship_to_id)) {
-                throw \Illuminate\Validation\ValidationException::withMessages(['ship_to_id' => 'Choose a ship-to for a delivery (or switch the sale to Counter pickup).']);
+                throw ValidationException::withMessages(['ship_to_id' => 'Choose a ship-to for a delivery (or switch the sale to Counter pickup).']);
             }
         });
+        // 0.20.4: bell alert to the warehouse when a counter-pickup order is confirmed (never blocks the save).
+        static::saved(fn (self $m) => PickupBoard::onSaved($m));
     }
 
     /** 0.19.6: stored values. 'pickup' = counter pickup (the default). */
@@ -109,6 +113,7 @@ class SalesOrder extends Model
             'confirmed_at' => 'datetime',
             'delivered_at' => 'datetime',
             'invoiced_at' => 'datetime',
+            'board_stage_at' => 'datetime',
             'subtotal' => 'decimal:4',
             'total' => 'decimal:4',
             'amount_paid' => 'decimal:4',
@@ -150,21 +155,21 @@ class SalesOrder extends Model
     /** 0.20: computed from the balance (no stored status). null before delivery / when cancelled. */
     public function paymentState(): ?string
     {
-        if (! in_array($this->status, [\App\Enums\SalesOrderStatus::Delivered, \App\Enums\SalesOrderStatus::Invoiced], true)) {
+        if (! in_array($this->status, [SalesOrderStatus::Delivered, SalesOrderStatus::Invoiced], true)) {
             return null;
         }
-        $bal = \App\Services\Money::of($this->balance());
+        $bal = Money::of($this->balance());
         if (! $bal->isPositive()) {
             return 'paid';
         }
 
-        return \App\Services\Money::of($this->amount_paid)->plus(\App\Services\Money::of($this->amount_credited))->isPositive() ? 'partial' : 'unpaid';
+        return Money::of($this->amount_paid)->plus(Money::of($this->amount_credited))->isPositive() ? 'partial' : 'unpaid';
     }
 
     /** 0.20 status chips: Confirmed > Delivered > Invoiced > Paid / Partial. */
     public function stageChips(): string
     {
-        $S = \App\Enums\SalesOrderStatus::class;
+        $S = SalesOrderStatus::class;
         if ($this->status === $S::Draft || $this->status === $S::Cancelled) {
             return '<span class="text-xs text-gray-500">'.ucfirst($this->status->value).'</span>';
         }

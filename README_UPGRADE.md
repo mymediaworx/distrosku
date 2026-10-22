@@ -1,7 +1,20 @@
-# Vega ERP — Phase 20.3 UPGRADE (existing install at vegatest1.distrosku.com)
+# Vega ERP — Phase 20.4 UPGRADE (existing install at vegatest1.distrosku.com)
 
 For a site already installed from `vega-erp-phase1.zip` and upgraded through phase 3 (a phase-2 site can also take this zip: seeders are cumulative). TEST data only. No secrets in this package.
 This zip contains **no `laravel/.env` and no `laravel/storage/`**, so extracting it over the live site keeps both.
+
+## What's new in 0.20.4 (includes everything through 0.20.3)
+
+**Counter pickup board** (*Sales > Counter pickup board*, also reachable from the Sales Orders module; the Modules launcher order is unchanged).
+
+- Open **counter-pickup** orders (Delivery / Ship orders and completed POS walk-in sales are not shown) in four columns: **To pick** (Confirmed), **Picking** (Confirmed + started), **Ready for pickup** (Picked), **Picked up today** (Delivered / Invoiced today).
+- Each card: order # (click opens the order), customer, phone (ship-to, else customer), items / units, total, balance due or *paid*, time since confirmed (amber over 2 h, red over 24 h or past the requested pickup date = order ship date), *Regulated · signature needed / signed* badge, warehouse, notes.
+- Card buttons: **Pick list** (print), **Start picking** / *Back to To pick*, **Mark ready** (marks the order Picked), **Picked up** (= Deliver & invoice), **Collect payment** (= Deliver, invoice & collect on a ready order; Record payment on a picked-up order with a balance). Orders with regulated items show **Sign & pick up** (the existing pickup signature screen) until signed; Picked up stays blocked without a signature.
+- Permissions: stage moves = Sales Orders *manage* or Warehouse scan *manage*; Picked up / Collect payment = Sales Orders *manage*; Sign & pick up = Pickup signature *manage*. On-account over the credit limit still needs the owner/admin override.
+- Filters: warehouse and search (order #, customer name/code/phone). Refreshes every 30 seconds. **TV mode** button for large type on a wall screen (kept in the URL).
+- Bell alert "Counter pickup: SO… to pick" to the warehouse's Receiving team (else active Warehouse-role users) when a pickup order is confirmed (not POS sales). No email on vegatest1.
+- Every stage move is in the Activity log (`pickup_board_stage`), alerts as `pickup_board_alert`.
+- **Migration** `2026_11_19_000001_phase204_pickup_board` (re-runnable): `sales_orders.board_stage`, `board_stage_at`, `board_stage_by`, index `so_fulfill_status_idx`. Order statuses are unchanged. Run the upgrade page as usual.
 
 ## What's new in 0.20.3 (includes everything through 0.20.2)
 
