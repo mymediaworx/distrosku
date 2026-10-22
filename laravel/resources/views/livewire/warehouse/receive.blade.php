@@ -11,9 +11,9 @@
             <p>No open receiving session.</p>
         @endif
     </div>
-    <div class="card"><table class="tbl"><tr><th>SKU</th><th>Item</th><th>Ordered</th><th>Received before</th><th>Scanned</th><th>Left</th><th>Lots</th></tr>
+    <div class="card"><div class="tblwrap"><table class="tbl"><tr><th>SKU</th><th>Item</th><th>Ordered</th><th>Received before</th><th>Scanned</th><th>Left</th><th>Lots</th></tr>
         @foreach($rows as $r)<tr class="{{ (float) $r['remaining'] <= 0 ? 'done' : '' }}"><td>{{ $r['line']->product->sku }}</td><td>{{ $r['line']->product->name }}</td><td>{{ (float) $r['ordered'] }}</td><td>{{ (float) $r['received'] }}</td><td>{{ (float) $r['scanned'] }}</td><td>{{ (float) $r['remaining'] }}</td><td>{{ $r['line']->product->track_lots ? ($session?->scans->where('purchase_order_line_id', $r['line']->id)->whereNotNull('lot_number')->pluck('lot_number')->unique()->implode(', ') ?: 'lot required') : '' }}</td></tr>@endforeach
-    </table>
+    </table></div>
     @if($session && $session->status === 'open')
         <div class="row" style="margin-top:.6rem"><button class="btn2" wire:click="undo">Undo last scan</button><button wire:click="post" wire:confirm="Post the scanned quantities to stock and the GL?">Post receipt</button></div>
     @endif
