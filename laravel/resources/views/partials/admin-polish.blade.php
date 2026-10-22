@@ -13,7 +13,7 @@
 .fi-ta-header-cell{font-size:.72rem;text-transform:uppercase;letter-spacing:.04em}
 .fi-main{padding-bottom:2rem}
 /* No sideways page scroll; wide tables scroll inside their own card */
-html,body{overflow-x:hidden}
+html{overflow-x:hidden}
 .fi-main,.fi-page{min-width:0;max-width:100%}
 .fi-ta-content{overflow-x:auto;-webkit-overflow-scrolling:touch}
 .fi-fo-repeater,.fi-fo-table-repeater{overflow-x:auto}

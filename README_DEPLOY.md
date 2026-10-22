@@ -11,7 +11,7 @@ TEST DATA ONLY. Authorize.net is sandbox-only and not wired yet. No secrets are 
 `bootstrap/app.php` automatically uses the sibling `public_html` as the public path.
 
 ## Steps
-1. Site Tools > Devs > PHP Manager: PHP 8.3 (8.2 minimum) for vegatest1.distrosku.com.
+1. Site Tools > Devs > PHP Manager: PHP 8.2 (Managed PHP 8.2.x; the composer platform is pinned to 8.2) for vegatest1.distrosku.com.
 2. Site Tools > Site > MySQL: confirm the site database and its database user (All privileges). Password is NOT in this package — type it into the setup form.
 3. File Manager: upload `vega-erp-phase1.zip` to `/home/customer/www/vegatest1.distrosku.com/`, extract. It creates `laravel/` and `public_html/` (merge with the existing public_html; remove SiteGround's default index.html if present).
 4. Visit `https://vegatest1.distrosku.com/setup-<TOKEN>.php?token=<TOKEN>` (exact filename is in `public_html/`).

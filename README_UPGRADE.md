@@ -1,7 +1,22 @@
-# Vega ERP — Phase 20.6 UPGRADE (existing install at vegatest1.distrosku.com)
+# Vega ERP — Phase 20.7 UPGRADE (existing install at vegatest1.distrosku.com)
 
 For a site already installed from `vega-erp-phase1.zip` and upgraded through phase 3 (a phase-2 site can also take this zip: seeders are cumulative). TEST data only. No secrets in this package.
 This zip contains **no `laravel/.env` and no `laravel/storage/`**, so extracting it over the live site keeps both.
+
+## What's new in 0.20.7 (includes everything through 0.20.6)
+
+**UI fixes (POS, warehouse, sales orders, portal) and admin top bar fix. No migrations.**
+
+- **POS checkout:** order details sit next to the cart and *Complete sale* stays on screen on a 1280x800 tablet (including with the 21+ signature block); pay bar on portrait tablets and phones; line totals at 2 decimals; tender column stays put on long carts.
+- **Warehouse scanner:** the hub shows one card per PO/order with large touch buttons; scan field labelled; line tables scroll inside their card.
+- **Sales Orders list:** a single Status column, state shown under the customer, no wrapping; Status and Total stay visible on phones. *Fulfil.* is hidden by default (toggleable).
+- **Sales order screen:** a line total per line and a *Totals* section (Subtotal, Order total, Paid / credited, Balance due); Deliver modals show the amount. Qty/price display without trailing zeros (stored precision unchanged).
+- **Page titles** match the sidebar labels (e.g. "New price group", "New ship-to").
+- **Admin lists:** readable eligibility and PO vendor columns; Purchase Order secondary actions are in the row menu; Products keep Price visible on phones.
+- **Customer portal:** Shop / Buy again as one segmented control; the cart bar now sticks to the bottom.
+- **Admin top bar** stays pinned when scrolling again (0.20.6 regression).
+- `composer.json` now declares `ext-bcmath` (required by money math).
+- **No migration.** Run the upgrade page as usual.
 
 ## What's new in 0.20.6 (includes everything through 0.20.5)
 

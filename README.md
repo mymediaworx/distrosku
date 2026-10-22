@@ -15,7 +15,7 @@ KY tobacco/cigarette excise reporting, MSA/PACT compliance, customer portal, and
 | `docs/` | FRD gap list, roadmap, KY EDI guides and XSDs, MSA format specs. |
 
 ## Stack
-PHP 8.3+, Laravel 12, Filament 3, Livewire 3. MariaDB 11.8 in production (SiteGround), SQLite for local tests.
+PHP 8.2 (Managed PHP 8.2.35 in production; composer platform pinned to 8.2), Laravel 12, Filament 3, Livewire 3. MariaDB 11.8 in production (SiteGround), SQLite for local tests.
 Queue: `database` driver, drained every minute by `schedule:run` (cron) via `queue:work --stop-when-empty`.
 
 ## Run the tests
