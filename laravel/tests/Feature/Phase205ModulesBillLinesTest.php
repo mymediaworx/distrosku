@@ -30,7 +30,7 @@ class Phase205ModulesBillLinesTest extends TestCase
         $this->assertSame(0, Modules::section('Counter Pickup'));
         $this->assertCount(25, Modules::definitions());
         $this->get('/admin/sales/counter-pickup')->assertOk();
-        $this->assertSame('0.20.5', config('erp.version'));
+        $this->assertTrue(version_compare(config('erp.version'), '0.20.5', '>='));
     }
 
     public function test_vendor_bill_create_renders_lines_table(): void

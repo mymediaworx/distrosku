@@ -32,6 +32,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // 0.20.6: consistent table look (zebra rows) across every list.
+        \Filament\Tables\Table::configureUsing(fn (\Filament\Tables\Table $t) => $t->striped());
         \App\Marketing\MarketingEvents::register(); // 0.19 BrandWorx Marketing hooks (no-ops when off)
         // dompdf resolves base_path('public') unless told otherwise; on SiteGround the web root is ../public_html
         // and laravel/public does not exist -> "Cannot resolve public path" -> every PDF 500s. Point it at the real web root.

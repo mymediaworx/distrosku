@@ -57,3 +57,4 @@ laravel/bootstrap/cache/*
 !laravel/bootstrap/cache/.gitignore
 .deploy-secret
 secrets/client_id
+/msa-sample/

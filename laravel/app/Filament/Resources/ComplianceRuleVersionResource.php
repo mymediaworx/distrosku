@@ -39,7 +39,9 @@ class ComplianceRuleVersionResource extends Resource
                     ->required(),
                 Forms\Components\TextInput::make('max_thc_mg')
                     ->numeric(),
-                Forms\Components\TextInput::make('license_type'),
+                Forms\Components\Select::make('license_type')->label('License type')
+                    ->options(fn ($record) => \App\Models\LicenseType::options($record?->license_type))->searchable()
+                    ->helperText('From Settings › License types; the customer needs a current license of this type.'),
                 Forms\Components\DatePicker::make('effective_from')
                     ->required(),
                 Forms\Components\DatePicker::make('effective_to'),

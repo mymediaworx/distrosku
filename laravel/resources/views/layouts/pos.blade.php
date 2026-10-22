@@ -41,6 +41,13 @@ button{background:#1e3a8a;color:#fff;border:0;font-weight:600;cursor:pointer}but
 .who{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:.6rem}.who button{min-height:72px;background:#e5e7eb;color:#111;font-size:1.1rem}.who button.on{background:#1e3a8a;color:#fff}
 .dots{display:flex;justify-content:center;gap:1rem;margin:1rem 0}.dots span{width:22px;height:22px;border-radius:50%;border:2px solid #1e3a8a}.dots span.f{background:#1e3a8a}
 .lockbox{max-width:520px;margin:0 auto}
+/* 0.20.6 phones */
+html,body{overflow-x:hidden}
+@media(max-width:560px){body{font-size:16px}main{padding:.5rem}header{flex-wrap:wrap;padding:.4rem .6rem}.card{padding:.75rem;border-radius:10px}
+.line{grid-template-columns:1fr auto;row-gap:.35rem}.line .price{grid-column:1}.line .x{grid-column:2;width:52px}
+.step button{width:46px;min-height:46px}.step input{width:56px}.scan button{min-width:84px}
+.posbar{grid-template-columns:1fr 1fr}.posbar button.big{grid-column:1/-1}.tiles{grid-template-columns:repeat(2,1fr)}.who{grid-template-columns:repeat(2,1fr)}
+.total{font-size:1.6rem}.ovl{padding:0}.ovl-in{border-radius:0;min-height:100vh}}
 </style>
 @livewireStyles
 </head>

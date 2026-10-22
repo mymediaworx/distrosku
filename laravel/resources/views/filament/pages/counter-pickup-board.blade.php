@@ -9,6 +9,7 @@
     $head = ['to_pick' => '#6b7280', 'picking' => '#2563eb', 'ready' => '#d97706', 'done' => '#16a34a'];
 @endphp
 <x-filament-panels::page>
+<style>.cpb-cols{grid-template-columns:repeat(4,minmax(0,1fr))}@media(max-width:1100px){.cpb-cols{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:640px){.cpb-cols{grid-template-columns:1fr}}</style>
     <div wire:poll.30s style="font-size: {{ $fs }}rem">
         <div style="display:flex; flex-wrap:wrap; gap:.75rem; align-items:center; margin-bottom:1rem">
             <select wire:model.live="warehouseId" style="border:1px solid #d1d5db; border-radius:.5rem; padding:.4rem .6rem; font-size:inherit">
@@ -18,14 +19,14 @@
                 @endforeach
             </select>
             <input type="search" wire:model.live.debounce.400ms="search" placeholder="Search order #, customer, phone"
-                   style="border:1px solid #d1d5db; border-radius:.5rem; padding:.4rem .6rem; min-width:16rem; font-size:inherit">
+                   style="border:1px solid #d1d5db; border-radius:.5rem; padding:.4rem .6rem; min-width:0; width:min(16rem,100%); font-size:inherit">
             <x-filament::button color="gray" wire:click="toggleTv" icon="heroicon-o-tv" size="sm">
                 {{ $tv ? 'Normal view' : 'TV mode (large type)' }}
             </x-filament::button>
             <span style="color:#6b7280; font-size:.85em">Refreshes every 30 seconds · amber over {{ B::AMBER_HOURS }}h, red over {{ B::RED_HOURS }}h or past the requested pickup date</span>
         </div>
 
-        <div style="display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:1rem; align-items:start">
+        <div class="cpb-cols" style="display:grid; gap:1rem; align-items:start">
             @foreach(B::STAGES as $key => $label)
                 <div style="background:#f9fafb; border-radius:.75rem; padding:.6rem; min-height:12rem" data-stage="{{ $key }}">
                     <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:3px solid {{ $head[$key] }}; padding-bottom:.35rem; margin-bottom:.6rem">

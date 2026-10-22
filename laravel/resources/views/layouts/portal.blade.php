@@ -27,6 +27,10 @@ table{width:100%;border-collapse:collapse}td,th{padding:.45rem .3rem;border-bott
 .badge{display:inline-block;padding:.1rem .45rem;border-radius:999px;background:#e2e8f0;font-size:.75rem}
 .cartbar{position:sticky;bottom:0;background:#1e3a8a;color:#fff;padding:.7rem 1rem;border-radius:10px;display:flex;justify-content:space-between;align-items:center}
 .cartbar button{width:auto;background:#fff;color:#1e3a8a}
+/* 0.20.6 phones */
+html,body{overflow-x:hidden}.card{overflow-x:auto}
+@media(max-width:600px){header{padding:.5rem .75rem}header nav{margin-left:0;width:100%;overflow-x:auto;gap:1rem;padding-bottom:.2rem;white-space:nowrap}
+main{padding:.6rem}.card{padding:.8rem}.inline{flex-wrap:wrap}td,th{font-size:.85rem}input,select,textarea{font-size:16px}}
 </style>
 @livewireStyles
 </head>

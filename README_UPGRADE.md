@@ -1,7 +1,32 @@
-# Vega ERP — Phase 20.5 UPGRADE (existing install at vegatest1.distrosku.com)
+# Vega ERP — Phase 20.6 UPGRADE (existing install at vegatest1.distrosku.com)
 
 For a site already installed from `vega-erp-phase1.zip` and upgraded through phase 3 (a phase-2 site can also take this zip: seeders are cumulative). TEST data only. No secrets in this package.
 This zip contains **no `laravel/.env` and no `laravel/storage/`**, so extracting it over the live site keeps both.
+
+## What's new in 0.20.6 (includes everything through 0.20.5)
+
+**Edit Customer screen, licenses and a responsive UI pass.**
+
+- **Customers > Edit customer** is grouped into sections: *Customer*, *Terms & pricing*, *Credit*, *Delivery & marketing*, *Balance & aging*, *MSA*, then the related tabs.
+- **Terms** is now a dropdown with these standard options: COD, Due on receipt, Prepaid, Net 7/10/15/30/45/60 and 2/10 Net 30.
+  - Existing values are normalized by the migration (for example "net30" becomes "Net 30").
+  - Any non-standard value is kept and shown as "(existing)".
+  - Dunning now reads "2/10 Net 30" as 30 days.
+- **Price group** options include **Standard** and **Wholesale**. The migration creates them if they are missing; an existing "wholesale" group is renamed rather than duplicated. Manage groups in *Pricing > Price groups*.
+- **State tax ID** and the new **Federal EIN** field sit above Price group. EIN is validated as 9 digits and saved as XX-XXXXXXX, using the existing `fein` column.
+- **Beginning balance** sits directly below *Available credit*.
+- **MSA** section moved below *Balance & aging*.
+- **Licenses** are managed on the customer screen in a new *Licenses* tab. The standalone Customer Licenses page is removed from the sidebar; its URL still works.
+- **License type** is a dropdown from **Settings > License types** (admin only). It is seeded with **KY Tobacco License** and **KY Hemp License**, plus tobacco wholesale, resale and kratom.
+  - Existing type codes are kept, so compliance rules keep matching unchanged. Compliance rule versions use the same list.
+  - A type in use can't be deleted, and its code can't be changed.
+- **UI pass:**
+  - Inter font, striped tables and a collapsible desktop sidebar.
+  - Responsive form grids; less important table columns are hidden on phones.
+  - The sidebar drawer starts closed on phones, and phone inputs no longer trigger iOS zoom.
+  - No horizontal scrolling on admin, POS, driver or portal pages.
+  - The counter pickup board stacks to 2 columns, then 1, on small screens.
+- **Migration** `2026_11_20_000001_phase206_customer_screen` (re-runnable, deletes nothing): `license_types` table + seeds, terms normalization, Standard/Wholesale price groups. Run the upgrade page as usual.
 
 ## What's new in 0.20.5 (includes everything through 0.20.4)
 

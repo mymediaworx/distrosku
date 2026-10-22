@@ -53,6 +53,7 @@ class CoreSeeder extends Seeder
                     'source' => 'PROTOTYPE - verify before use', 'notes' => 'Seeded starter rule; Rules Hub will supersede.'],
             );
         }
+        \App\Models\LicenseType::seedDefaults(); // 0.20.6
         // Federal hemp redefinition (total THC per container) - every destination state.
         foreach (['KY', 'IL', 'IN', 'TN', 'MS'] as $st) {
             ComplianceRuleVersion::updateOrCreate(

@@ -10,6 +10,7 @@ use App\Filament\Resources\CustomerResource\Pages;
 use App\Models\Customer;
 use App\Services\CustomerBalanceService;
 use App\Services\Money;
+use App\Support\Terms;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
@@ -46,65 +47,83 @@ class CustomerResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('code')
-                    ->required(),
-                Forms\Components\TextInput::make('name')
-                    ->required(),
-                Forms\Components\Select::make('type')->label('Customer type')
-                    ->options(\App\Support\CustomerType::OPTIONS)->default('retailer')
-                    ->required()
-                    ->helperText(fn ($record) => $record?->type_legacy ? 'Before 0.20.3 this was: '.$record->type_legacy : null),
-                Forms\Components\TextInput::make('email')
-                    ->email(),
-                Forms\Components\TextInput::make('phone')
-                    ->tel(),
-                Forms\Components\TextInput::make('terms')
-                    ->required(),
-                Forms\Components\Select::make('customer_group_id')->label('Price group')->relationship('customerGroup', 'name')->searchable()->preload()->nullable()
-                    ->helperText('Group prices and group promotions apply to this customer.'),
-                Forms\Components\Select::make('sales_rep_id')->label('Sales rep')->relationship('salesRep', 'name')->searchable()->preload()->nullable(),
-                Forms\Components\TextInput::make('credit_limit')
-                    ->required()
-                    ->numeric()
-                    ->default(0)
-                    ->disabled(fn () => ! auth()->user()?->isAdmin())
-                    ->dehydrated(fn () => (bool) auth()->user()?->isAdmin())
-                    ->helperText(fn () => (auth()->user()?->isAdmin() ? '' : 'Only an owner/admin can change the credit limit. ').'0 = no limit. Charges to the account that would go over the limit are blocked (owner/admin can override per order).'),
-                Forms\Components\Placeholder::make('available_credit')->label('Available credit')
-                    ->visible(fn (?Customer $record) => $record !== null)
-                    ->content(fn (?Customer $record) => $record ? CreditLimit::summary($record) : ''),
-                Forms\Components\CheckboxList::make('delivery_days')->options(DeliveryDays::DAYS)->columns(7)->gridDirection('row')
-                    ->formatStateUsing(fn ($state) => DeliveryDays::parse($state))->dehydrateStateUsing(fn ($state) => DeliveryDays::toCsv($state))->columnSpanFull(),
-                Forms\Components\TextInput::make('state_tax_id')->label('State tax ID')->maxLength(40)
-                    ->helperText('Sent to BrandWorx Marketing (State Tax ID custom field).'),
-                Forms\Components\Toggle::make('email_opt_in')->label('Email opt-in (marketing / notices)')
-                    ->helperText('Drives email consent in BrandWorx Marketing. Off sets Email to DND there.'),
-                Forms\Components\Toggle::make('sms_opt_in')->label('SMS opt-in')
-                    ->helperText('Only with recorded consent (A2P 10DLC). Drives SMS consent in BrandWorx Marketing. Off sets SMS to DND there.'),
-                Forms\Components\Toggle::make('active')
-                    ->required(),
-                Forms\Components\Fieldset::make('MSA')->visible(fn () => (bool) auth()->user()?->isAdmin())->schema([
-                    Forms\Components\Select::make('msa_class_of_trade')->label('Class of trade (blank = from type)')
-                        ->options(['Retailer' => 'Retailer', 'Distributor' => 'Distributor', 'Other' => 'Other']),
-                    Forms\Components\Toggle::make('msa_promo_acceptance')->label('Accepts promotional tobacco product'),
-                ])->columns(2),
-                // Admin-level only (owner/admin/brandworx_admin). Not dehydrated: saved via CustomerBalanceService (ledger + audit).
-                Forms\Components\Section::make('Beginning balance (migrated from previous system)')
-                    ->visible(fn () => CustomerBalanceService::canManage(auth()->user()))
-                    ->schema([
-                        Forms\Components\TextInput::make('beginning_balance')->numeric()->default(0)
-                            ->helperText('Negative = customer credit. Changes post Dr/Cr 1100 AR vs 3900 Opening Balance Equity for the difference.')
-                            ->dehydrated(false),
-                        Forms\Components\DatePicker::make('beginning_balance_date')->dehydrated(false),
-                        Forms\Components\TextInput::make('beginning_balance_note')->label('Reason for change')->dehydrated(false),
-                    ])->columns(3),
+                // 0.20.6: grouped, responsive sections (stack on phones). Order per Michael:
+                // Price group after State tax ID + Federal EIN; Beginning balance right under Available credit; MSA below Balance & aging.
+                Forms\Components\Section::make('Customer')->schema([
+                    Forms\Components\TextInput::make('code')->required(),
+                    Forms\Components\TextInput::make('name')->required(),
+                    Forms\Components\Select::make('type')->label('Customer type')
+                        ->options(\App\Support\CustomerType::OPTIONS)->default('retailer')->required()
+                        ->helperText(fn ($record) => $record?->type_legacy ? 'Before 0.20.3 this was: '.$record->type_legacy : null),
+                    Forms\Components\TextInput::make('email')->email(),
+                    Forms\Components\TextInput::make('phone')->tel(),
+                    Forms\Components\Toggle::make('active')->required()->default(true)->inline(false),
+                ])->columns(['default' => 1, 'sm' => 2, 'xl' => 3]),
+                Forms\Components\Section::make('Terms & pricing')->schema([
+                    Forms\Components\Select::make('terms')->label('Terms')
+                        ->options(fn (?Customer $record) => Terms::options($record?->terms))
+                        ->default('Net 15')->required()->native(false)->searchable(),
+                    Forms\Components\TextInput::make('state_tax_id')->label('State tax ID')->maxLength(40)
+                        ->helperText('Sent to BrandWorx Marketing (State Tax ID custom field).'),
+                    Forms\Components\TextInput::make('fein')->label('Federal EIN')->maxLength(20)->placeholder('12-3456789')
+                        ->rule('nullable')->regex('/^\s*\d{2}-?\d{7}\s*$/')
+                        ->validationMessages(['regex' => 'Federal EIN should be 9 digits, like 12-3456789.'])
+                        ->dehydrateStateUsing(fn ($state) => static::formatEin($state)),
+                    Forms\Components\Select::make('customer_group_id')->label('Price group')->relationship('customerGroup', 'name')->searchable()->preload()->nullable()
+                        ->helperText('Group prices and group promotions apply to this customer. Add groups in Pricing › Price groups.'),
+                    Forms\Components\Select::make('sales_rep_id')->label('Sales rep')->relationship('salesRep', 'name')->searchable()->preload()->nullable(),
+                ])->columns(['default' => 1, 'sm' => 2, 'xl' => 3]),
+                Forms\Components\Section::make('Credit')->schema([
+                    Forms\Components\TextInput::make('credit_limit')->required()->numeric()->default(0)
+                        ->disabled(fn () => ! auth()->user()?->isAdmin())
+                        ->dehydrated(fn () => (bool) auth()->user()?->isAdmin())
+                        ->helperText(fn () => (auth()->user()?->isAdmin() ? '' : 'Only an owner/admin can change the credit limit. ').'0 = no limit. Charges to the account that would go over the limit are blocked (owner/admin can override per order).'),
+                    Forms\Components\Placeholder::make('available_credit')->label('Available credit')
+                        ->visible(fn (?Customer $record) => $record !== null)
+                        ->content(fn (?Customer $record) => $record ? CreditLimit::summary($record) : ''),
+                    // Admin-level only (owner/admin/brandworx_admin). Not dehydrated: saved via CustomerBalanceService (ledger + audit).
+                    Forms\Components\Fieldset::make('Beginning balance (migrated from previous system)')
+                        ->visible(fn () => CustomerBalanceService::canManage(auth()->user()))
+                        ->schema([
+                            Forms\Components\TextInput::make('beginning_balance')->numeric()->default(0)
+                                ->helperText('Negative = customer credit. Changes post Dr/Cr 1100 AR vs 3900 Opening Balance Equity for the difference.')
+                                ->dehydrated(false),
+                            Forms\Components\DatePicker::make('beginning_balance_date')->dehydrated(false),
+                            Forms\Components\TextInput::make('beginning_balance_note')->label('Reason for change')->dehydrated(false),
+                        ])->columns(['default' => 1, 'md' => 3])->columnSpanFull(),
+                ])->columns(['default' => 1, 'md' => 2]),
+                Forms\Components\Section::make('Delivery & marketing')->schema([
+                    Forms\Components\CheckboxList::make('delivery_days')->options(DeliveryDays::DAYS)->columns(['default' => 2, 'sm' => 4, 'lg' => 7])->gridDirection('row')
+                        ->formatStateUsing(fn ($state) => DeliveryDays::parse($state))->dehydrateStateUsing(fn ($state) => DeliveryDays::toCsv($state))->columnSpanFull(),
+                    Forms\Components\Toggle::make('email_opt_in')->label('Email opt-in (marketing / notices)')
+                        ->helperText('Drives email consent in BrandWorx Marketing. Off sets Email to DND there.'),
+                    Forms\Components\Toggle::make('sms_opt_in')->label('SMS opt-in')
+                        ->helperText('Only with recorded consent (A2P 10DLC). Drives SMS consent in BrandWorx Marketing. Off sets SMS to DND there.'),
+                ])->columns(['default' => 1, 'md' => 2])->collapsible(),
                 Forms\Components\Section::make('Balance & aging')
                     ->visible(fn (?Customer $record) => (bool) $record?->exists)
                     ->schema([
                         Forms\Components\Placeholder::make('aging')->hiddenLabel()
                             ->content(fn (?Customer $record) => $record ? view('docs.aging-inline', ['aging' => app(CustomerBalanceService::class)->aging($record)]) : null),
                     ]),
+                Forms\Components\Section::make('MSA')->visible(fn () => (bool) auth()->user()?->isAdmin())->schema([
+                    Forms\Components\Select::make('msa_class_of_trade')->label('Class of trade (blank = from type)')
+                        ->options(['Retailer' => 'Retailer', 'Distributor' => 'Distributor', 'Other' => 'Other']),
+                    Forms\Components\Toggle::make('msa_promo_acceptance')->label('Accepts promotional tobacco product')->inline(false),
+                ])->columns(['default' => 1, 'md' => 2])->collapsible(),
             ]);
+    }
+
+    /** 0.20.6: store Federal EIN as XX-XXXXXXX when 9 digits were entered; otherwise keep what was typed. */
+    public static function formatEin(?string $v): ?string
+    {
+        $v = trim((string) $v);
+        if ($v === '') {
+            return null;
+        }
+        $d = preg_replace('/\D/', '', $v);
+
+        return strlen($d) === 9 ? substr($d, 0, 2).'-'.substr($d, 2) : $v;
     }
 
     public static function table(Table $table): Table
@@ -118,14 +137,16 @@ class CustomerResource extends Resource
                 Tables\Columns\TextColumn::make('type')->label('Type')
                     ->formatStateUsing(fn ($state) => \App\Support\CustomerType::label($state))->searchable()->sortable(),
                 Tables\Columns\TextColumn::make('email')
-                    ->searchable(),
+                    ->searchable()->visibleFrom('lg')->toggleable(),
                 Tables\Columns\TextColumn::make('phone')
-                    ->searchable(),
+                    ->searchable()->visibleFrom('md')->toggleable(),
                 Tables\Columns\TextColumn::make('terms')
-                    ->searchable(),
+                    ->searchable()->badge()->color('gray')->visibleFrom('md'),
+                Tables\Columns\TextColumn::make('customerGroup.name')->label('Price group')->badge()->color('info')
+                    ->visibleFrom('lg')->toggleable(),
                 Tables\Columns\TextColumn::make('credit_limit')
                     ->numeric()
-                    ->sortable(),
+                    ->sortable()->visibleFrom('lg')->toggleable(),
                 Tables\Columns\TextColumn::make('ar_balance')->label('Balance')
                     ->state(fn (Customer $r) => $r->balance())->numeric(2),
                 Tables\Columns\TextColumn::make('beginning_balance')->label('Beginning bal.')
@@ -145,6 +166,7 @@ class CustomerResource extends Resource
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('type')->label('Customer type')->options(\App\Support\CustomerType::OPTIONS),
+                Tables\Filters\SelectFilter::make('customer_group_id')->label('Price group')->relationship('customerGroup', 'name'),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
@@ -172,6 +194,7 @@ class CustomerResource extends Resource
     public static function getRelations(): array
     {
         return [
+            CustomerResource\RelationManagers\LicensesRelationManager::class,
             CustomerResource\RelationManagers\ShipTosRelationManager::class,
             CustomerResource\RelationManagers\ContactsRelationManager::class,
             HistoryRelationManager::class,

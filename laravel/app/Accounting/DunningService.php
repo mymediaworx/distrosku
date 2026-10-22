@@ -57,6 +57,9 @@ class DunningService
 
     public static function termsDays(?string $terms): int
     {
+        if ($terms && preg_match('/net\s*(\d+)/i', $terms, $m)) { // 0.20.6: "2/10 Net 30" = 30
+            return (int) $m[1];
+        }
         if ($terms && preg_match('/(\d+)/', $terms, $m)) {
             return (int) $m[1];
         }
