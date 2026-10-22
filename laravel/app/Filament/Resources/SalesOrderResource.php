@@ -116,22 +116,33 @@ class SalesOrderResource extends Resource
     {
         return $table
             ->defaultSort('id', 'desc')
+            ->modifyQueryUsing(fn ($query) => $query->with('shipTo')) // the customer description reads the ship-to state
             ->columns([
-                Tables\Columns\TextColumn::make('number')->searchable()->sortable(),
-                Tables\Columns\TextColumn::make('customer.name')->searchable()->wrap(),
-                Tables\Columns\TextColumn::make('shipTo.state')->label('St')->placeholder('Pickup'),
-                Tables\Columns\TextColumn::make('fulfillment')->label('Fulfil.')->badge()->toggleable()
+                // UI audit #4: one status column, no 4-line customer wrap, key columns visible on phones.
+                // Phones: number over customer in one column so status and total stay on screen.
+                Tables\Columns\TextColumn::make('order_summary')->label('Order')->weight('medium')
+                    ->getStateUsing(fn (SalesOrder $r) => $r->number)
+                    ->description(fn (SalesOrder $r) => new HtmlString(e(\Illuminate\Support\Str::limit((string) $r->customer?->name, 16)).'<br>'.e(self::fulfillmentLabel($r))))
+                    ->hiddenFrom('sm'),
+                Tables\Columns\TextColumn::make('number')->searchable()->sortable()->visibleFrom('sm'),
+                Tables\Columns\TextColumn::make('customer.name')->label('Customer')->searchable()
+                    ->limit(32)->tooltip(fn (SalesOrder $r) => mb_strlen((string) $r->customer?->name) > 32 ? $r->customer?->name : null)
+                    ->description(fn (SalesOrder $r) => self::fulfillmentLabel($r)) // replaces the separate "St" column
+                    ->visibleFrom('sm'),
+                Tables\Columns\TextColumn::make('fulfillment')->label('Fulfil.')->badge()->toggleable(isToggledHiddenByDefault: true)
                     ->formatStateUsing(fn ($state) => ['pickup' => 'Pickup', 'delivery' => 'Delivery', 'ship' => 'Ship'][$state] ?? 'Pickup'),
                 Tables\Columns\TextColumn::make('status')->badge()->formatStateUsing(fn ($state) => ucfirst($state->value))
                     ->color(fn ($state) => match ($state) {
                         S::Invoiced => 'success', S::Cancelled => 'gray', S::Draft => 'warning', default => 'info'
-                    }),
-                Tables\Columns\TextColumn::make('progress')->label('Progress')->html()
-                    ->getStateUsing(fn (SalesOrder $r) => $r->stageChips()), // 0.20 chips: Confirmed > Delivered > Invoiced > Paid / Partial
+                    })
+                    ->hiddenFrom('lg'), // phones/tablets: compact badge; large screens use the progress chips below
+                Tables\Columns\TextColumn::make('progress')->label('Status')->html()
+                    ->getStateUsing(fn (SalesOrder $r) => self::progressHtml($r)) // 0.20 chips: Confirmed > Delivered > Invoiced > Paid / Partial
+                    ->visibleFrom('lg'),
                 Tables\Columns\TextColumn::make('total')->money('USD')->sortable(),
-                Tables\Columns\TextColumn::make('balance_due')->label('Balance')->money('USD')->toggleable()
+                Tables\Columns\TextColumn::make('balance_due')->label('Balance')->money('USD')->toggleable()->visibleFrom('md')
                     ->getStateUsing(fn (SalesOrder $r) => in_array($r->status, [S::Delivered, S::Invoiced], true) ? $r->balance() : null),
-                Tables\Columns\TextColumn::make('order_date')->date()->sortable()->toggleable(),
+                Tables\Columns\TextColumn::make('order_date')->date()->sortable()->toggleable()->visibleFrom('sm'),
                 Tables\Columns\TextColumn::make('channel')->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
@@ -304,6 +315,26 @@ class SalesOrderResource extends Resource
     public static function getRelations(): array
     {
         return [HistoryRelationManager::class];
+    }
+
+    /** List description under the customer: "Pickup", or "Delivery · KY" (ship-to state, needed for PACT checks at a glance). */
+    public static function fulfillmentLabel(SalesOrder $r): string
+    {
+        $f = ['pickup' => 'Pickup', 'delivery' => 'Delivery', 'ship' => 'Ship'][$r->fulfillment] ?? 'Pickup';
+        $state = $f === 'Pickup' ? null : $r->shipTo?->state;
+
+        return $state ? "{$f} · {$state}" : $f;
+    }
+
+    /** Single status column on large screens: progress chips, with Draft / Cancelled as badges and "Picked" named. */
+    public static function progressHtml(SalesOrder $r): string
+    {
+        return match ($r->status) {
+            S::Draft => '<span style="display:inline-block;padding:1px 8px;border-radius:9999px;font-size:11px;font-weight:600;background:#fef3c7;color:#92400e">Draft</span>',
+            S::Cancelled => '<span style="display:inline-block;padding:1px 8px;border-radius:9999px;font-size:11px;font-weight:600;background:#f3f4f6;color:#4b5563">Cancelled</span>',
+            S::Picked => str_replace('>Confirmed<', '>Picked<', $r->stageChips()),
+            default => $r->stageChips(),
+        };
     }
 
     public static function getPages(): array
