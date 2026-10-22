@@ -41,7 +41,7 @@ case "$PHASE" in
   17.2) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
   17.3) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
   18) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
-  19|19.1|19.2|19.3|19.4|19.5|19.6|20.0) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
+  19|19.1|19.2|19.3|19.4|19.5|19.6|20.0|20.1) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
   18.2) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
   18.1) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
   *) echo "No seeder list for phase $PHASE"; exit 1 ;;
@@ -238,6 +238,31 @@ if [ "$PHASE" = "13" ]; then
       | cmp -s - $L/resources/ky-edi/KYTobacco2017V1.5-local/Documents/LOCAL-PATCH.lines || { echo "CHECK FAILED: tobacco XSD differs from docs/xsd beyond the documented patch"; exit 1; }
   fi
   echo "Phase 13 checks OK"
+fi
+if [ "$PHASE" = "20.1" ]; then
+  L=stage-up/laravel
+  test -f $L/vendor/livewire/livewire/dist/livewire.min.js || { echo "CHECK FAILED: livewire dist missing"; exit 1; }
+  grep -q "'version' => '0.20.1'" $L/config/erp.php || { echo "CHECK FAILED: erp version is not 0.20.1"; exit 1; }
+  M=database/migrations/2026_11_17_000001_phase201_po_inbound.php
+  [ "$(ls $L/database/migrations | tail -1)" = "$(basename $M)" ] || { echo "CHECK FAILED: last migration is not 20.1"; exit 1; }
+  LONG=$(grep -oE "'[a-z_]+_(fk|idx|uq|index|unique)'" $L/$M | tr -d "'" | awk 'length > 64')
+  [ -z "$LONG" ] || { echo "CHECK FAILED: identifier over 64 chars: $LONG"; exit 1; }
+  for f in app/Purchasing/InboundTracking.php app/Purchasing/ReceivingAlerts.php app/Notifications/InboundPoAlert.php app/Filament/Pages/ExpectedInbound.php \
+           app/Filament/Widgets/ExpectedInboundWidget.php app/Navigation/NavOrder.php app/Filament/Support/OrderActions.php app/Filament/Pages/Receivables.php; do
+    test -f $L/$f || { echo "CHECK FAILED: $f missing"; exit 1; }
+  done
+  grep -q "po:inbound-digest" $L/routes/console.php || { echo "CHECK FAILED: digest not scheduled"; exit 1; }
+  grep -q "databaseNotifications()" $L/app/Providers/Filament/AdminPanelProvider.php || { echo "CHECK FAILED: bell not enabled"; exit 1; }
+  grep -q "'enabled' => false, 'verify_with_counsel' => false" $L/database/migrations/2026_11_09_000001_phase181_ky_hemp_registry.php || { echo "CHECK FAILED: KY registry rule must seed disabled"; exit 1; }
+  ! has_val "$CLIENT_ID" $L/app $L/config $L/database $L/resources || { echo "CHECK FAILED: client MSA ID in package"; exit 1; }
+  ! has_val "$GHL_LOC" $L/app $L/config $L/database $L/resources $L/routes || { echo "CHECK FAILED: live location id in package"; exit 1; }
+  ! grep -rqi "highlevel\|gohighlevel" $L/resources/views || { echo "CHECK FAILED: vendor name in UI"; exit 1; }
+  if [ -f secrets/ghl.env ]; then
+    PIT=$(sed -n 's/^GHL_PIT=//p' secrets/ghl.env | tr -d '\r\n')
+    [ -n "$PIT" ] && grep -rqF "$PIT" stage-up && { echo "CHECK FAILED: marketing token found in package"; exit 1; }
+  fi
+  grep -q "return \$this->invoice(\$so);" $L/app/Services/SalesOrderService.php || { echo "CHECK FAILED: deliver does not auto-invoice"; exit 1; }
+  echo "Phase 20.1 checks OK"
 fi
 if [ "$PHASE" = "20.0" ]; then
   L=stage-up/laravel

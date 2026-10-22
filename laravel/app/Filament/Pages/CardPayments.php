@@ -19,7 +19,9 @@ class CardPayments extends Page
 {
     protected static string $view = 'filament.pages.card-payments';
 
-    protected static ?string $navigationGroup = 'Sales';
+    protected static ?string $navigationGroup = 'Payments';
+
+    protected static ?int $navigationSort = 2;
 
     protected static ?string $navigationIcon = 'heroicon-o-credit-card';
 

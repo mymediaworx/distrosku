@@ -30,6 +30,8 @@ class PurchaseOrderResource extends Resource
 
     protected static ?string $navigationGroup = 'Purchasing';
 
+    protected static ?int $navigationSort = 2;
+
     protected static ?string $recordTitleAttribute = 'number';
 
     public static function form(Form $form): Form
@@ -47,6 +49,19 @@ class PurchaseOrderResource extends Resource
                     ->helperText('Blank = global setting. Over-receipts are logged.')
                     ->visible(fn () => auth()->user()?->isAdmin()),
             ]),
+            Forms\Components\Section::make('Inbound shipping')->description('The receiving team is alerted when the PO is sent (Ordered) and when the ETA or tracking changes.')
+                ->columns(['default' => 1, 'md' => 3])->schema([
+                    Forms\Components\DatePicker::make('expected_at')->label('Expected arrival'),
+                    Forms\Components\Select::make('carrier_code')->label('Carrier')->options(\App\Purchasing\InboundTracking::CARRIERS)->live(),
+                    Forms\Components\TextInput::make('carrier_name')->label('Carrier name')->maxLength(80)
+                        ->visible(fn (Forms\Get $get) => $get('carrier_code') === 'other')->placeholder('e.g. Estes, R+L, own truck'),
+                    Forms\Components\TagsInput::make('tracking_numbers')->label('Tracking number(s)')->placeholder('Add a number, press Enter')->splitKeys([',', ' ', 'Enter'])->columnSpan(['md' => 2]),
+                    Forms\Components\TextInput::make('tracking_url')->label('Custom tracking URL')->url()->maxLength(500)
+                        ->helperText('Optional. Overrides the carrier link; use {tracking} where the number goes.'),
+                    Forms\Components\Placeholder::make('track_links')->label('Track')->columnSpanFull()
+                        ->visible(fn (?PurchaseOrder $record) => $record && \App\Purchasing\InboundTracking::links($record))
+                        ->content(fn (?PurchaseOrder $record) => new \Illuminate\Support\HtmlString($record ? \App\Purchasing\InboundTracking::html($record) : '')),
+                ]),
             Forms\Components\Repeater::make('lines')->relationship()->columns(['default' => 2, 'md' => 4])
                 ->disabled(fn (?PurchaseOrder $record) => in_array($record?->status, ['received', 'partial'], true))
                 ->schema([
@@ -77,6 +92,9 @@ class PurchaseOrderResource extends Resource
                 Tables\Columns\TextColumn::make('total')->money('USD'),
                 Tables\Columns\TextColumn::make('order_date')->date()->toggleable(),
                 Tables\Columns\TextColumn::make('warehouse.code')->label('WH')->toggleable(),
+                Tables\Columns\TextColumn::make('expected_at')->label('Expected')->date()->sortable()->toggleable(),
+                Tables\Columns\TextColumn::make('track')->label('Tracking')->html()->toggleable()
+                    ->getStateUsing(fn (PurchaseOrder $r) => trim((\App\Purchasing\InboundTracking::carrierLabel($r) ?? '').' '.\App\Purchasing\InboundTracking::html($r))),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

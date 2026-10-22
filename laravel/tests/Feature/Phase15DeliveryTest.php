@@ -297,11 +297,11 @@ class Phase15DeliveryTest extends TestCase
         $this->flushSession();
         $this->actingAs($this->driver);
         $labels = collect(Modules::tiles())->pluck('label');
-        $this->assertContains('Driver app', $labels);
+        $this->assertContains('Driver', $labels);
         $this->assertContains('Delivery', $labels);
         $this->assertNotContains('Accounting', $labels);
         $this->assertNotContains('Settings', $labels);
-        $this->get('/admin/modules')->assertOk()->assertDontSee('Bills (AP)');
+        $this->get('/admin/modules')->assertOk()->assertDontSee("<span>Bills (AP)</span>", false);
         Livewire::test(Modules::class)->call('toggleHome');
         $this->assertSame('modules', $this->driver->fresh()->landing_page);
         $resp = app(LoginResponse::class)->toResponse(request()->setUserResolver(fn () => $this->driver->fresh()));

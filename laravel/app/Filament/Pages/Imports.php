@@ -24,7 +24,7 @@ class Imports extends Page
 
     protected static ?string $navigationIcon = 'heroicon-o-arrow-up-tray';
 
-    protected static ?int $navigationSort = 80;
+    protected static ?int $navigationSort = 3;
 
     protected static ?string $title = 'Imports';
 

@@ -22,7 +22,7 @@ class MsaWeekly extends Page implements HasForms
 
     protected static string $view = 'filament.pages.msa-weekly';
 
-    protected static ?string $navigationGroup = 'Reports';
+    protected static ?string $navigationGroup = 'Tax Filings';
 
     protected static ?string $navigationIcon = 'heroicon-o-document-arrow-up';
 
@@ -30,7 +30,7 @@ class MsaWeekly extends Page implements HasForms
 
     protected static ?string $slug = 'msa/weekly';
 
-    protected static ?int $navigationSort = 50;
+    protected static ?int $navigationSort = 20;
 
     public ?string $week_ending = null;
 

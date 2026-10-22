@@ -1,5 +1,6 @@
 <div>
     <div class="card"><h3>Receive PO {{ $po->number }} · {{ $po->vendor->name }} <span class="pill">{{ $po->status }}</span></h3>
+        <p data-test="inbound">Expected {{ $po->expected_at ? $po->expected_at->format('D M j') : 'not set' }}@if($c = \App\Purchasing\InboundTracking::carrierLabel($po)) · {{ $c }}@endif @if($t = \App\Purchasing\InboundTracking::html($po)) · {!! $t !!}@endif</p>
         @if($session && $session->status === 'open')
             <div class="row"><label>Lot <input wire:model="lot" placeholder="lot # (lot-tracked items)" data-test="lot"></label>
                 <label>Expires <input type="date" wire:model="expires" data-test="expires"></label>

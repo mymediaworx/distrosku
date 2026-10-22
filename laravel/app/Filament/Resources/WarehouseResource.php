@@ -20,7 +20,9 @@ class WarehouseResource extends Resource
 
     protected static ?string $model = Warehouse::class;
 
-    protected static ?string $navigationGroup = 'Inventory';
+    protected static ?string $navigationGroup = 'Warehouse';
+
+    protected static ?int $navigationSort = 2;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
@@ -40,6 +42,8 @@ class WarehouseResource extends Resource
                     ->required(),
                 Forms\Components\Toggle::make('is_van')->label('Van / truck (van sales)')->live(),
                 Forms\Components\Select::make('van_driver_id')->label('Van driver')->options(fn () => User::where('role', 'driver')->pluck('name', 'id'))->visible(fn (Forms\Get $get) => (bool) $get('is_van')),
+                Forms\Components\Select::make('receivers')->label('Receiving team (inbound PO alerts)')->multiple()->relationship('receivers', 'name')->preload()
+                    ->helperText('Who gets bell alerts for POs shipping to this warehouse. Blank = every active Warehouse-role user (owners/admins if there are none).'),
                 Forms\Components\Toggle::make('active')
                     ->required(),
             ]);

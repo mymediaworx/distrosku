@@ -20,7 +20,9 @@ class PactRegistrationResource extends Resource
 
     protected static ?string $model = PactRegistration::class;
 
-    protected static ?string $navigationGroup = 'Tax Reports';
+    protected static ?string $navigationGroup = 'Tax Filings';
+
+    protected static ?int $navigationSort = 31;
 
     protected static ?string $navigationLabel = 'PACT registrations';
 

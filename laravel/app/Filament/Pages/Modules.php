@@ -29,30 +29,30 @@ class Modules extends Page
         $can = fn (string $m, string $a = 'view') => fn () => (bool) auth()->user()?->canModule($m, $a);
 
         return [
+            ['POS', 'heroicon-o-calculator', 'pos', $can('pos', 'manage')],
             ['Sales Orders', 'heroicon-o-shopping-cart', Resources\SalesOrderResource::class],
             ['Customers', 'heroicon-o-user-group', Resources\CustomerResource::class],
-            ['Products', 'heroicon-o-cube', Resources\ProductResource::class],
-            ['Inventory', 'heroicon-o-archive-box', Resources\InventoryResource::class],
-            ['Purchasing', 'heroicon-o-clipboard-document-list', Resources\PurchaseOrderResource::class],
-            ['Vendors', 'heroicon-o-building-storefront', Resources\VendorResource::class],
-            ['Warehouse', 'heroicon-o-qr-code', 'wh.hub', $can('warehouse_scan')],
-            ['Delivery', 'heroicon-o-truck', Resources\DeliveryManifestResource::class],
-            ['Driver app', 'heroicon-o-map-pin', 'driver.today', $can('driver_app')],
-            ['Van sales', 'heroicon-o-banknotes', 'driver.van', $can('van_sales', 'manage')],
-            ['POS', 'heroicon-o-calculator', 'pos', $can('pos', 'manage')],
             ['Payments', 'heroicon-o-credit-card', Resources\PaymentResource::class],
-            ['Accounting', 'heroicon-o-book-open', Resources\JournalResource::class],
-            ['Bills (AP)', 'heroicon-o-document-text', Resources\VendorBillResource::class],
             ['Pricing', 'heroicon-o-tag', Resources\PriceRuleResource::class],
             ['Promotions', 'heroicon-o-gift', Resources\PromotionResource::class],
+            ['Products', 'heroicon-o-cube', Resources\ProductResource::class],
+            ['Vendors', 'heroicon-o-building-storefront', Resources\VendorResource::class],
+            ['Purchasing', 'heroicon-o-clipboard-document-list', Resources\PurchaseOrderResource::class],
+            ['Warehouse', 'heroicon-o-qr-code', 'wh.hub', $can('warehouse_scan')],
+            ['Inventory', 'heroicon-o-archive-box', Resources\InventoryResource::class],
+            ['Delivery', 'heroicon-o-truck', Resources\DeliveryManifestResource::class],
+            ['Driver', 'heroicon-o-map-pin', 'driver.today', $can('driver_app')],
+            ['Van Sales', 'heroicon-o-banknotes', 'driver.van', $can('van_sales', 'manage')],
+            ['Accounting', 'heroicon-o-book-open', Resources\JournalResource::class],
+            ['Bills (AP)', 'heroicon-o-document-text', Resources\VendorBillResource::class],
             ['Reports', 'heroicon-o-chart-bar', SalesByCustomer::class],
+            ['Tax Filings', 'heroicon-o-receipt-percent', Resources\TaxFilingResource::class],
+            ['MSA Weekly', 'heroicon-o-document-arrow-up', MsaWeekly::class],
+            ['PACT Reports', 'heroicon-o-flag', Resources\PactReportResource::class],
             ['Compliance', 'heroicon-o-shield-check', Resources\ComplianceRuleVersionResource::class],
-            ['Tax filings', 'heroicon-o-receipt-percent', Resources\TaxFilingResource::class],
-            ['MSA weekly', 'heroicon-o-document-arrow-up', MsaWeekly::class],
-            ['PACT reports', 'heroicon-o-flag', Resources\PactReportResource::class],
-            ['Imports', 'heroicon-o-arrow-up-tray', Imports::class],
             ['Users', 'heroicon-o-users', Resources\UserResource::class],
             ['Settings', 'heroicon-o-cog-6-tooth', Settings::class],
+            ['Imports', 'heroicon-o-arrow-up-tray', Imports::class],
         ];
     }
 
@@ -83,10 +83,22 @@ class Modules extends Page
             } catch (Throwable) {
                 continue;
             }
-            $out[] = ['label' => $label, 'icon' => $icon, 'url' => $url];
+            $out[] = ['label' => $label, 'icon' => $icon, 'url' => $url, 'section' => self::section($label)];
         }
 
         return $out;
+    }
+
+    /** 0.20.1: visual group of a tile (index into NavOrder::MODULES); unknown labels go last. */
+    public static function section(string $label): int
+    {
+        foreach (\App\Navigation\NavOrder::MODULES as $i => $labels) {
+            if (in_array($label, $labels, true)) {
+                return $i;
+            }
+        }
+
+        return count(\App\Navigation\NavOrder::MODULES);
     }
 
     public function isHome(): bool

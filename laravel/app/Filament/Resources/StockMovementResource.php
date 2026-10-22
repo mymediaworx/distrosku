@@ -22,6 +22,8 @@ class StockMovementResource extends Resource
 
     protected static ?string $navigationGroup = 'Inventory';
 
+    protected static ?int $navigationSort = 2;
+
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
     // Read-only ledger: entries come from services, never typed in.

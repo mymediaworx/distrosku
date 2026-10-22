@@ -21,7 +21,7 @@ class Hub extends Component
     public function render()
     {
         return view('livewire.warehouse.hub', [
-            'pos' => PurchaseOrder::with('vendor')->whereIn('status', ['ordered', 'partial', 'draft'])->orderBy('order_date')->limit(50)->get(),
+            'pos' => PurchaseOrder::with('vendor')->whereIn('status', ['ordered', 'partial', 'draft'])->orderByRaw('expected_at IS NULL')->orderBy('expected_at')->orderBy('order_date')->limit(50)->get(),
             'counts' => auth()->user()->canModule('counts', 'manage') ? \App\Models\InventoryCount::with('warehouse')->where('status', 'counting')->latest()->limit(20)->get() : collect(),
             'putaway' => PutawayTask::where('status', 'open')->count(),
             'toPick' => SalesOrder::with('customer')->where('status', S::Confirmed)->orderBy('order_date')->limit(50)->get(),

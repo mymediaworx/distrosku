@@ -8,11 +8,11 @@ class ApAging extends BaseReport
 
     protected static ?string $title = 'AP aging';
 
-    protected static ?string $navigationGroup = 'Accounting';
+    protected static ?string $navigationGroup = 'Bills (AP)';
 
     protected static ?string $navigationIcon = 'heroicon-o-clock';
 
-    protected static ?int $navigationSort = 20;
+    protected static ?int $navigationSort = 3;
 
     protected static string $module = 'ap';
 

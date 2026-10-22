@@ -25,7 +25,9 @@ class TaxFilingResource extends Resource
 
     protected static string $module = 'tax_filings';
 
-    protected static ?string $navigationGroup = 'Tax Reports';
+    protected static ?string $navigationGroup = 'Tax Filings';
+
+    protected static ?int $navigationSort = 1;
 
     protected static ?string $model = TaxFiling::class;
 

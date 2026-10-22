@@ -25,6 +25,8 @@ class CreditMemoResource extends Resource
 
     protected static ?string $navigationGroup = 'Sales';
 
+    protected static ?int $navigationSort = 5;
+
     protected static ?string $navigationIcon = 'heroicon-o-arrow-uturn-left';
 
     public static function canCreate(): bool

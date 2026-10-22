@@ -24,7 +24,9 @@ class MsaDirectoryImportResource extends Resource
 
     protected static ?string $model = MsaDirectoryImport::class;
 
-    protected static ?string $navigationGroup = 'Tax Reports';
+    protected static ?string $navigationGroup = 'Tax Filings';
+
+    protected static ?int $navigationSort = 22;
 
     protected static ?string $navigationLabel = 'MSA state directories';
 

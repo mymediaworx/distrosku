@@ -17,7 +17,9 @@ class TaxRateResource extends Resource
 
     protected static string $module = 'tax_rates';
 
-    protected static ?string $navigationGroup = 'Tax Reports';
+    protected static ?string $navigationGroup = 'Tax Filings';
+
+    protected static ?int $navigationSort = 10;
 
     protected static ?string $model = TaxRate::class;
 

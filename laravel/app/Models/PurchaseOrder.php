@@ -23,6 +23,7 @@ class PurchaseOrder extends Model
                 $m->number = Sequence::next('PO', static::class);
             }
         });
+        static::saved(fn (self $m) => \App\Purchasing\ReceivingAlerts::onSaved($m)); // 0.20.1 receiving-team alerts
     }
 
     protected function casts(): array
@@ -31,6 +32,9 @@ class PurchaseOrder extends Model
             'order_date' => 'date',
             'received_at' => 'datetime',
             'total' => 'decimal:4',
+            'expected_at' => 'date',
+            'ordered_at' => 'datetime',
+            'tracking_numbers' => 'array',
         ];
     }
 

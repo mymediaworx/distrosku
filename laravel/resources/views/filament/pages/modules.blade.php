@@ -14,12 +14,14 @@
             {{ $this->isHome() ? 'Use Dashboard as my home' : 'Make Modules my home page' }}
         </x-filament::button>
     </div>
-    <div class="dsk-tiles" data-test="module-tiles">
-        @foreach(static::tiles() as $t)
+    @foreach(collect(static::tiles())->groupBy('section') as $section => $group)
+    <div class="dsk-tiles" data-test="module-tiles" style="margin-bottom:1.6rem">
+        @foreach($group as $t)
             <a href="{{ $t['url'] }}" class="dsk-tile" data-test="tile">
                 @svg($t['icon'])
                 <span>{{ $t['label'] }}</span>
             </a>
         @endforeach
     </div>
+    @endforeach
 </x-filament-panels::page>

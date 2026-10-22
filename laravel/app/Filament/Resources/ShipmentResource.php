@@ -23,7 +23,9 @@ class ShipmentResource extends Resource
 
     protected static ?string $model = Package::class;
 
-    protected static ?string $navigationGroup = 'Sales';
+    protected static ?string $navigationGroup = 'Delivery';
+
+    protected static ?int $navigationSort = 2;
 
     protected static ?string $navigationLabel = 'Shipments';
 

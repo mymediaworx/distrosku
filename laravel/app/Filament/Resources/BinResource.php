@@ -22,11 +22,11 @@ class BinResource extends Resource
 
     protected static ?string $model = Bin::class;
 
-    protected static ?string $navigationGroup = 'Inventory';
+    protected static ?string $navigationGroup = 'Warehouse';
 
     protected static ?string $navigationIcon = 'heroicon-o-map-pin';
 
-    protected static ?int $navigationSort = 80;
+    protected static ?int $navigationSort = 3;
 
     public static function canDelete(Model $record): bool
     {

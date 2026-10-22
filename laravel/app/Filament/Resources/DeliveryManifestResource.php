@@ -24,7 +24,9 @@ class DeliveryManifestResource extends Resource
 
     protected static ?string $model = DeliveryManifest::class;
 
-    protected static ?string $navigationGroup = 'Sales';
+    protected static ?string $navigationGroup = 'Delivery';
+
+    protected static ?int $navigationSort = 1;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 

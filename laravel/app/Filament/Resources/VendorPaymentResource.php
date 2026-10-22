@@ -26,13 +26,13 @@ class VendorPaymentResource extends Resource
 
     protected static ?string $model = VendorPayment::class;
 
-    protected static ?string $navigationGroup = 'Accounting';
+    protected static ?string $navigationGroup = 'Bills (AP)';
 
     protected static ?string $navigationIcon = 'heroicon-o-banknotes';
 
     protected static ?string $navigationLabel = 'Vendor payments';
 
-    protected static ?int $navigationSort = 11;
+    protected static ?int $navigationSort = 2;
 
     public static function canCreate(): bool
     {

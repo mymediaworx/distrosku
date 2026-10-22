@@ -21,6 +21,8 @@ class AccountResource extends Resource
 
     protected static ?string $navigationGroup = 'Accounting';
 
+    protected static ?int $navigationSort = 2;
+
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
     public static function form(Form $form): Form

@@ -19,7 +19,9 @@ class BuydownResource extends Resource
 
     protected static ?string $model = Buydown::class;
 
-    protected static ?string $navigationGroup = 'Catalog';
+    protected static ?string $navigationGroup = 'Promotions';
+
+    protected static ?int $navigationSort = 2;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 

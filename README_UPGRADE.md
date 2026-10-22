@@ -1,7 +1,21 @@
-# Vega ERP — Phase 20.0 UPGRADE (existing install at vegatest1.distrosku.com)
+# Vega ERP — Phase 20.1 UPGRADE (existing install at vegatest1.distrosku.com)
 
 For a site already installed from `vega-erp-phase1.zip` and upgraded through phase 3 (a phase-2 site can also take this zip: seeders are cumulative). TEST data only. No secrets in this package.
 This zip contains **no `laravel/.env` and no `laravel/storage/`**, so extracting it over the live site keeps both.
+
+## What's new in 0.20.1 (includes everything through 0.20.0)
+
+**Inbound purchase orders: tracking and receiving-team alerts.**
+
+- **Inbound shipping** section on the purchase order: *Expected arrival*, *Carrier* (UPS, FedEx, USPS, DHL, LTL / freight / other with a carrier name), *Tracking number(s)* (several allowed) and an optional *Custom tracking URL* (overrides the carrier link; `{tracking}` is replaced by each number).
+- **Track** links (open in a new tab) on the PO page, the PO list (*Expected* and *Tracking* columns), the warehouse scanner hub and the scan-receive screen. UPS/FedEx/USPS/DHL links are built automatically; LTL/other needs a custom URL.
+- **Receiving-team alerts** (bell icon, top right): when a PO is set to **Ordered** (sent to the vendor), when its ETA, carrier or tracking changes, and a **morning digest at 6:30** (POs due today, tomorrow and overdue) per warehouse.
+  - Who: the warehouse's **Receiving team** (Warehouses > edit > *Receiving team*). If none is set: every active **Warehouse**-role user; if there are none, owners/admins.
+  - Email is sent too **only when mail is configured** (not on vegatest1); without mail, alerts are bell-only and never error.
+- **Purchasing > Expected inbound** page and a dashboard widget for the receiving team: open (Ordered/Partial) POs grouped Overdue / Today / Tomorrow / This week / Later / No ETA, products and quantity still outstanding, carrier + Track, and **Start receiving** (scanner).
+- Field changes are in the Activity log (PO *updated*), plus `po_receiving_alert` and `po_receiving_digest` entries.
+- **New order for the Modules launcher and the sidebar**: POS, Sales Orders, Customers, Payments, Pricing, Promotions, Products, Vendors, Purchasing, Warehouse, Inventory | Delivery, Driver, Van Sales, Accounting, Bills (AP) | Reports, Tax Filings, MSA Weekly, PACT Reports, Compliance | Users, Settings, Imports. Sidebar groups follow the same order (Payments, Promotions, Products, Warehouse, Delivery, Bills (AP) and Tax Filings are now their own groups; Users, Settings and Imports are under Settings). Marketing, Admin and Platform stay at the end.
+- **Migration** (re-runnable): new PO columns, `warehouse_receivers` table, `notifications` table. Run the upgrade page as usual.
 
 ## What's new in 0.20.0 (includes everything through 0.19.6)
 

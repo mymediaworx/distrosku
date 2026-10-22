@@ -28,6 +28,8 @@ class JournalResource extends Resource
 
     protected static ?string $navigationGroup = 'Accounting';
 
+    protected static ?int $navigationSort = 1;
+
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
     // Read-only ledger: entries come from services, never typed in.

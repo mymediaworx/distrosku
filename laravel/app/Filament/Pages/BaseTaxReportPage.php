@@ -13,7 +13,9 @@ abstract class BaseTaxReportPage extends Page
 {
     protected static string $view = 'filament.pages.tax-report';
 
-    protected static ?string $navigationGroup = 'Tax Reports';
+    protected static ?string $navigationGroup = 'Tax Filings';
+
+    protected static ?int $navigationSort = 5;
 
     protected static string $reportKey;
 

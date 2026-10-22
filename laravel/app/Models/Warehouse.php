@@ -21,6 +21,12 @@ class Warehouse extends Model
         ];
     }
 
+    /** 0.20.1: receiving team (inbound PO alerts). */
+    public function receivers()
+    {
+        return $this->belongsToMany(User::class, 'warehouse_receivers')->withTimestamps();
+    }
+
     public function inventories()
     {
         return $this->hasMany(Inventory::class);

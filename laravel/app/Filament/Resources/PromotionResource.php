@@ -20,11 +20,11 @@ class PromotionResource extends Resource
 
     protected static ?string $model = Promotion::class;
 
-    protected static ?string $navigationGroup = 'Pricing';
+    protected static ?string $navigationGroup = 'Promotions';
 
     protected static ?string $navigationIcon = 'heroicon-o-tag';
 
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 1;
 
     public static function form(Form $form): Form
     {

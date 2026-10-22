@@ -26,6 +26,7 @@ if (is_file(base_path('.env')) || app()->configurationIsCached() || app()->runni
     Schedule::command('costs:apply')->dailyAt('00:05')->withoutOverlapping();
     Schedule::command('pos:expire-holds')->dailyAt('00:15')->withoutOverlapping(); // 0.19.3
     Schedule::command('marketing:reconcile')->dailyAt('02:45')->withoutOverlapping(); // 0.19.2: nightly, NEW (unlinked) customers only
+    Schedule::command('po:inbound-digest')->dailyAt('06:30')->withoutOverlapping(); // 0.20.1 receiving-team morning digest
     Schedule::command('marketing:invoice-events')->dailyAt('07:00')->withoutOverlapping(); // 0.19 (no-op when BrandWorx Marketing is off)
 }
 
@@ -88,3 +89,8 @@ Artisan::command('marketing:reconcile', function () {
 Artisan::command('pos:expire-holds', function () {
     $this->line('Expired '.\App\Models\PosHeldSale::purgeExpired().' held sale(s).');
 })->purpose('Remove expired POS held sales');
+
+Artisan::command('po:inbound-digest', function () {
+    $n = \App\Purchasing\ReceivingAlerts::digest();
+    $this->line("Inbound digest: {$n} notification(s) sent.");
+})->purpose('0.20.1: morning digest of POs expected today/tomorrow and overdue, to each warehouse receiving team');

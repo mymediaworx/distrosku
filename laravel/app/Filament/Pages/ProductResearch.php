@@ -18,7 +18,7 @@ class ProductResearch extends Page implements HasTable
 
     protected static string $view = 'filament.pages.table-page';
 
-    protected static ?string $navigationGroup = 'Catalog';
+    protected static ?string $navigationGroup = 'Products';
 
     protected static ?string $navigationIcon = 'heroicon-o-magnifying-glass-circle';
 

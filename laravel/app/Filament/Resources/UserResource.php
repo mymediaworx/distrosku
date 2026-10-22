@@ -29,6 +29,8 @@ class UserResource extends Resource
 
     protected static ?string $navigationGroup = 'Settings';
 
+    protected static ?int $navigationSort = 1;
+
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
     /** Only the owner may edit an owner; only a BrandWorx admin may edit a BrandWorx admin account (0.17.2). */

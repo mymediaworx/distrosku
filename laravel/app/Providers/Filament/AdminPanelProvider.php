@@ -40,7 +40,9 @@ class AdminPanelProvider extends PanelProvider
             ->brandName(fn () => Company::current()->name ?: config('app.name'))
             ->brandLogo(fn () => Company::current()->logoUrl())
             ->brandLogoHeight('2.5rem')
-            ->navigationGroups(['Sales', 'Catalog', 'Customers', 'Inventory', 'Purchasing', 'Accounting', 'Reports', 'Tax Reports', 'Compliance', 'Settings', 'Admin', 'Platform'])
+            ->databaseNotifications() // 0.20.1 bell: receiving-team inbound PO alerts
+            ->databaseNotificationsPolling('60s')
+            ->navigationGroups(\App\Navigation\NavOrder::GROUPS) // 0.20.1 order
             ->renderHook(PanelsRenderHook::AUTH_LOGIN_FORM_BEFORE, fn () => Company::isSuspended()
                 ? new HtmlString('<div data-test="suspended" style="border:1px solid #e5a3a3;background:#fff4f4;padding:.75rem;border-radius:.5rem;margin-bottom:1rem">'
                     .'<strong>This account is suspended.</strong> Sign-in is disabled for everyone except BrandWorx support. Please contact BrandWorx.</div>')
@@ -49,8 +51,14 @@ class AdminPanelProvider extends PanelProvider
                 MenuItem::make()->label('Change password')->icon('heroicon-o-key')->url(fn () => ChangePassword::getUrl()),
             ])
             ->navigationItems([
-                NavigationItem::make('Warehouse scanner')->url('/warehouse')->icon('heroicon-o-qr-code')->group('Inventory')->sort(90)
+                NavigationItem::make('POS')->url('/pos')->icon('heroicon-o-calculator')->group('Sales')->sort(0)
+                    ->visible(fn () => (bool) auth()->user()?->canModule('pos', 'manage')),
+                NavigationItem::make('Warehouse scanner')->url('/warehouse')->icon('heroicon-o-qr-code')->group('Warehouse')->sort(1)
                     ->visible(fn () => (bool) auth()->user()?->canModule('warehouse_scan')),
+                NavigationItem::make('Driver app')->url('/driver')->icon('heroicon-o-map-pin')->group('Delivery')->sort(3)
+                    ->visible(fn () => (bool) auth()->user()?->canModule('driver_app')),
+                NavigationItem::make('Van sales')->url('/driver/van')->icon('heroicon-o-banknotes')->group('Delivery')->sort(4)
+                    ->visible(fn () => (bool) auth()->user()?->canModule('van_sales', 'manage')),
             ])
             ->renderHook(PanelsRenderHook::FOOTER, fn () => view('partials.powered-by'))
             ->colors([

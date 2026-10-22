@@ -23,7 +23,7 @@ class MsaFixList extends Page implements HasTable
 
     protected static string $view = 'filament.pages.table-page';
 
-    protected static ?string $navigationGroup = 'Reports';
+    protected static ?string $navigationGroup = 'Tax Filings';
 
     protected static ?string $navigationIcon = 'heroicon-o-wrench-screwdriver';
 
@@ -31,7 +31,7 @@ class MsaFixList extends Page implements HasTable
 
     protected static ?string $slug = 'msa/fix-list';
 
-    protected static ?int $navigationSort = 51;
+    protected static ?int $navigationSort = 21;
 
     public static function canAccess(): bool
     {
