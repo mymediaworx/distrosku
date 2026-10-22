@@ -27,9 +27,10 @@ class PaymentResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
     // Read-only ledger: entries come from services, never typed in.
+    // 0.20: "New" records a payment against an order through SalesOrderService (GL post + order balance), payments-manage only.
     public static function canCreate(): bool
     {
-        return false;
+        return static::allowed('manage') && auth()->user()?->canModule('sales_orders', 'manage');
     }
 
     public static function canEdit(Model $record): bool
@@ -46,16 +47,15 @@ class PaymentResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Select::make('customer_id')->relationship('customer', 'name')->searchable()->preload()->required(),
-                Forms\Components\Select::make('sales_order_id')->relationship('salesOrder', 'number')->searchable()->preload(),
-                Forms\Components\TextInput::make('amount')
-                    ->required()
-                    ->numeric(),
-                Forms\Components\TextInput::make('method')
-                    ->required(),
-                Forms\Components\TextInput::make('reference'),
-                Forms\Components\DatePicker::make('paid_on')
-                    ->required(),
+                Forms\Components\Select::make('sales_order_id')->label('Order')->required()->searchable()->live()
+                    ->options(fn () => \App\Filament\Pages\Receivables::query()->latest('id')->limit(500)->get()
+                        ->mapWithKeys(fn ($o) => [$o->id => "{$o->number} {$o->customer?->name} (open \${$o->balance()})"]))
+                    ->afterStateUpdated(fn (Forms\Set $set, $state) => $set('amount', ($o = \App\Models\SalesOrder::find($state)) ? number_format((float) $o->balance(), 2, '.', '') : null))
+                    ->helperText('Delivered or invoiced orders with an open balance. A delivered order is invoiced first.'),
+                Forms\Components\Select::make('method')->options(array_diff_key(\App\Services\SalesOrderService::METHODS, ['on_account' => 1]))->default('cash')->required()->live()->selectablePlaceholder(false),
+                Forms\Components\TextInput::make('amount')->numeric()->required()->minValue(0.01)->prefix('$'),
+                Forms\Components\TextInput::make('reference')->label(fn (Forms\Get $get) => $get('method') === 'check' ? 'Check #' : 'Reference')
+                    ->required(fn (Forms\Get $get) => $get('method') === 'check')->maxLength(100),
             ]);
     }
 
@@ -93,7 +93,6 @@ class PaymentResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
                 Tables\Actions\Action::make('refund')->label('Refund')->icon('heroicon-o-arrow-uturn-left')->color('warning')
                     ->visible(fn (Payment $r) => $r->kind === 'payment' && $r->status === 'posted' && $r->provider_transaction_id && auth()->user()->canModule('refunds', 'manage'))
                     ->form([Forms\Components\TextInput::make('amount')->numeric()->required()->default(fn (Payment $r) => $r->amount)])
@@ -104,11 +103,7 @@ class PaymentResource extends Resource
                     ->requiresConfirmation()
                     ->action(fn (Payment $r) => self::gatewayAction(fn () => app(PaymentService::class)->void($r), 'Voided')),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
-            ]);
+            ->bulkActions([]);
     }
 
     public static function getRelations(): array

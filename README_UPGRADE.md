@@ -1,7 +1,22 @@
-# Vega ERP — Phase 19.6 UPGRADE (existing install at vegatest1.distrosku.com)
+# Vega ERP — Phase 20.0 UPGRADE (existing install at vegatest1.distrosku.com)
 
 For a site already installed from `vega-erp-phase1.zip` and upgraded through phase 3 (a phase-2 site can also take this zip: seeders are cumulative). TEST data only. No secrets in this package.
 This zip contains **no `laravel/.env` and no `laravel/storage/`**, so extracting it over the live site keeps both.
+
+## What's new in 0.20.0 (includes everything through 0.19.6)
+
+**Order to cash in the fewest clicks.** A normal order is now 3 clicks (Save & confirm, Deliver & invoice, Record payment); cash on delivery is 2 (Save & confirm, Deliver, invoice & collect).
+
+- **Save & confirm** on the new sales order form: saves and confirms in one click (compliance, credit limit, stock reservation as before). If confirm is blocked, the order is saved as a **Draft** and the reason is shown. **Save as draft** still saves without confirming.
+- **Delivering always invoices.** *Deliver & invoice* (was *Deliver*), a driver marking a stop delivered, pickup signature, POS and van sales all deliver and post the invoice (GL, buydowns) in one step. Signatures for regulated items are still required. Compliance is still checked at confirm only.
+- **Record payment** on any Delivered or Invoiced order with a balance (a Delivered order is invoiced first, so orders stuck at Delivered such as SO000001 can be closed in one step). Amount defaults to the open balance; partial payments allowed. Methods: Cash, Check (**check # required**), Card (manual), ACH, **On account** (records no payment). On account that puts the customer over the credit limit is blocked unless an **owner/admin** enters an override reason (Activity log). *Charge card / ACH* (gateway) is unchanged.
+- **Deliver, invoice & collect**: one step for cash on delivery.
+- All steps are **buttons at the top of the order page** (only the ones that apply show), and still in the list row menu.
+- **Progress chips** on the orders list: Confirmed > Delivered > Invoiced > Paid / Partial (from the balance; no new stored status). New **Payment** filter: Unpaid / Partial / Paid, and a Balance column.
+- **Sales > Receivables**: delivered-not-invoiced and invoiced-unpaid orders, age and aging bucket (Current / 30 / 60 / 90+ days from invoice date), customer, stage and aging filters, bulk **Invoice selected**, and **Record payment** per row. *Invoice selected* is also a bulk action on the orders list.
+- **Fix: Payments > New** (now *Record payment*) no longer saves a bare payment row: you pick an open order and it posts to the ledger and updates the order balance, same as Record payment on the order. Payments are not editable or deletable.
+- Every payment and every on-account decision is in the Activity log (`payment_recorded`, `order_on_account`, `credit_override`).
+- **No migration** in this release. Run the upgrade page as usual (clears caches).
 
 ## What's new in 0.19.6 (includes everything through 0.19.5)
 

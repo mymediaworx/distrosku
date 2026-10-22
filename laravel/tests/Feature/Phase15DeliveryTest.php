@@ -120,7 +120,7 @@ class Phase15DeliveryTest extends TestCase
         $this->assertSame(S::Confirmed, $so->fresh()->status);
         $gen = $this->order('TST-GEN-001');
         app(SalesOrderService::class)->deliver($gen);
-        $this->assertSame(S::Delivered, $gen->fresh()->status);
+        $this->assertSame(S::Invoiced, /* 0.20: deliver auto-invoices */ $gen->fresh()->status);
     }
 
     public function test_capture_validates_name_acks_and_image_and_snapshots(): void
@@ -143,7 +143,7 @@ class Phase15DeliveryTest extends TestCase
         $this->assertSame('38.0400000', (string) $sig->latitude);
         Storage::disk('local')->assertExists($sig->image_path);
         app(SalesOrderService::class)->deliver($so);
-        $this->assertSame(S::Delivered, $so->fresh()->status);
+        $this->assertSame(S::Invoiced, /* 0.20: deliver auto-invoices */ $so->fresh()->status);
     }
 
     public function test_driver_screen_delivers_with_signature_photo_and_notes(): void
@@ -163,7 +163,7 @@ class Phase15DeliveryTest extends TestCase
         $this->assertSame('Left at back door', $stop->notes);
         $this->assertNotNull($stop->photo_path);
         $this->assertSame('Pat Buyer', $stop->received_by);
-        $this->assertSame(S::Delivered, $so->fresh()->status);
+        $this->assertSame(S::Invoiced, /* 0.20: deliver auto-invoices */ $so->fresh()->status);
         $this->assertSame('delivery', DeliverySignature::where('sales_order_id', $so->id)->value('context'));
         // receipt PDF + order screen + invoice PDF show it
         $this->actingAs($this->admin)->get(route('docs.delivery-proof', $so))->assertOk()->assertHeader('content-type', 'application/pdf');
@@ -197,7 +197,7 @@ class Phase15DeliveryTest extends TestCase
         app(DeliveryService::class)->complete($stop, 'partial', [$line->id => '3']);
         $this->assertSame('partial', $stop->fresh()->status);
         $this->assertSame(3.0, (float) $line->fresh()->qty);
-        $this->assertSame(S::Delivered, $so->fresh()->status);
+        $this->assertSame(S::Invoiced, /* 0.20: deliver auto-invoices */ $so->fresh()->status);
         $this->assertSame($before - 3, (float) Inventory::where('product_id', $line->product_id)->where('warehouse_id', $so->warehouse_id)->value('qty'));
     }
 
@@ -276,7 +276,7 @@ class Phase15DeliveryTest extends TestCase
         $this->assertSame(S::Confirmed, $so->fresh()->status);
         Livewire::actingAs($u)->test(PickupSign::class, ['so' => $so])->set('sigImage', self::PNG)->set('sigName', 'Will Call')->set('sigAccepted', [true, true])
             ->call('complete')->assertSet('err', null);
-        $this->assertSame(S::Delivered, $so->fresh()->status);
+        $this->assertSame(S::Invoiced, /* 0.20: deliver auto-invoices */ $so->fresh()->status);
         $this->assertSame('pickup', $so->signatures()->value('context'));
 
         $sales = User::where('role', 'sales')->first();

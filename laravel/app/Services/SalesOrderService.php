@@ -128,6 +128,7 @@ class SalesOrderService
         return $so;
     }
 
+    /** 0.20: delivering ALWAYS invoices too (one transaction): stock out, lots, then GL posting + buydowns. Returns the Invoiced order. */
     public function deliver(SalesOrder $so): SalesOrder
     {
         $this->expect($so, [S::Confirmed, S::Picked]);
@@ -143,12 +144,16 @@ class SalesOrderService
             app(LotService::class)->consumeForOrder($so); // lot-tracked items: record which lots went to this customer
             $so->update(['status' => S::Delivered, 'delivered_at' => now()]);
 
-            return $so;
+            return $this->invoice($so);
         });
     }
 
+    /** Posts the invoice. Idempotent: an order that is already Invoiced is returned unchanged (deliver() now invoices). */
     public function invoice(SalesOrder $so): SalesOrder
     {
+        if ($so->status === S::Invoiced) {
+            return $so;
+        }
         $this->expect($so, [S::Delivered]);
 
         return DB::transaction(function () use ($so) {
@@ -160,6 +165,86 @@ class SalesOrderService
 
             return $so;
         });
+    }
+
+    /** 0.20: Save & confirm. Returns [order, null] when confirmed, [order, reason] when it stays a Draft. */
+    public function tryConfirm(SalesOrder $so): array
+    {
+        try {
+            return [$this->confirm($so->fresh()), null];
+        } catch (ComplianceException $e) {
+            return [$so->fresh(), 'Saved as draft, not confirmed. '.$e->getMessage()];
+        } catch (\Throwable $e) {
+            return [$so->fresh(), 'Saved as draft, not confirmed: '.$e->getMessage()];
+        }
+    }
+
+    public const METHODS = ['cash' => 'Cash', 'check' => 'Check', 'card' => 'Card (manual)', 'ach' => 'ACH', 'on_account' => 'On account (no payment now)'];
+
+    /**
+     * 0.20 one-stop settle for a Delivered/Invoiced order: invoices first if needed, then records the payment.
+     * on_account records no payment; it is blocked when the open balance pushes the customer over the credit limit,
+     * unless an owner/admin passes an override reason (logged). Returns the Payment, or null for on account.
+     */
+    public function settle(SalesOrder $so, string $method, mixed $amount = null, ?string $reference = null, ?string $overrideReason = null): ?Payment
+    {
+        if (! array_key_exists($method, self::METHODS)) {
+            throw new WorkflowException("Unknown payment method {$method}.");
+        }
+        $this->expect($so, [S::Delivered, S::Invoiced]);
+        $reference = filled($reference) ? trim((string) $reference) : null;
+        if ($method === 'check' && ! $reference) {
+            throw new WorkflowException('Enter the check number.');
+        }
+
+        return DB::transaction(function () use ($so, $method, $amount, $reference, $overrideReason) {
+            $so = $this->invoice($so);
+            if ($method === 'on_account') {
+                $this->chargeToAccount($so, $overrideReason);
+
+                return null;
+            }
+
+            return $this->recordPayment($so, $amount ?? $so->balance(), $method, $reference);
+        });
+    }
+
+    /** "On account": no payment. Blocks over the credit limit unless an owner/admin override reason is given. */
+    public function chargeToAccount(SalesOrder $so, ?string $overrideReason = null): void
+    {
+        $credit = app(CreditLimit::class);
+        $c = $so->customer;
+        $l = $credit->limit($c);
+        if ($l !== null && ! $so->credit_override_at) {
+            // invoiced orders are already in the customer's AR balance: exposure = AR + other open orders.
+            $exp = Money::of($credit->exposure($c, $so->id));
+            if ($so->status !== S::Invoiced) {
+                $exp = $exp->plus(Money::of($so->balance()));
+            }
+            if ($exp->isGreaterThan(Money::of($l))) {
+                $u = auth()->user();
+                if (! filled($overrideReason)) {
+                    throw new \App\Credit\CreditLimitException(sprintf('On account would put %s over the credit limit: limit $%s, open balance and orders $%s. Collect payment, or an owner/admin can approve it with a credit override reason.',
+                        $c->name, CreditLimit::fmt($l), CreditLimit::fmt($exp)), $l, Money::s($exp), $so->balance());
+                }
+                if (! $u) {
+                    throw new WorkflowException('Only an owner or admin can override a credit limit.');
+                }
+                $credit->override($so, $u, $overrideReason); // admin-only, reason required, Activity log
+            }
+        }
+        \App\Audit\Audit::action('order_on_account', $so, "{$so->number} left on account (\${$so->balance()} open) for {$c->name}",
+            ['balance' => $so->balance(), 'credit_override' => (bool) $so->credit_override_at]);
+    }
+
+    /** 0.20 COD in one step: deliver (auto-invoices) + collect. */
+    public function deliverAndCollect(SalesOrder $so, string $method, mixed $amount = null, ?string $reference = null, ?string $overrideReason = null): ?Payment
+    {
+        if ($method === 'check' && ! filled($reference)) {
+            throw new WorkflowException('Enter the check number.');
+        }
+
+        return DB::transaction(fn () => $this->settle($this->deliver($so), $method, $amount, $reference, $overrideReason));
     }
 
     public function cancel(SalesOrder $so): SalesOrder
@@ -180,7 +265,15 @@ class SalesOrderService
 
     public function recordPayment(SalesOrder $so, mixed $amount, string $method = 'cash', ?string $reference = null): Payment
     {
+        $so = $this->invoice($so); // 0.20: a Delivered order is invoiced first (no-op when Invoiced)
         $this->expect($so, [S::Invoiced]);
+        $amt = Money::of($amount);
+        if ($amt->isNegativeOrZero()) {
+            throw new WorkflowException('Payment amount must be more than 0.');
+        }
+        if ($amt->isGreaterThan(Money::of($so->balance()))) {
+            throw new WorkflowException("Payment is more than the open balance \${$so->balance()} on {$so->number}.");
+        }
 
         return DB::transaction(function () use ($so, $amount, $method, $reference) {
             $p = Payment::create([
@@ -190,6 +283,7 @@ class SalesOrderService
             ]);
             $this->posting->payment($p);
             $so->update(['amount_paid' => Money::add($so->amount_paid, $amount)]);
+            \App\Audit\Audit::action('payment_recorded', $so, "Payment \$".Money::s($amount)." ({$method}) on {$so->number}", ['payment_id' => $p->id, 'method' => $method, 'amount' => Money::s($amount)]);
 
             return $p;
         });

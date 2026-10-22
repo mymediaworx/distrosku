@@ -147,6 +147,53 @@ class SalesOrder extends Model
     }
 
     /** Open AR on this order: total - credited - paid. */
+    /** 0.20: computed from the balance (no stored status). null before delivery / when cancelled. */
+    public function paymentState(): ?string
+    {
+        if (! in_array($this->status, [\App\Enums\SalesOrderStatus::Delivered, \App\Enums\SalesOrderStatus::Invoiced], true)) {
+            return null;
+        }
+        $bal = \App\Services\Money::of($this->balance());
+        if (! $bal->isPositive()) {
+            return 'paid';
+        }
+
+        return \App\Services\Money::of($this->amount_paid)->plus(\App\Services\Money::of($this->amount_credited))->isPositive() ? 'partial' : 'unpaid';
+    }
+
+    /** 0.20 status chips: Confirmed > Delivered > Invoiced > Paid / Partial. */
+    public function stageChips(): string
+    {
+        $S = \App\Enums\SalesOrderStatus::class;
+        if ($this->status === $S::Draft || $this->status === $S::Cancelled) {
+            return '<span class="text-xs text-gray-500">'.ucfirst($this->status->value).'</span>';
+        }
+        $rank = [$S::Confirmed->value => 1, $S::Picked->value => 1, $S::Delivered->value => 2, $S::Invoiced->value => 3][$this->status->value] ?? 0;
+        $pay = $this->paymentState();
+        $chips = [['Confirmed', $rank >= 1], ['Delivered', $rank >= 2], ['Invoiced', $rank >= 3]];
+        $chips[] = $pay === 'paid' ? ['Paid', $rank >= 3] : ($pay === 'partial' ? ['Partial', true] : ['Paid', false]);
+        $out = [];
+        foreach ($chips as [$label, $on]) {
+            $color = ! $on ? '#e5e7eb;color:#6b7280' : ($label === 'Paid' ? '#16a34a;color:#fff' : ($label === 'Partial' ? '#f59e0b;color:#fff' : '#2563eb;color:#fff'));
+            $out[] = '<span style="display:inline-block;padding:1px 6px;border-radius:9999px;font-size:11px;background:'.$color.'">'.$label.'</span>';
+        }
+
+        return '<span style="white-space:nowrap">'.implode(' <span style="color:#9ca3af">&rsaquo;</span> ', $out).'</span>';
+    }
+
+    /** 0.20 list filter: unpaid / partial / paid (delivered or invoiced orders). */
+    public function scopeWherePayment($q, string $state)
+    {
+        $paid = '(amount_paid + amount_credited)';
+        $q->whereIn('status', ['delivered', 'invoiced']);
+
+        return match ($state) {
+            'paid' => $q->whereRaw("total - $paid <= 0.004"),
+            'partial' => $q->whereRaw("total - $paid > 0.004")->whereRaw("$paid > 0.004"),
+            default => $q->whereRaw("total - $paid > 0.004")->whereRaw("$paid <= 0.004"),
+        };
+    }
+
     public function balance(): string
     {
         return Money::s(Money::of($this->total)->minus(Money::of($this->amount_credited))->minus(Money::of($this->amount_paid)));

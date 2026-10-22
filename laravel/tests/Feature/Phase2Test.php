@@ -211,7 +211,7 @@ class Phase2Test extends TestCase
         $stop = $m->stops()->create(['sales_order_id' => $so->id, 'sequence' => 1]);
         $this->assertSame(SalesOrderStatus::Confirmed, $so->fresh()->status);
         $stop->update(['status' => 'delivered', 'received_by' => 'TEST Clerk']);
-        $this->assertSame(SalesOrderStatus::Delivered, $so->fresh()->status);
+        $this->assertSame(SalesOrderStatus::Invoiced, /* 0.20 */ $so->fresh()->status);
         $this->assertNotNull($stop->fresh()->delivered_at);
         $this->assertSame('3.0000', Inventory::where('product_id', $p->id)->value('qty'));
     }

@@ -5,7 +5,7 @@ namespace App\Filament\Resources;
 use App\Credit\CreditLimit;
 use App\Enums\SalesOrderStatus as S;
 use App\Filament\Concerns\RoleGated;
-use App\Filament\Pages\CardPayments;
+use App\Filament\Support\OrderActions;
 use App\Filament\RelationManagers\HistoryRelationManager;
 use App\Filament\Resources\SalesOrderResource\Pages;
 use App\Models\Customer;
@@ -126,11 +126,19 @@ class SalesOrderResource extends Resource
                     ->color(fn ($state) => match ($state) {
                         S::Invoiced => 'success', S::Cancelled => 'gray', S::Draft => 'warning', default => 'info'
                     }),
+                Tables\Columns\TextColumn::make('progress')->label('Progress')->html()
+                    ->getStateUsing(fn (SalesOrder $r) => $r->stageChips()), // 0.20 chips: Confirmed > Delivered > Invoiced > Paid / Partial
                 Tables\Columns\TextColumn::make('total')->money('USD')->sortable(),
+                Tables\Columns\TextColumn::make('balance_due')->label('Balance')->money('USD')->toggleable()
+                    ->getStateUsing(fn (SalesOrder $r) => in_array($r->status, [S::Delivered, S::Invoiced], true) ? $r->balance() : null),
                 Tables\Columns\TextColumn::make('order_date')->date()->sortable()->toggleable(),
                 Tables\Columns\TextColumn::make('channel')->toggleable(isToggledHiddenByDefault: true),
             ])
-            ->filters([Tables\Filters\SelectFilter::make('status')->options(S::options())])
+            ->filters([
+                Tables\Filters\SelectFilter::make('status')->options(S::options()),
+                Tables\Filters\SelectFilter::make('payment')->label('Payment')->options(['unpaid' => 'Unpaid', 'partial' => 'Partial', 'paid' => 'Paid'])
+                    ->query(fn ($query, array $data) => filled($data['value'] ?? null) ? $query->wherePayment($data['value']) : $query),
+            ])
             ->actions([
                 Tables\Actions\ActionGroup::make([
                     Tables\Actions\EditAction::make(),
@@ -140,7 +148,7 @@ class SalesOrderResource extends Resource
 
                         return $res ? 'Blocked: '.collect($res)->map(fn ($x, $k) => "$k: ".implode(' ', $x))->implode(' | ') : 'All lines pass.';
                     }),
-                    self::step('confirm', 'Confirm', 'heroicon-o-check', [S::Draft], fn ($r) => [app(SalesOrderService::class)->confirm($r), 'Confirmed and stock reserved.'][1]),
+                    OrderActions::confirm(Tables\Actions\Action::class),
                     Tables\Actions\Action::make('creditOverride')->label('Confirm with credit override')->icon('heroicon-o-shield-exclamation')->color('warning')
                         ->visible(fn (SalesOrder $r) => $r->status === S::Draft && auth()->user()->isAdmin() && app(CreditLimit::class)->limit($r->customer) !== null)
                         ->modalDescription(fn (SalesOrder $r) => CreditLimit::summary($r->customer).'. The override and reason are recorded in the Activity log.')
@@ -169,14 +177,15 @@ class SalesOrderResource extends Resource
                             }
                         }),
                     self::step('pick', 'Mark picked', 'heroicon-o-archive-box', [S::Confirmed], fn ($r) => [app(SalesOrderService::class)->pick($r), 'Picked.'][1]),
-                    self::step('deliver', 'Deliver', 'heroicon-o-truck', [S::Confirmed, S::Picked], fn ($r) => [app(SalesOrderService::class)->deliver($r), 'Delivered; stock decreased.'][1]),
+                    OrderActions::deliver(Tables\Actions\Action::class),
+                    OrderActions::deliverCollect(Tables\Actions\Action::class),
                     Tables\Actions\Action::make('pickupSign')->label('Pickup (signature)')->icon('heroicon-o-pencil-square')
                         ->visible(fn (SalesOrder $r) => in_array($r->status, [S::Confirmed, S::Picked], true) && auth()->user()->canModule('pickup_signature', 'manage'))
                         ->url(fn (SalesOrder $r) => route('driver.pickup', $r)),
                     Tables\Actions\Action::make('deliveryProof')->label('Delivery receipt PDF')->icon('heroicon-o-document-check')
                         ->visible(fn (SalesOrder $r) => $r->signatures()->exists() || $r->deliveryStops()->where('status', '!=', 'pending')->exists())
                         ->url(fn (SalesOrder $r) => route('docs.delivery-proof', $r)),
-                    self::step('invoice', 'Invoice', 'heroicon-o-document-text', [S::Delivered], fn ($r) => [app(SalesOrderService::class)->invoice($r), 'Invoiced and posted to ledger.'][1]),
+                    OrderActions::invoice(Tables\Actions\Action::class), // only for orders delivered before 0.20
                     Tables\Actions\Action::make('scanPick')->label('Scan pick')->icon('heroicon-o-qr-code')
                         ->visible(fn (SalesOrder $r) => $r->status === S::Confirmed && auth()->user()->canModule('warehouse_scan', 'manage'))->url(fn (SalesOrder $r) => route('wh.pick', $r)),
                     Tables\Actions\Action::make('pickList')->label('Print pick list')->icon('heroicon-o-printer')
@@ -187,20 +196,8 @@ class SalesOrderResource extends Resource
                         ->url(fn (SalesOrder $r) => route('wh.print.pack', $r))->openUrlInNewTab(),
                     Tables\Actions\Action::make('invoicePdf')->label('Invoice PDF')->icon('heroicon-o-document-arrow-down')
                         ->visible(fn (SalesOrder $r) => $r->status === S::Invoiced)->url(fn (SalesOrder $r) => route('docs.invoice', $r)),
-                    Tables\Actions\Action::make('pay')->label('Record payment')->icon('heroicon-o-banknotes')
-                        ->visible(fn (SalesOrder $r) => $r->status === S::Invoiced && bccomp($r->balance(), '0', 4) > 0 && auth()->user()->canModule('sales_orders', 'manage'))
-                        ->form([
-                            Forms\Components\TextInput::make('amount')->numeric()->required()->default(fn (SalesOrder $r) => bcadd($r->balance(), '0', 2)),
-                            Forms\Components\Select::make('method')->options(['cash' => 'Cash', 'check' => 'Check', 'card' => 'Card (manual)', 'ach' => 'ACH'])->default('cash')->required(),
-                            Forms\Components\TextInput::make('reference'),
-                        ])
-                        ->action(function (SalesOrder $r, array $data) {
-                            app(SalesOrderService::class)->recordPayment($r, $data['amount'], $data['method'], $data['reference'] ?? null);
-                            Notification::make()->success()->title('Payment recorded')->send();
-                        }),
-                    Tables\Actions\Action::make('chargeCard')->label('Charge card / ACH')->icon('heroicon-o-credit-card')
-                        ->visible(fn (SalesOrder $r) => $r->status === S::Invoiced && bccomp($r->balance(), '0', 4) > 0 && auth()->user()->canModule('card_payments', 'manage'))
-                        ->url(fn (SalesOrder $r) => CardPayments::getUrl(['order' => $r->id])),
+                    OrderActions::pay(Tables\Actions\Action::class),
+                    OrderActions::chargeCard(Tables\Actions\Action::class),
                     Tables\Actions\Action::make('creditMemo')->label('Return / credit memo')->icon('heroicon-o-arrow-uturn-left')
                         ->visible(fn (SalesOrder $r) => $r->status === S::Invoiced && auth()->user()->canModule('credit_memos', 'manage'))
                         ->form(fn (SalesOrder $r) => [
@@ -232,7 +229,32 @@ class SalesOrderResource extends Resource
                         }),
                     self::step('cancel', 'Cancel', 'heroicon-o-x-mark', [S::Draft, S::Confirmed, S::Picked], fn ($r) => [app(SalesOrderService::class)->cancel($r), 'Cancelled.'][1], 'danger'),
                 ]),
+            ])
+            ->bulkActions([
+                Tables\Actions\BulkAction::make('bulkInvoice')->label('Invoice selected')->icon('heroicon-o-document-text')->requiresConfirmation()
+                    ->visible(fn () => OrderActions::canManage())
+                    ->action(fn (\Illuminate\Support\Collection $records) => self::bulkInvoice($records)),
             ]);
+    }
+
+    /** 0.20: invoice every selected Delivered order (others are skipped). */
+    public static function bulkInvoice(iterable $records): void
+    {
+        $ok = 0;
+        $err = [];
+        foreach ($records as $r) {
+            if ($r->status !== S::Delivered) {
+                continue;
+            }
+            try {
+                app(SalesOrderService::class)->invoice($r);
+                $ok++;
+            } catch (Throwable $e) {
+                $err[] = "{$r->number}: {$e->getMessage()}";
+            }
+        }
+        $n = Notification::make()->title("Invoiced {$ok} order(s).")->body($err ? implode(' | ', $err) : null);
+        ($err ? $n->warning()->persistent() : $n->success())->send();
     }
 
     /** Price from the shared PricingEngine for the line's product, qty, the order's customer and date. Qty changes keep a typed (manual) price. */
