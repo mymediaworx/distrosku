@@ -46,9 +46,10 @@
         </div>
     @endif
 
-    <nav class="tabs" style="margin:.5rem 0">
-        <button type="button" class="{{ $view === 'again' ? 'sec' : '' }}" wire:click="$set('view', 'shop')" data-test="tab-shop">Shop</button>
-        <button type="button" class="{{ $view === 'again' ? '' : 'sec' }}" wire:click="$set('view', 'again')" data-test="tab-again">Buy again</button>
+    {{-- Segmented control: one row, the current view is highlighted (it used to be two stacked bars with no active state). --}}
+    <nav class="tabs" role="tablist" aria-label="Catalog view">
+        <button type="button" role="tab" class="{{ $view === 'again' ? '' : 'on' }}" aria-selected="{{ $view === 'again' ? 'false' : 'true' }}" wire:click="$set('view', 'shop')" data-test="tab-shop">Shop</button>
+        <button type="button" role="tab" class="{{ $view === 'again' ? 'on' : '' }}" aria-selected="{{ $view === 'again' ? 'true' : 'false' }}" wire:click="$set('view', 'again')" data-test="tab-again">Buy again</button>
     </nav>
 
     @if($view === 'again')
@@ -116,6 +117,6 @@
         @endforelse
     @endif
 
-    <div class="cartbar" style="margin-top:1rem"><span>{{ count($cart) }} item(s) · ${{ number_format((float) $total, 2) }}</span>
+    <div class="cartbar" style="margin-top:1rem" data-test="cartbar"><span>{{ count($cart) }} item(s) · ${{ number_format((float) $total, 2) }}</span>
         <button type="button" wire:click="$toggle('showCart')">{{ $showCart ? 'Hide cart' : 'View cart' }}</button></div>
 </div>

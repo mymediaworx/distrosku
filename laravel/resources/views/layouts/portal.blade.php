@@ -25,10 +25,12 @@ button{background:#1e3a8a;color:#fff;border:0;font-weight:600;cursor:pointer}but
 .price{font-weight:700}.ok{color:#047857}.err{color:#b91c1c;font-size:.9rem}.na{color:#b91c1c;font-size:.85rem}.muted{color:#64748b;font-size:.85rem}
 table{width:100%;border-collapse:collapse}td,th{padding:.45rem .3rem;border-bottom:1px solid #eee;text-align:left;font-size:.92rem}td.r,th.r{text-align:right}
 .badge{display:inline-block;padding:.1rem .45rem;border-radius:999px;background:#e2e8f0;font-size:.75rem}
-.cartbar{position:sticky;bottom:0;background:#1e3a8a;color:#fff;padding:.7rem 1rem;border-radius:10px;display:flex;justify-content:space-between;align-items:center}
+.cartbar{position:sticky;bottom:0;bottom:env(safe-area-inset-bottom);z-index:20;background:#1e3a8a;color:#fff;padding:.7rem 1rem;border-radius:10px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 -4px 14px #0f172a26}
 .cartbar button{width:auto;background:#fff;color:#1e3a8a}
-/* 0.20.6 phones */
-html,body{overflow-x:hidden}.card{overflow-x:auto}
+.tabs{display:flex;gap:.25rem;margin:.5rem 0;padding:.25rem;background:#e2e8f0;border-radius:10px}
+.tabs button{flex:1;background:transparent;color:#334155;min-height:44px}.tabs button.on{background:#fff;color:#1e3a8a;box-shadow:0 1px 3px #0f172a26}
+/* 0.20.6 phones. overflow-x on html only: on body it turns body into a scroll container and position:sticky (cart bar) stops working. */
+html{overflow-x:hidden}.card{overflow-x:auto}
 @media(max-width:600px){header{padding:.5rem .75rem}header nav{margin-left:0;width:100%;overflow-x:auto;gap:1rem;padding-bottom:.2rem;white-space:nowrap}
 main{padding:.6rem}.card{padding:.8rem}.inline{flex-wrap:wrap}td,th{font-size:.85rem}input,select,textarea{font-size:16px}}
 </style>
