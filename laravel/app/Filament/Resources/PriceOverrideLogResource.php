@@ -20,6 +20,9 @@ class PriceOverrideLogResource extends Resource
 
     protected static ?string $model = PriceOverrideLog::class;
 
+    protected static ?string $modelLabel = 'price override';
+    protected static ?string $pluralModelLabel = 'price overrides'; // page title matches the sidebar (UI audit #6)
+
     protected static ?string $navigationGroup = 'Pricing';
 
     protected static ?string $navigationLabel = 'Price overrides';

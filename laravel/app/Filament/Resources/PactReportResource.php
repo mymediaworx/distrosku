@@ -23,6 +23,9 @@ class PactReportResource extends Resource
 
     protected static ?string $model = PactReport::class;
 
+    protected static ?string $modelLabel = 'PACT Act report';
+    protected static ?string $pluralModelLabel = 'PACT Act reports'; // page title matches the sidebar (UI audit #6)
+
     protected static ?string $navigationGroup = 'Tax Filings';
 
     protected static ?int $navigationSort = 30;

@@ -20,6 +20,9 @@ class PactRegistrationResource extends Resource
 
     protected static ?string $model = PactRegistration::class;
 
+    protected static ?string $modelLabel = 'PACT registration';
+    protected static ?string $pluralModelLabel = 'PACT registrations'; // page title matches the sidebar (UI audit #6)
+
     protected static ?string $navigationGroup = 'Tax Filings';
 
     protected static ?int $navigationSort = 31;

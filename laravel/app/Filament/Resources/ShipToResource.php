@@ -20,6 +20,11 @@ class ShipToResource extends Resource
 
     protected static ?string $model = ShipTo::class;
 
+    protected static ?string $modelLabel = 'ship-to';
+    protected static ?string $pluralModelLabel = 'ship-tos'; // page title matches the sidebar (UI audit #6)
+
+    protected static ?string $navigationLabel = 'Ship-tos';
+
     protected static ?string $navigationGroup = 'Customers';
 
     protected static ?int $navigationSort = 2;

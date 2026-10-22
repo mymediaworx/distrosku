@@ -19,6 +19,9 @@ class CustomerGroupResource extends Resource
 
     protected static ?string $model = CustomerGroup::class;
 
+    protected static ?string $modelLabel = 'price group';
+    protected static ?string $pluralModelLabel = 'price groups'; // page title matches the sidebar (UI audit #6)
+
     protected static ?string $navigationGroup = 'Pricing';
 
     protected static ?string $navigationLabel = 'Price groups';

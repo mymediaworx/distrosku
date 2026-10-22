@@ -20,6 +20,9 @@ class WarehouseEventResource extends Resource
 
     protected static ?string $model = WarehouseEvent::class;
 
+    protected static ?string $modelLabel = 'warehouse event';
+    protected static ?string $pluralModelLabel = 'short picks & over-receipts'; // page title matches the sidebar (UI audit #6)
+
     protected static ?string $navigationGroup = 'Inventory';
 
     protected static ?string $navigationLabel = 'Short picks & over-receipts';

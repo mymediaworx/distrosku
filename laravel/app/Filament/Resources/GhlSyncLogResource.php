@@ -16,6 +16,8 @@ class GhlSyncLogResource extends Resource
 {
     protected static ?string $model = GhlSyncLog::class;
 
+    protected static ?string $pluralModelLabel = 'marketing sync log'; // page title matches the sidebar (UI audit #6)
+
     protected static ?string $navigationGroup = 'Marketing';
 
     protected static ?string $navigationLabel = 'Marketing sync log';
