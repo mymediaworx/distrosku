@@ -66,6 +66,15 @@ class Phase207PosCheckoutLayoutTest extends TestCase
             ->assertSeeHtml('for="pos-notes"');
     }
 
+    public function test_layout_keeps_the_tender_column_sticky(): void
+    {
+        $html = $this->get('/pos')->assertOk()->getContent();
+
+        // overflow-x on <body> makes body a scroll container and silently disables position:sticky.
+        $this->assertStringNotContainsString('html,body{overflow-x:hidden}', $html);
+        $this->assertStringContainsString('html{overflow-x:hidden}', $html);
+    }
+
     public function test_notes_open_automatically_when_a_note_exists(): void
     {
         Livewire::test(CounterPos::class)

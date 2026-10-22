@@ -58,7 +58,8 @@ main{padding-bottom:5.5rem}
   .checkout .pay{position:sticky;bottom:0;box-shadow:0 -8px 12px #fff}
 }
 /* 0.20.6 phones */
-html,body{overflow-x:hidden}
+/* overflow-x on html only: on body it makes body a scroll container and position:sticky (tender column) stops working. */
+html{overflow-x:hidden}
 @media(max-width:560px){body{font-size:16px}main{padding:.5rem}header{flex-wrap:wrap;padding:.4rem .6rem}.card{padding:.75rem;border-radius:10px}
 .line{grid-template-columns:1fr auto;row-gap:.35rem}.line .price{grid-column:1}.line .x{grid-column:2;width:52px}
 [data-test=cart] .line{grid-template-columns:1fr auto auto}[data-test=cart] .line>div:first-child{grid-column:1/3}[data-test=cart] .line .price{grid-column:1}[data-test=cart] .line .ext{grid-column:2}[data-test=cart] .line .x{grid-column:3}
