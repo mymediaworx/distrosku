@@ -18,6 +18,7 @@ use App\Models\Warehouse;
 use App\Pricing\PricingEngine;
 use App\Services\ComplianceChecker;
 use App\Services\CreditMemoService;
+use App\Services\Money;
 use App\Services\SalesOrderService;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -85,7 +86,7 @@ class SalesOrderResource extends Resource
                     ->content(fn (?SalesOrder $record) => collect($record?->elig_warnings ?? [])->map(fn ($m, $sku) => $sku.': '.implode(' ', $m))->implode(' | ')),
                 Forms\Components\Placeholder::make('status_display')->label('Status')->content(fn (?SalesOrder $record) => ucfirst($record?->status?->value ?? 'draft')),
             ]),
-            Forms\Components\Repeater::make('lines')->relationship()->columns(['default' => 2, 'md' => 4])
+            Forms\Components\Repeater::make('lines')->relationship()->columns(['default' => 2, 'md' => 5])
                 ->disabled(fn (?SalesOrder $record) => $record && $record->status !== S::Draft)
                 ->schema([
                     Forms\Components\Hidden::make('quoted')->dehydrated(false)
@@ -101,10 +102,30 @@ class SalesOrderResource extends Resource
                         ->live()->afterStateUpdated(fn (Get $get, Set $set) => self::fillQuote($get, $set))
                         ->columnSpan(['default' => 2, 'md' => 2]),
                     Forms\Components\TextInput::make('qty')->numeric()->default(1)->required()->minValue(0.0001)
+                        ->formatStateUsing(fn ($state) => self::displayQty($state)) // 4.0000 -> 4 (stored precision unchanged)
                         ->live(onBlur: true)->afterStateUpdated(fn (Get $get, Set $set) => self::fillQuote($get, $set, true)),
                     Forms\Components\TextInput::make('unit_price')->numeric()->required()->prefix('$')
+                        ->formatStateUsing(fn ($state) => self::displayPrice($state)) // 0.9900 -> 0.99, 0.6550 -> 0.655
+                        ->live(onBlur: true)
                         ->helperText(fn (Get $get, ?SalesOrderLine $record) => self::sourceHint($get, $record)),
+                    Forms\Components\Placeholder::make('line_total_display')->label('Line total')
+                        ->content(fn (Get $get) => '$'.number_format((float) self::lineTotal($get('qty'), $get('unit_price')), 2)),
                 ])->defaultItems(1)->columnSpanFull(),
+            // UI audit #5: the amount is visible before Deliver / invoice / collect.
+            Forms\Components\Section::make('Totals')->columns(['default' => 2, 'md' => 4])->compact()
+                ->schema([
+                    Forms\Components\Placeholder::make('totals_subtotal')->label('Subtotal')
+                        ->content(fn (Get $get) => '$'.number_format((float) self::formTotal($get('lines')), 2)),
+                    Forms\Components\Placeholder::make('totals_total')->label('Order total')
+                        ->content(fn (Get $get) => new HtmlString('<strong data-test="order-total">$'.number_format((float) self::formTotal($get('lines')), 2).'</strong>')),
+                    Forms\Components\Placeholder::make('totals_paid')->label('Paid / credited')
+                        ->visible(fn (?SalesOrder $record) => $record !== null)
+                        ->content(fn (?SalesOrder $record) => '$'.number_format((float) Money::add($record?->amount_paid ?? 0, $record?->amount_credited ?? 0), 2)),
+                    Forms\Components\Placeholder::make('totals_balance')->label('Balance due')
+                        ->visible(fn (?SalesOrder $record) => $record !== null)
+                        ->content(fn (Get $get, ?SalesOrder $record) => new HtmlString('<strong data-test="balance-due">$'.number_format((float) Money::s(
+                            Money::of(self::formTotal($get('lines')))->minus(Money::of($record?->amount_paid ?? 0))->minus(Money::of($record?->amount_credited ?? 0))), 2).'</strong>')),
+                ])->columnSpanFull(),
             Forms\Components\Textarea::make('notes')->columnSpanFull(),
             Forms\Components\Placeholder::make('compliance')->label('Compliance blocks')->columnSpanFull()
                 ->visible(fn (?SalesOrder $record) => ! empty($record?->compliance_reasons))
@@ -269,6 +290,44 @@ class SalesOrderResource extends Resource
     }
 
     /** Price from the shared PricingEngine for the line's product, qty, the order's customer and date. Qty changes keep a typed (manual) price. */
+    /** Exact qty x price for display; anything not yet a number (e.g. "4." while typing) counts as 0. */
+    public static function lineTotal(mixed $qty, mixed $price): string
+    {
+        try {
+            return is_numeric($qty) && is_numeric($price) ? Money::mul(trim((string) $qty), trim((string) $price)) : '0.0000';
+        } catch (\Brick\Math\Exception\MathException) {
+            return '0.0000'; // display helper: never break the form over a half-typed value
+        }
+    }
+
+    /** Sum of the repeater's current lines, so unsaved edits show in the totals. */
+    public static function formTotal(?array $lines): string
+    {
+        return Money::add(...array_map(fn ($l) => self::lineTotal($l['qty'] ?? null, $l['unit_price'] ?? null), array_values($lines ?? [])) ?: [0]);
+    }
+
+    /** 4.0000 -> 4, 2.5000 -> 2.5 (display only; the column keeps 4 decimals). */
+    public static function displayQty(mixed $v): mixed
+    {
+        if (! is_numeric($v) || ! str_contains((string) $v, '.')) {
+            return $v;
+        }
+
+        return rtrim(rtrim((string) $v, '0'), '.');
+    }
+
+    /** At least 2 decimals, no trailing zeros beyond that: 0.9900 -> 0.99, 0.6550 -> 0.655, 24.0000 -> 24.00. */
+    public static function displayPrice(mixed $v): mixed
+    {
+        if (! is_numeric($v) || ! str_contains((string) $v, '.')) {
+            return $v;
+        }
+        [$int, $dec] = explode('.', (string) $v, 2);
+        $dec = rtrim($dec, '0');
+
+        return $int.'.'.str_pad($dec, 2, '0');
+    }
+
     private static function fillQuote(Get $get, Set $set, bool $qtyOnly = false): void
     {
         $p = Product::find($get('product_id'));
@@ -281,7 +340,7 @@ class SalesOrderResource extends Resource
 
             return;
         }
-        $set('unit_price', $q->price);
+        $set('unit_price', self::displayPrice($q->price)); // same value, shown without trailing zeros
         $set('quoted', $q->price);
     }
 
