@@ -150,7 +150,7 @@ class Phase204PickupBoardTest extends TestCase
 
     public function test_version(): void
     {
-        $this->assertSame('0.20.4', config('erp.version'));
+        $this->assertTrue(version_compare(config('erp.version'), '0.20.4', '>='));
     }
 
     public function test_migration_rerunnable(): void

@@ -1,7 +1,17 @@
-# Vega ERP — Phase 20.4 UPGRADE (existing install at vegatest1.distrosku.com)
+# Vega ERP — Phase 20.5 UPGRADE (existing install at vegatest1.distrosku.com)
 
 For a site already installed from `vega-erp-phase1.zip` and upgraded through phase 3 (a phase-2 site can also take this zip: seeders are cumulative). TEST data only. No secrets in this package.
 This zip contains **no `laravel/.env` and no `laravel/storage/`**, so extracting it over the live site keeps both.
+
+## What's new in 0.20.5 (includes everything through 0.20.4)
+
+**Counter Pickup module.** The Counter pickup board is now its own module.
+
+- **Modules launcher:** new **Counter Pickup** tile right after Inventory (end of the first group). Order is now: POS, Sales Orders, Customers, Payments, Pricing, Promotions, Products, Vendors, Purchasing, Warehouse, Inventory, **Counter Pickup** | Delivery, Driver, Van Sales, Accounting, Bills (AP) | Reports, Tax Filings, MSA Weekly, PACT Reports, Compliance | Users, Settings, Imports.
+- **Sidebar:** the board moved from *Sales* to its own **Counter Pickup** group right after Inventory. Page URL (`/admin/sales/counter-pickup`) and route are unchanged.
+- Visibility unchanged: shown to users with Sales Orders, Warehouse scan or Pickup signature *view*.
+- **Bills (AP) > Create/Edit vendor bill:** wider, tidier layout. Header (vendor, vendor invoice #, bill #, bill/due dates, PO) in a 4-column grid; **Lines** full width as a compact row per line: Product / item (searchable, optional; fills description and cost), Description, GL account, Qty, Unit cost, Line total (read-only, right-aligned); *Add line* and drag to reorder; **Bill total** right-aligned below. Page uses full screen width; stacks on mobile. Validation, PO matching and GL posting unchanged.
+- No migration. Run the upgrade page as usual.
 
 ## What's new in 0.20.4 (includes everything through 0.20.3)
 

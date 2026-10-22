@@ -10,6 +10,12 @@ use Filament\Resources\Pages\CreateRecord;
 
 class CreateVendorBill extends CreateRecord
 {
+    /** 0.20.5: full-width so the lines table has room. */
+    public function getMaxContentWidth(): \Filament\Support\Enums\MaxWidth|string|null
+    {
+        return \Filament\Support\Enums\MaxWidth::Full;
+    }
+
     protected static string $resource = VendorBillResource::class;
 
     protected function mutateFormDataBeforeCreate(array $data): array

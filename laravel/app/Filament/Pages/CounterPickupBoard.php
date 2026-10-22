@@ -20,7 +20,7 @@ class CounterPickupBoard extends Page
 {
     protected static string $view = 'filament.pages.counter-pickup-board';
 
-    protected static ?string $navigationGroup = 'Sales';
+    protected static ?string $navigationGroup = 'Counter Pickup'; // 0.20.5: own sidebar group after Inventory (slug/route unchanged)
 
     protected static ?string $navigationIcon = 'heroicon-o-view-columns';
 
@@ -28,7 +28,7 @@ class CounterPickupBoard extends Page
 
     protected static ?string $slug = 'sales/counter-pickup';
 
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 1;
 
     public ?int $warehouseId = null;
 

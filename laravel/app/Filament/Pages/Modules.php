@@ -40,6 +40,7 @@ class Modules extends Page
             ['Purchasing', 'heroicon-o-clipboard-document-list', Resources\PurchaseOrderResource::class],
             ['Warehouse', 'heroicon-o-qr-code', 'wh.hub', $can('warehouse_scan')],
             ['Inventory', 'heroicon-o-archive-box', Resources\InventoryResource::class],
+            ['Counter Pickup', 'heroicon-o-view-columns', CounterPickupBoard::class], // 0.20.5
             ['Delivery', 'heroicon-o-truck', Resources\DeliveryManifestResource::class],
             ['Driver', 'heroicon-o-map-pin', 'driver.today', $can('driver_app')],
             ['Van Sales', 'heroicon-o-banknotes', 'driver.van', $can('van_sales', 'manage')],

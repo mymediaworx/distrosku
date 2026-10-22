@@ -55,32 +55,61 @@ class VendorBillResource extends Resource
 
     public static function form(Form $form): Form
     {
-        return $form->schema([
-            Forms\Components\Section::make()->columns(['default' => 1, 'md' => 3])->schema([
-                Forms\Components\TextInput::make('number')->disabled()->dehydrated(false)->placeholder('Assigned on save'),
+        $lineTotal = fn ($qty, $cost) => bcmul(is_numeric($qty) ? (string) $qty : '0', is_numeric($cost) ? (string) $cost : '0', 4);
+
+        // 0.20.5: wider layout: tidy header grid, full-width compact table-style lines, totals right-aligned.
+        return $form->columns(1)->schema([
+            Forms\Components\Section::make('Bill')->columns(['default' => 1, 'sm' => 2, 'lg' => 4])->schema([
                 Forms\Components\Select::make('vendor_id')->relationship('vendor', 'name')->searchable()->preload()->required()
-                    ->disabled(fn (?VendorBill $record) => (bool) $record?->purchase_order_id),
+                    ->disabled(fn (?VendorBill $record) => (bool) $record?->purchase_order_id)->columnSpan(['sm' => 2]),
                 Forms\Components\TextInput::make('vendor_invoice')->label('Vendor invoice #')->maxLength(120),
+                Forms\Components\TextInput::make('number')->label('Bill #')->disabled()->dehydrated(false)->placeholder('Assigned on save'),
                 Forms\Components\DatePicker::make('bill_date')->default(now())->required(),
                 Forms\Components\DatePicker::make('due_date')->default(now()->addDays(30))->required(),
                 Forms\Components\Placeholder::make('po')->label('Purchase order')->content(fn (?VendorBill $record) => $record?->purchaseOrder?->number ?? 'Standalone'),
-                Forms\Components\Textarea::make('notes')->columnSpanFull(),
+                Forms\Components\Textarea::make('notes')->rows(2)->columnSpanFull(),
             ]),
-            Forms\Components\Repeater::make('lines')->relationship()->columns(['default' => 2, 'md' => 5])
-                ->helperText('PO lines are matched to what was received at the PO cost. Add extra lines (freight, fees) with a GL account. Standalone bills need a GL account on every line.')
+            Forms\Components\Section::make('Lines')->columnSpanFull()->extraAttributes(['class' => 'vb-lines'])
+                ->description('PO lines are matched to what was received at the PO cost. Add extra lines (freight, fees) with a GL account. Standalone bills need a GL account on every line.')
                 ->schema([
-                    Forms\Components\Select::make('account_code')->label('GL account')->options(fn () => static::accountOptions())->searchable()
-                        ->disabled(fn (Forms\Get $get) => (bool) $get('purchase_order_line_id'))
-                        ->required(fn (Forms\Get $get) => ! $get('purchase_order_line_id')),
-                    Forms\Components\TextInput::make('description')->columnSpan(['md' => 2]),
-                    Forms\Components\TextInput::make('qty')->numeric()->default(1)->required(),
-                    Forms\Components\TextInput::make('unit_cost')->numeric()->required(),
-                    Forms\Components\Hidden::make('purchase_order_line_id'),
-                    Forms\Components\Hidden::make('product_id'),
-                    Forms\Components\Hidden::make('amount')->default(0),
-                ])
-                ->mutateRelationshipDataBeforeCreateUsing(fn (array $d) => $d + ['amount' => bcmul((string) ($d['qty'] ?? 0), (string) ($d['unit_cost'] ?? 0), 4)])
-                ->mutateRelationshipDataBeforeSaveUsing(fn (array $d) => array_merge($d, ['amount' => bcmul((string) ($d['qty'] ?? 0), (string) ($d['unit_cost'] ?? 0), 4)])),
+                    Forms\Components\Repeater::make('lines')->relationship()->hiddenLabel()->columnSpanFull()
+                        ->columns(['default' => 2, 'md' => 12])->reorderable()->orderColumn(false)->addActionLabel('Add line')
+                        ->itemLabel(fn (array $state) => $state['description'] ?? null)->collapsible()->live()
+                        ->extraAttributes(['class' => 'vb-lines-repeater'])
+                        ->schema([
+                            Forms\Components\Select::make('product_id')->label('Product / item')->relationship('product', 'name')
+                                ->getOptionLabelFromRecordUsing(fn ($p) => "{$p->sku} {$p->name}")->searchable(['sku', 'name', 'upc'])
+                                ->disabled(fn (Forms\Get $get) => (bool) $get('purchase_order_line_id'))->dehydrated()
+                                ->live()->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
+                                    if ($state && ($p = \App\Models\Product::find($state))) {
+                                        $get('description') ?: $set('description', "{$p->sku} {$p->name}");
+                                        $get('unit_cost') ?: $set('unit_cost', $p->cost);
+                                    }
+                                })->columnSpan(['default' => 2, 'md' => 3]),
+                            Forms\Components\TextInput::make('description')->columnSpan(['default' => 2, 'md' => 3]),
+                            Forms\Components\Select::make('account_code')->label('GL account')->options(fn () => static::accountOptions())->searchable()
+                                ->disabled(fn (Forms\Get $get) => (bool) $get('purchase_order_line_id'))
+                                ->required(fn (Forms\Get $get) => ! $get('purchase_order_line_id'))->columnSpan(['default' => 2, 'md' => 2]),
+                            Forms\Components\TextInput::make('qty')->numeric()->default(1)->required()->live(onBlur: true)->columnSpan(['default' => 1, 'md' => 1]),
+                            Forms\Components\TextInput::make('unit_cost')->label('Unit cost')->numeric()->required()->live(onBlur: true)->columnSpan(['default' => 1, 'md' => 2]),
+                            Forms\Components\Placeholder::make('line_total')->label('Line total')
+                                ->content(fn (Forms\Get $get) => '$'.number_format((float) $lineTotal($get('qty'), $get('unit_cost')), 2))
+                                ->extraAttributes(['class' => 'text-right font-medium tabular-nums'])->columnSpan(['default' => 2, 'md' => 1]),
+                            Forms\Components\Hidden::make('purchase_order_line_id'),
+                            Forms\Components\Hidden::make('amount')->default(0),
+                        ])
+                        ->mutateRelationshipDataBeforeCreateUsing(fn (array $d) => $d + ['amount' => bcmul((string) ($d['qty'] ?? 0), (string) ($d['unit_cost'] ?? 0), 4)])
+                        ->mutateRelationshipDataBeforeSaveUsing(fn (array $d) => array_merge($d, ['amount' => bcmul((string) ($d['qty'] ?? 0), (string) ($d['unit_cost'] ?? 0), 4)])),
+                    Forms\Components\Placeholder::make('bill_total')->label('Bill total')->hiddenLabel()
+                        ->content(function (Forms\Get $get) use ($lineTotal) {
+                            $t = '0';
+                            foreach ((array) $get('lines') as $l) {
+                                $t = bcadd($t, $lineTotal($l['qty'] ?? 0, $l['unit_cost'] ?? 0), 4);
+                            }
+
+                            return new \Illuminate\Support\HtmlString('<div class="text-right text-base"><span class="text-gray-500">Bill total</span> <strong class="tabular-nums">$'.number_format((float) $t, 2).'</strong></div>');
+                        }),
+                ]),
         ]);
     }
 

@@ -157,7 +157,7 @@ class Phase201InboundPoTest extends TestCase
 
     public function test_modules_and_sidebar_order(): void
     {
-        $this->assertSame(['POS', 'Sales Orders', 'Customers', 'Payments', 'Pricing', 'Promotions', 'Products', 'Vendors', 'Purchasing', 'Warehouse', 'Inventory',
+        $this->assertSame(['POS', 'Sales Orders', 'Customers', 'Payments', 'Pricing', 'Promotions', 'Products', 'Vendors', 'Purchasing', 'Warehouse', 'Inventory', 'Counter Pickup',
             'Delivery', 'Driver', 'Van Sales', 'Accounting', 'Bills (AP)', 'Reports', 'Tax Filings', 'MSA Weekly', 'PACT Reports', 'Compliance', 'Users', 'Settings', 'Imports'],
             array_column(Modules::definitions(), 0));
         $this->assertSame(NavOrder::flat(), array_column(Modules::definitions(), 0));
@@ -175,10 +175,12 @@ class Phase201InboundPoTest extends TestCase
         }
         $this->assertSame('Purchasing', ExpectedInbound::getNavigationGroup());
         $this->assertSame('Payments', \App\Filament\Resources\PaymentResource::getNavigationGroup());
+        $this->assertSame('Counter Pickup', \App\Filament\Pages\CounterPickupBoard::getNavigationGroup());
+        $this->assertSame(0, Modules::section('Counter Pickup'));
         $this->assertSame('Bills (AP)', \App\Filament\Resources\VendorBillResource::getNavigationGroup());
         $this->get('/admin')->assertOk();
         $html = $this->get('/admin/modules')->assertOk()->getContent();
         $pos = fn ($s) => strpos($html, '<span>'.$s.'</span>');
-        $this->assertTrue($pos('POS') < $pos('Sales Orders') && $pos('Inventory') < $pos('Delivery') && $pos('Compliance') < $pos('Users') && $pos('Settings') < $pos('Imports'));
+        $this->assertTrue($pos('POS') < $pos('Sales Orders') && $pos('Inventory') < $pos('Counter Pickup') && $pos('Counter Pickup') < $pos('Delivery') && $pos('Compliance') < $pos('Users') && $pos('Settings') < $pos('Imports'));
     }
 }
