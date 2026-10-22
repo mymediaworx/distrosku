@@ -1,6 +1,7 @@
 <div x-data="{ idle: null, reset() { clearTimeout(this.idle); this.last = Date.now(); this.idle = setTimeout(() => $wire.lock(), {{ \App\Pos\PosPin::IDLE_SECONDS * 1000 }}); }, last: Date.now() }"
      x-init="reset(); ['pointerdown','keydown','touchstart'].forEach(e => window.addEventListener(e, () => reset(), {passive: true}));
              document.addEventListener('visibilitychange', () => { if (!document.hidden && Date.now() - last > {{ \App\Pos\PosPin::IDLE_SECONDS * 1000 }}) $wire.lock(); });">
+    <h1 class="sr-only">Counter POS</h1>
     <div class="card" style="display:flex;justify-content:space-between;align-items:center;gap:.5rem;padding:.5rem 1rem">
         <span>Cashier: <strong data-test="operator">{{ $operator }}</strong></span>
         <span style="display:flex;gap:.5rem">
@@ -12,7 +13,7 @@
         <div>
             <div class="card">
                 <form class="scan" wire:submit="add">
-                    <input wire:model="scan" placeholder="Scan UPC or type SKU / name" autofocus inputmode="search" autocomplete="off" aria-label="Search or scan">
+                    <input wire:model="scan" placeholder="Scan UPC or type SKU / name" autofocus inputmode="search" autocomplete="off" aria-label="Scan UPC or type SKU or name">
                     <button type="submit">Add</button>
                 </form>
                 <div class="posbar">
@@ -24,7 +25,31 @@
                 @if($message)<p class="ok">{{ $message }}</p>@endif
                 @foreach($recallNotes as $n)<p class="warn" data-test="recall-note">⚠ {{ $n }}</p>@endforeach
             </div>
-            <div class="card">
+            {{-- Order details live with the cart so the tender column fits a tablet screen. --}}
+            <div class="card details" data-test="order-details">
+                <div class="dgrid">
+                    <div class="dcust"><label for="pos-customer">Customer</label>
+                        <select id="pos-customer" wire:model.live="customerId">@foreach($customers as $c)<option value="{{ $c->id }}">{{ $c->name }}</option>@endforeach</select>
+                        @if(! is_null($this->customerBalance))<small data-test="customer-balance">Account balance: {{ number_format((float) $this->customerBalance, 2) }}{{ (float) $this->customerBalance < 0 ? ' (credit)' : '' }}</small>@endif</div>
+                    <div><label for="pos-fulfillment">Fulfillment</label>
+                        <select id="pos-fulfillment" wire:model.live="fulfillment" data-test="fulfillment"><option value="pickup">Counter pickup</option><option value="delivery">Delivery</option></select></div>
+                    <div><label for="pos-warehouse">Warehouse</label>
+                        <select id="pos-warehouse" wire:model="warehouseId">@foreach($warehouses as $w)<option value="{{ $w->id }}">{{ $w->name }}</option>@endforeach</select></div>
+                </div>
+                @if($fulfillment === 'delivery')
+                <div><label for="pos-ship-to">Ship-to</label>
+                    @if($shipTos->isEmpty())
+                        <p class="warn" data-test="no-ship-to">No ship-to for delivery: @if($addShipToUrl)<a href="{{ $addShipToUrl }}" target="_blank" rel="noopener">add one</a>@else add one on the customer page @endif, or switch to Counter pickup.</p>
+                    @else
+                        <select id="pos-ship-to" wire:model.live="shipToId" data-test="ship-to">@foreach($shipTos as $s)<option value="{{ $s->id }}" wire:key="st-{{ $customerId }}-{{ $s->id }}">{{ $s->name }}{{ $s->is_default ? ' (default)' : '' }} - {{ $s->city ? $s->city.', ' : '' }}{{ $s->state }}</option>@endforeach</select>
+                    @endif</div>
+                @endif
+                <div x-data="{ open: @js(filled($notes)) }" class="notes">
+                    <button type="button" class="link" x-show="! open" x-on:click="open = true; $nextTick(() => $refs.notes.focus())" data-test="add-note">+ Add a note</button>
+                    <div x-show="open" x-cloak><label for="pos-notes">Notes</label><textarea id="pos-notes" x-ref="notes" wire:model.blur="notes" rows="2" style="width:100%"></textarea></div>
+                </div>
+            </div>
+            <div class="card" data-test="cart">
                 @forelse($cart as $i => $line)
                     <div class="line" wire:key="l{{ $line['product_id'] }}">
                         <div><strong>{{ $line['sku'] }}</strong><br><small>{{ $line['name'] }}</small>@if(!empty($line['source']))<br><small class="src">{{ \App\Pricing\PricingEngine::sourceLabel($line['source']) }}</small>@endif</div>
@@ -34,6 +59,7 @@
                             <button type="button" wire:click="inc({{ $i }})" aria-label="One more">+</button>
                         </div>
                         <input class="price" type="number" step="0.01" min="0" inputmode="decimal" wire:model.blur="cart.{{ $i }}.price" aria-label="Price">
+                        <span class="ext" data-test="line-total">${{ number_format((float) \App\Services\Money::mul($line['qty'] ?: 0, $line['price'] ?: 0), 2) }}</span>
                         <button type="button" class="x" wire:click="remove({{ $i }})" aria-label="Remove">×</button>
                         @foreach($line['reasons'] as $r)<div class="blk">⛔ {{ $r }}</div>@endforeach
                     </div>
@@ -43,25 +69,7 @@
             </div>
         </div>
         <div class="side">
-            <div class="card row" style="grid-template-columns:1fr">
-                <div><label>Customer</label>
-                    <select wire:model.live="customerId">@foreach($customers as $c)<option value="{{ $c->id }}">{{ $c->name }}</option>@endforeach</select>
-                    @if(! is_null($this->customerBalance))<small data-test="customer-balance">Account balance: {{ number_format((float) $this->customerBalance, 2) }}{{ (float) $this->customerBalance < 0 ? ' (credit)' : '' }}</small>@endif</div>
-                <div><label>Fulfillment</label>
-                    <select wire:model.live="fulfillment" data-test="fulfillment"><option value="pickup">Counter pickup</option><option value="delivery">Delivery</option></select></div>
-                @if($fulfillment === 'delivery')
-                <div><label>Ship-to</label>
-                    @if($shipTos->isEmpty())
-                        <p class="warn" data-test="no-ship-to">No ship-to for delivery: @if($addShipToUrl)<a href="{{ $addShipToUrl }}" target="_blank" rel="noopener">add one</a>@else add one on the customer page @endif, or switch to Counter pickup.</p>
-                    @else
-                        <select wire:model.live="shipToId" data-test="ship-to">@foreach($shipTos as $s)<option value="{{ $s->id }}" wire:key="st-{{ $customerId }}-{{ $s->id }}">{{ $s->name }}{{ $s->is_default ? ' (default)' : '' }} - {{ $s->city ? $s->city.', ' : '' }}{{ $s->state }}</option>@endforeach</select>
-                    @endif</div>
-                @endif
-                <div><label>Warehouse</label>
-                    <select wire:model="warehouseId">@foreach($warehouses as $w)<option value="{{ $w->id }}">{{ $w->name }}</option>@endforeach</select></div>
-            </div>
-            <div class="card"><label>Notes</label><textarea wire:model.blur="notes" rows="2" aria-label="Notes" style="width:100%"></textarea></div>
-            <div class="card">
+            <div class="card checkout" id="pos-checkout" data-test="checkout">
                 <p class="total">${{ number_format((float) $this->total, 2) }}</p>
                 <div class="tenders">
                     @foreach(['cash' => 'Cash', 'check' => 'Check', 'card' => 'Card (manual)', 'account' => 'Charge to account'] as $k => $v)
@@ -70,8 +78,8 @@
                 </div>
                 @if($tender === 'cash')
                     <div x-data="{ add(d) { let v = ($wire.tendered || '') + d; if (/^\d*(\.\d{0,2})?$/.test(v)) $wire.tendered = v; } }">
-                        <label>Cash tendered</label>
-                        <input type="text" inputmode="decimal" wire:model.live.debounce.300ms="tendered" placeholder="0.00" aria-label="Cash tendered" style="font-size:1.5rem;text-align:right">
+                        <div class="tendrow"><label for="pos-tendered">Cash tendered</label>
+                        <input id="pos-tendered" type="text" inputmode="decimal" wire:model.live.debounce.300ms="tendered" placeholder="0.00" style="font-size:1.5rem;text-align:right"></div>
                         <div class="keypad">
                             @foreach(['7','8','9','4','5','6','1','2','3','.','0'] as $k)<button type="button" x-on:click="add('{{ $k }}')">{{ $k }}</button>@endforeach
                             <button type="button" class="alt" x-on:click="$wire.tendered = ($wire.tendered || '').slice(0, -1)" aria-label="Backspace">⌫</button>
@@ -83,6 +91,11 @@
                 <button class="pay" wire:click="checkout" @disabled($this->blocked || empty($cart)) wire:loading.attr="disabled">Complete sale</button>
             </div>
         </div>
+    </div>
+    {{-- Portrait tablets and phones: the tender card is below the cart, so keep the total one tap away. --}}
+    <div class="paybar" data-test="paybar">
+        <span>{{ count($cart) }} item(s) · <strong>${{ number_format((float) $this->total, 2) }}</strong></span>
+        <button type="button" x-on:click="document.getElementById('pos-checkout').scrollIntoView({behavior: 'smooth', block: 'start'})" @disabled(empty($cart))>Pay</button>
     </div>
 
     @if($browsing)

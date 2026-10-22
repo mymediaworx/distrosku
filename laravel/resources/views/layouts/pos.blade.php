@@ -41,10 +41,28 @@ button{background:#1e3a8a;color:#fff;border:0;font-weight:600;cursor:pointer}but
 .who{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:.6rem}.who button{min-height:72px;background:#e5e7eb;color:#111;font-size:1.1rem}.who button.on{background:#1e3a8a;color:#fff}
 .dots{display:flex;justify-content:center;gap:1rem;margin:1rem 0}.dots span{width:22px;height:22px;border-radius:50%;border:2px solid #1e3a8a}.dots span.f{background:#1e3a8a}
 .lockbox{max-width:520px;margin:0 auto}
+/* Checkout always reachable: order details sit with the cart; the side column holds only the tender card. */
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}[x-cloak]{display:none!important}
+.details .dgrid{display:grid;grid-template-columns:1fr;gap:.5rem}@media(min-width:700px){.details .dgrid{grid-template-columns:2fr 1fr 1fr}}
+.details .notes{margin-top:.4rem}.details button.link{background:none;color:#1e3a8a;width:auto;min-height:44px;padding:0;text-decoration:underline;font-weight:600}
+.line{grid-template-columns:1fr auto 110px 92px 52px}.line .ext{text-align:right;font-weight:600;font-variant-numeric:tabular-nums}
+.tendrow{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:.6rem;margin-top:.5rem}.tendrow label{margin:0}
+.paybar{position:fixed;left:0;right:0;bottom:0;z-index:40;display:flex;justify-content:space-between;align-items:center;gap:.75rem;padding:.6rem 1rem calc(.6rem + env(safe-area-inset-bottom));background:#fff;box-shadow:0 -2px 10px #0002}
+.paybar strong{font-size:1.3rem}.paybar button{width:auto;min-width:140px;min-height:52px;background:#047857;font-size:1.15rem}
+main{padding-bottom:5.5rem}
+@media(min-width:1000px) and (orientation:landscape){
+  .paybar{display:none}main{padding-bottom:.75rem}
+  /* 10rem = header + cashier bar above the column, so Complete sale stays on screen before any scrolling. */
+  .pos .side{max-height:calc(100vh - 10rem);max-height:calc(100dvh - 10rem);overflow-y:auto;overscroll-behavior:contain;border-radius:12px}
+  .checkout{margin-bottom:0}.checkout .total{margin-top:0}.checkout .keypad button{min-height:54px}
+  .checkout .pay{position:sticky;bottom:0;box-shadow:0 -8px 12px #fff}
+}
 /* 0.20.6 phones */
-html,body{overflow-x:hidden}
+/* overflow-x on html only: on body it makes body a scroll container and position:sticky (tender column) stops working. */
+html{overflow-x:hidden}
 @media(max-width:560px){body{font-size:16px}main{padding:.5rem}header{flex-wrap:wrap;padding:.4rem .6rem}.card{padding:.75rem;border-radius:10px}
 .line{grid-template-columns:1fr auto;row-gap:.35rem}.line .price{grid-column:1}.line .x{grid-column:2;width:52px}
+[data-test=cart] .line{grid-template-columns:1fr auto auto}[data-test=cart] .line>div:first-child{grid-column:1/3}[data-test=cart] .line .price{grid-column:1}[data-test=cart] .line .ext{grid-column:2}[data-test=cart] .line .x{grid-column:3}
 .step button{width:46px;min-height:46px}.step input{width:56px}.scan button{min-width:84px}
 .posbar{grid-template-columns:1fr 1fr}.posbar button.big{grid-column:1/-1}.tiles{grid-template-columns:repeat(2,1fr)}.who{grid-template-columns:repeat(2,1fr)}
 .total{font-size:1.6rem}.ovl{padding:0}.ovl-in{border-radius:0;min-height:100vh}}
