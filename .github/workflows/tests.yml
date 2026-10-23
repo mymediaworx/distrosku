@@ -61,12 +61,12 @@ jobs:
         run: vendor/bin/phpunit
 
   mariadb:
-    name: PHPUnit (PHP 8.2, MariaDB 10.11)
+    name: PHPUnit (PHP 8.2, MariaDB 11.8)
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     services:
       mariadb:
-        image: mariadb:10.11
+        image: mariadb:11.8
         env:
           MARIADB_DATABASE: vega_test
           MARIADB_USER: vega
