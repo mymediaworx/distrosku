@@ -84,6 +84,11 @@ class CounterPos extends Component
     /** @var list<string> warnings shown after a recall (price changes, stock, credit) */
     public array $recallNotes = [];
 
+    /** #27: last completed sale on this screen, for "Print receipt" (and the cash tendered, for change due). */
+    public ?int $lastSaleId = null;
+
+    public ?string $lastTendered = null;
+
     public function mount(): void
     {
         $cash = Customer::where('code', 'CASH')->first() ?? Customer::first();
@@ -533,7 +538,10 @@ class CounterPos extends Component
                 return $so->fresh();
             });
             $change = $this->changeDue;
-            $this->message = "Sale {$so->number} complete: \${$so->total}.".($change !== null && (float) $change >= 0 ? " Change due \${$change}." : '');
+            $this->message = "Sale {$so->number} complete: \$".number_format((float) $so->total, 2).'.'.($change !== null && (float) $change >= 0 ? " Change due \${$change}." : '');
+            $this->lastSaleId = $so->id;
+            $this->lastTendered = $this->tender === 'cash' && is_numeric($this->tendered) ? (string) $this->tendered : null;
+            $this->dispatch('pos-sale-complete', url: $this->receiptUrl(print: true));
             $this->cart = [];
             $this->tendered = '';
             $this->notes = '';
@@ -544,6 +552,17 @@ class CounterPos extends Component
         } catch (Throwable $e) {
             $this->error = $e->getMessage();
         }
+    }
+
+    /** #27: receipt link for the last sale (80 mm by default). */
+    public function receiptUrl(string $format = '80mm', bool $print = false): ?string
+    {
+        if (! $this->lastSaleId) {
+            return null;
+        }
+
+        return route('pos.receipt', array_filter(['so' => $this->lastSaleId, 'format' => $format === 'letter' ? 'letter' : null,
+            'tendered' => $this->lastTendered, 'print' => $print ? 1 : null]));
     }
 
     /** @return list<string> acknowledgments for the current cart ([] = no signature needed). */

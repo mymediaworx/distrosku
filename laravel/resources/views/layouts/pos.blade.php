@@ -41,6 +41,10 @@ button{background:#1e3a8a;color:#fff;border:0;font-weight:600;cursor:pointer}but
 .who{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:.6rem}.who button{min-height:72px;background:#e5e7eb;color:#111;font-size:1.1rem}.who button.on{background:#1e3a8a;color:#fff}
 .dots{display:flex;justify-content:center;gap:1rem;margin:1rem 0}.dots span{width:22px;height:22px;border-radius:50%;border:2px solid #1e3a8a}.dots span.f{background:#1e3a8a}
 .lockbox{max-width:520px;margin:0 auto}
+/* #27 receipt bar */
+.receipt{display:flex;gap:.5rem;align-items:center;margin:.4rem 0}.receipt button{width:auto;min-width:150px;background:#047857}.receipt button.alt{min-width:0;background:#e5e7eb;color:#111}
+.receipt a{min-height:44px;display:inline-flex;align-items:center;padding:0 .5rem;color:#1e3a8a;font-weight:600}
+.autoprint{display:flex;align-items:center;gap:.5rem;font-weight:400;font-size:.9rem;color:#475569;margin:.4rem 0 0}.autoprint input{width:22px;min-height:22px;height:22px}
 /* Checkout always reachable: order details sit with the cart; the side column holds only the tender card. */
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}[x-cloak]{display:none!important}
 .details .dgrid{display:grid;grid-template-columns:1fr;gap:.5rem}@media(min-width:700px){.details .dgrid{grid-template-columns:2fr 1fr 1fr}}

@@ -23,6 +23,21 @@
                 </div>
                 @if($error)<p class="err">{{ $error }}</p>@endif
                 @if($message)<p class="ok">{{ $message }}</p>@endif
+                {{-- #27 receipts: printed from a hidden frame through Chrome's print dialog; auto-print is a per-device choice. --}}
+                <div x-data="{ auto: (() => { try { return localStorage.getItem('pos.autoReceipt') === '1' } catch (e) { return false } })(),
+                               print(url) { if (url) { this.$refs.rf.src = url } },
+                               save() { try { localStorage.setItem('pos.autoReceipt', this.auto ? '1' : '0') } catch (e) {} } }"
+                     x-on:pos-sale-complete.window="if (auto) print($event.detail.url)">
+                    @if($lastSaleId)
+                        <div class="receipt" data-test="receipt-bar">
+                            <button type="button" x-on:click="print(@js($this->receiptUrl(print: true)))" data-test="print-receipt">Print receipt</button>
+                            <button type="button" class="alt" x-on:click="print(@js($this->receiptUrl('letter', true)))" data-test="print-letter">Letter</button>
+                            <a href="{{ $this->receiptUrl() }}" target="_blank" rel="noopener">View</a>
+                        </div>
+                    @endif
+                    <label class="autoprint"><input type="checkbox" x-model="auto" x-on:change="save()" data-test="auto-receipt"> Print a receipt after every sale on this device</label>
+                    <iframe x-ref="rf" title="Receipt" aria-hidden="true" tabindex="-1" style="position:absolute;width:0;height:0;border:0;visibility:hidden"></iframe>
+                </div>
                 @foreach($recallNotes as $n)<p class="warn" data-test="recall-note">⚠ {{ $n }}</p>@endforeach
             </div>
             {{-- Order details live with the cart so the tender column fits a tablet screen. --}}
