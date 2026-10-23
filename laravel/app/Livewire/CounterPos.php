@@ -514,29 +514,13 @@ class CounterPos extends Component
             return;
         }
         try {
-            $so = DB::transaction(function () use ($svc) {
-                $so = SalesOrder::create([
-                    'number' => SalesOrderService::nextNumber('POS', SalesOrder::class),
-                    'customer_id' => $this->customerId, 'ship_to_id' => $this->fulfillment === 'delivery' ? $this->shipToId : null, 'warehouse_id' => $this->warehouseId,
-                    'fulfillment' => $this->fulfillment === 'delivery' ? 'delivery' : 'pickup', 'channel' => 'pos', 'order_date' => now()->toDateString(), 'notes' => trim($this->notes) ?: null,
-                ]);
-                foreach ($this->cart as $l) {
-                    $so->lines()->create(['product_id' => $l['product_id'], 'qty' => Money::s($l['qty']), 'unit_price' => Money::s($l['price'])]);
-                }
-                $svc->confirm($so, $this->tender === 'account');
-                // 0.15: regulated items need the counter signature (21+; account charge when tender is account).
-                $sig = app(SignatureService::class);
-                if ($sig->required($so->fresh())) {
-                    $sig->capture($so->fresh(), $this->sigInput() ?? [], 'counter', null, $this->tender === 'account');
-                }
-                $svc->deliver($so);
-                $svc->invoice($so);
-                if ($this->tender !== 'account') {
-                    $svc->recordPayment($so->fresh(), $so->fresh()->total, $this->tender, 'POS');
-                }
-
-                return $so->fresh();
-            });
+            // #26: the sale itself lives in PosCheckout, shared with offline-sale sync.
+            $so = app(\App\Pos\PosCheckout::class)->complete([
+                'customer_id' => $this->customerId, 'warehouse_id' => $this->warehouseId,
+                'fulfillment' => $this->fulfillment, 'ship_to_id' => $this->shipToId, 'notes' => $this->notes,
+                'tender' => $this->tender, 'signature' => $this->sigInput(),
+                'lines' => array_map(fn ($l) => ['product_id' => $l['product_id'], 'qty' => $l['qty'], 'price' => $l['price']], $this->cart),
+            ]);
             $change = $this->changeDue;
             $this->message = "Sale {$so->number} complete: \$".number_format((float) $so->total, 2).'.'.($change !== null && (float) $change >= 0 ? " Change due \${$change}." : '');
             $this->lastSaleId = $so->id;
