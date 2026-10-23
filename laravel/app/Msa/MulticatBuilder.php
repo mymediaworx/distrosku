@@ -97,6 +97,8 @@ class MulticatBuilder
         $upc = Writer::digits($p->msa_upc ?: $p->upc);
         if ($upc === '') {
             $e[] = 'no UPC';
+        } elseif (ltrim($upc, '0') === '') {
+            $e[] = 'UPC is 0';
         } elseif (strlen($upc) > 14) {
             $e[] = 'UPC longer than 14 digits';
         }
@@ -122,6 +124,26 @@ class MulticatBuilder
         return $e;
     }
 
+    /** Non-blocking UPC concerns: failed GS1 check digit or unusual length. */
+    public static function productWarnings(Product $p): array
+    {
+        $upc = Writer::digits($p->msa_upc ?: $p->upc);
+        if ($upc === '' || ltrim($upc, '0') === '' || strlen($upc) > 14) {
+            return [];
+        }
+        if (! in_array(strlen($upc), [11, 12, 13, 14], true)) {
+            return ['UPC has an unusual length ('.strlen($upc).' digits); MSA expects 12-14 (or 11 with the leading 0 dropped)'];
+        }
+
+        return Writer::gtinValid($upc) ? [] : ['UPC check digit is not valid (looks like an internal item code)'];
+    }
+
+    /** Zero-pad an all-digit customer/shipping number to 8 (sample profile). */
+    private static function pad8(string $v): string
+    {
+        return ctype_digit($v) && strlen($v) < 8 ? str_pad($v, 8, '0', STR_PAD_LEFT) : $v;
+    }
+
     /**
      * Build the file. Returns ['lines', 'content', 'file_name', 'errors', 'warnings', 'totals', 'preview'].
      * $opts overrides settings (test, altria, dollars, tax_jurisdiction) - used by tests and the preview.
@@ -134,6 +156,10 @@ class MulticatBuilder
         $dollars = $opts['dollars'] ?? MsaSettings::bool('msa_report_dollars');
         $taxJur = $opts['tax_jurisdiction'] ?? ($s['msa_tax_jurisdiction'] ?: 'none');
         $created = $opts['created'] ?? now()->format('Ymd');
+        $sample = ($opts['profile'] ?? ($s['msa_profile'] ?: 'sample')) !== 'spec';
+        $numJust = $sample ? 'D2' : 'N';
+        $r2 = fn (BigDecimal $d) => $d->toScale(2, RoundingMode::HALF_UP);
+        $lay = fn (array $layout) => $sample ? array_map(fn ($f) => in_array($f[3], ['N', 'NB'], true) ? [$f[0], $f[1], $f[2], 'D2'] : $f, $layout) : $layout;
         [$from, $to] = self::weekRange($weekEnding);
         $we = $to->format('Ymd');
         $errors = [];
@@ -200,6 +226,9 @@ class MulticatBuilder
             foreach (self::productProblems($p) as $pr) {
                 $errors[] = "Product {$p->sku} ({$p->name}): $pr.";
             }
+            foreach (self::productWarnings($p) as $pr) {
+                $warnings[] = "Product {$p->sku} ({$p->name}): $pr.";
+            }
             $bid[$p->id] = ['p' => $p, 'inv' => $inv->multipliedBy($factor($p)),
                 'floor' => BigDecimal::of((string) ($floor[$p->id] ?? '0'))->abs()->negated()->multipliedBy($factor($p))];
         }
@@ -244,6 +273,10 @@ class MulticatBuilder
             $c = $st->customer;
             $cn = Writer::ascii((string) $c->code);
             $sn = self::shippingNumber($st);
+            if ($sample) {
+                $cn = self::pad8($cn);
+                $sn = self::pad8($sn);
+            }
             $label = "Ship-to {$st->name} ({$c->code})";
             if (strlen($cn) > 8) {
                 $errors[] = "$label: customer code longer than 8 characters (MSA customer number).";
@@ -267,19 +300,31 @@ class MulticatBuilder
             if (! in_array(strlen($zip), [5, 9], true)) {
                 $errors[] = "$label: ZIP must be 5 or 9 digits.";
             }
+            if (! blank($state) && strtoupper((string) $state) !== (string) $state) {
+                $warnings[] = "$label: state '$state' is stored in lowercase (uppercased in the file; fix the ship-to).";
+            }
             if (preg_match('/\b(P\.?\s*O\.?\s*BOX)\b/i', (string) $addr)) {
                 $warnings[] = "$label: address is a PO box (MSA asks for the street address).";
             }
             $phone = Writer::digits($st->phone ?: $c->phone);
+            $cot = self::classOfTrade($c);
             $sids[$st->id] = ['st' => $st, 'c' => $c, 'cn' => $cn, 'sn' => $sn, 'values' => [
                 'type' => 'SID', 'customer_number' => $cn, 'shipping_number' => $sn, 'shipping_ext' => $st->msa_shipping_ext,
                 'name' => $st->name ?: $c->name, 'store_number' => $st->msa_store_number, 'address' => $addr, 'city' => $city,
                 'state' => strtoupper((string) $state), 'zip' => $zip, 'country' => 'USA',
                 'tax_jurisdiction' => $taxJur === 'sid' ? strtoupper((string) $state) : null,
-                'phone' => strlen($phone) === 10 ? $phone : null, 'class_of_trade' => self::classOfTrade($c),
+                'phone' => strlen($phone) === 10 ? $phone : null, 'class_of_trade' => $sample && $cot === 'Retailer' ? 'Retail' : $cot,
                 'tdlinx' => $st->msa_tdlinx, 'cash_and_carry' => $cash ? 'Y' : 'N', 'bill_to_number' => $cn, 'bill_to_name' => $c->name,
                 'promo_acceptance' => $c->msa_promo_acceptance ? 'Y' : 'N', 'sales_rep' => $shipTos[$st->id] ? (string) $shipTos[$st->id] : null,
             ]];
+            if ($sample) { // accepted sample leaves these blank
+                foreach (['country', 'phone', 'tdlinx', 'cash_and_carry', 'bill_to_number', 'bill_to_name', 'sales_rep'] as $f) {
+                    $sids[$st->id]['values'][$f] = null;
+                }
+            }
+        }
+        if ($sample) {
+            uasort($sids, fn ($a, $b) => [$a['cn'], $a['sn']] <=> [$b['cn'], $b['sn']]);
         }
 
         // ---- write records ----
@@ -301,6 +346,10 @@ class MulticatBuilder
         $preview = ['bid' => [], 'sid' => [], 'pur' => []];
         foreach ($bid as $b) {
             $p = $b['p'];
+            if ($sample) {
+                $b['inv'] = $r2($b['inv']);
+                $b['floor'] = $r2($b['floor']);
+            }
             $tInv = $tInv->plus($b['inv']);
             $tFloor = $tFloor->plus($b['floor']);
             $v = ['type' => 'BID', 'upc' => Writer::digits($p->msa_upc ?: $p->upc), 'sku' => Writer::ascii((string) $p->sku),
@@ -310,17 +359,24 @@ class MulticatBuilder
                 'unit_size_desc' => $p->msa_unit_size_desc, 'shipper_flag' => $p->msa_shipper_flag, 'mfr_promo_code' => $p->msa_promo ? $p->msa_promo_code : null,
                 'mfr_product_code' => $p->msa_mfr_product_code, 'm1_code' => Layout::MEASURE_INVENTORY, 'm1_value' => (string) $b['inv'],
                 'm2_code' => $altria ? Layout::MEASURE_FLOOR_RETURNS : null, 'm2_value' => $altria ? (string) $b['floor'] : null];
-            if ($this->safe($lines, fn () => Writer::record(Layout::BID, $v, $altria ? Layout::BID_LENGTH_ALTRIA : Layout::BID_LENGTH), "Product {$p->sku}", $errors)) {
+            if ($this->safe($lines, fn () => Writer::record($lay(Layout::BID), $v, $altria ? Layout::BID_LENGTH_ALTRIA : Layout::BID_LENGTH), "Product {$p->sku}", $errors)) {
                 $preview['bid'][] = [$p->sku, $v['upc'], $v['description'], $v['items_per_unit'], $p->msa_category_code, Writer::number($b['inv'])];
             }
         }
-        foreach ($sids as $x) {
-            if ($this->safe($lines, fn () => Writer::record(Layout::SID, $x['values'], Layout::SID_LENGTH), "Ship-to {$x['st']->name}", $errors)) {
+        $sidLines = [];
+        $purLines = [];
+        foreach ($sids as $stId => $x) {
+            $sidLines[$stId] = [];
+            if ($this->safe($sidLines[$stId], fn () => Writer::record(Layout::SID, $x['values'], Layout::SID_LENGTH), "Ship-to {$x['st']->name}", $errors)) {
                 $v = $x['values'];
                 $preview['sid'][] = [$x['cn'], $x['sn'], $v['name'], trim($v['address'].', '.$v['city'].' '.$v['state'].' '.$v['zip']), $v['class_of_trade']];
             }
         }
         ksort($pur);
+        if ($sample) { // within a ship-to: by SKU
+            uasort($pur, fn ($a, $b) => [$a['ship_to_id'], (string) ($reportable->get($a['product_id'])?->sku), $a['kind'], (string) $a['date']]
+                <=> [$b['ship_to_id'], (string) ($reportable->get($b['product_id'])?->sku), $b['kind'], (string) $b['date']]);
+        }
         $tQty = BigDecimal::zero();
         $tUsd = BigDecimal::zero();
         $tSal = BigDecimal::zero();
@@ -332,38 +388,70 @@ class MulticatBuilder
             if (! $x || ! $p) {
                 continue;
             }
-            $sal = $r['kind'] === 'saleable' ? $r['qty'] : BigDecimal::zero();
-            $uns = $r['kind'] === 'unsaleable' ? $r['qty'] : BigDecimal::zero();
-            $measures = [[Layout::MEASURE_QTY, (string) $r['qty'], 'N']];
+            // TOT sums the values as written: round each line first (fixes the penny-off total).
+            $qty = $sample ? $r2($r['qty']) : $r['qty'];
+            $usd = $r2($r['usd']);
+            $sal = $r['kind'] === 'saleable' ? $qty : BigDecimal::zero();
+            $uns = $r['kind'] === 'unsaleable' ? $qty : BigDecimal::zero();
+            $measures = [[Layout::MEASURE_QTY, (string) $qty, $numJust]];
             if ($dollars) {
-                $measures[] = [Layout::MEASURE_DOLLARS, (string) $r['usd']->toScale(2, RoundingMode::HALF_UP), 'NB'];
+                $measures[] = [Layout::MEASURE_DOLLARS, (string) $usd, $sample ? 'D2' : 'NB'];
             }
             if ($altria) {
-                $measures[] = [Layout::MEASURE_SALEABLE_RETURNS, (string) $sal, 'N'];
-                $measures[] = [Layout::MEASURE_UNSALEABLE_RETURNS, (string) $uns, 'N'];
+                $measures[] = [Layout::MEASURE_SALEABLE_RETURNS, (string) $sal, $numJust];
+                $measures[] = [Layout::MEASURE_UNSALEABLE_RETURNS, (string) $uns, $numJust];
             }
             $docs = array_keys($r['docs']);
             $v = ['type' => 'PUR', 'customer_number' => $x['cn'], 'shipping_number' => $x['sn'], 'shipping_ext' => $x['st']->msa_shipping_ext,
-                'sku' => Writer::ascii((string) $p->sku), 'invoice' => count($docs) === 1 ? $docs[0] : null, 'transaction_date' => $r['date']];
-            if ($this->safe($lines, fn () => self::purRecord($v, $measures), "Sale of {$p->sku}", $errors)) {
+                'sku' => Writer::ascii((string) $p->sku), 'invoice' => ! $sample && count($docs) === 1 ? $docs[0] : null, 'transaction_date' => $r['date']];
+            $purLines[$r['ship_to_id']] ??= [];
+            if ($this->safe($purLines[$r['ship_to_id']], fn () => self::purRecord($v, $measures), "Sale of {$p->sku}", $errors)) {
                 $nPur++;
-                $tQty = $tQty->plus($r['qty']);
-                $tUsd = $tUsd->plus($r['usd']);
+                $tQty = $tQty->plus($qty);
+                $tUsd = $tUsd->plus($usd);
                 $tSal = $tSal->plus($sal);
                 $tUns = $tUns->plus($uns);
-                $preview['pur'][] = [$x['cn'], $x['sn'], $p->sku, $r['date'] ?? '', $r['kind'], Writer::number($r['qty']), $dollars ? (string) $r['usd']->toScale(2) : ''];
+                $preview['pur'][] = [$x['cn'], $x['sn'], $p->sku, $r['date'] ?? '', $r['kind'], Writer::number($qty), $dollars ? (string) $usd : ''];
+            }
+        }
+        if ($sample) { // each SID immediately followed by its PURs
+            foreach ($sidLines as $stId => $sl) {
+                array_push($lines, ...$sl, ...($purLines[$stId] ?? []));
+            }
+        } else {
+            foreach ($sidLines as $sl) {
+                array_push($lines, ...$sl);
+            }
+            foreach ($sids as $stId => $x) {
+                array_push($lines, ...($purLines[$stId] ?? []));
             }
         }
         $tot = ['type' => 'TOT', 'distributor_id' => $did, 'week_ending' => $we, 'bid_count' => (string) count($preview['bid']),
             'sid_count' => (string) count($preview['sid']), 'pur_count' => (string) $nPur,
             'm1_code' => Layout::MEASURE_QTY, 'm1_value' => (string) $tQty,
-            'm2_code' => $dollars ? Layout::MEASURE_DOLLARS : null, 'm2_value' => $dollars ? (string) $tUsd->toScale(2) : null,
+            'm2_code' => $dollars ? Layout::MEASURE_DOLLARS : null, 'm2_value' => $dollars ? (string) $r2($tUsd) : null,
             'm3_code' => Layout::MEASURE_INVENTORY, 'm3_value' => (string) $tInv];
         if ($altria) {
             $tot += ['m4_code' => Layout::MEASURE_FLOOR_RETURNS, 'm4_value' => (string) $tFloor, 'm5_code' => Layout::MEASURE_SALEABLE_RETURNS,
                 'm5_value' => (string) $tSal, 'm6_code' => Layout::MEASURE_UNSALEABLE_RETURNS, 'm6_value' => (string) $tUns];
         }
-        $this->safe($lines, fn () => Writer::record(Layout::TOT, $tot, $altria ? Layout::TOT_LENGTH_ALTRIA : Layout::TOT_LENGTH), 'Totals', $errors);
+        $this->safe($lines, fn () => Writer::record($lay(Layout::TOT), $tot, $altria ? Layout::TOT_LENGTH_ALTRIA : Layout::TOT_LENGTH), 'Totals', $errors);
+
+        // ---- self-check: TOT must equal the detail records as written ----
+        $chk = ['BID' => 0, 'SID' => 0, 'PUR' => 0];
+        $sumQty = BigDecimal::zero();
+        foreach ($lines as $l) {
+            $t = substr($l, 0, 3);
+            if (isset($chk[$t])) {
+                $chk[$t]++;
+            }
+            if ($t === 'PUR' && substr($l, 102, 3) === Layout::MEASURE_QTY) {
+                $sumQty = $sumQty->plus(BigDecimal::of(ltrim(substr($l, 105, 11)) ?: '0'));
+            }
+        }
+        if ($chk['BID'] !== count($preview['bid']) || $chk['SID'] !== count($preview['sid']) || $chk['PUR'] !== $nPur || ! $sumQty->isEqualTo($tQty)) {
+            $errors[] = 'Totals: TOT record does not match the detail records (counts or quantity sum).';
+        }
 
         if (! $bid) {
             $warnings[] = 'No MSA-reportable products (set an MSA category code on tobacco products).';
@@ -375,7 +463,7 @@ class MulticatBuilder
             'lines' => $lines, 'content' => implode($eol, $lines).$eol, 'errors' => array_values(array_unique($errors)),
             'warnings' => array_values(array_unique($warnings)), 'preview' => $preview,
             'totals' => ['bid' => count($preview['bid']), 'sid' => count($preview['sid']), 'pur' => $nPur, 'qty' => Writer::number($tQty),
-                'dollars' => $dollars ? (string) $tUsd->toScale(2) : null, 'inventory' => Writer::number($tInv)],
+                'dollars' => $dollars ? (string) $r2($tUsd) : null, 'inventory' => Writer::number($tInv)],
         ];
     }
 

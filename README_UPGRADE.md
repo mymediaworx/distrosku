@@ -1,7 +1,17 @@
-# Vega ERP — Phase 20.8 UPGRADE (existing install at vegatest1.distrosku.com)
+# Vega ERP — Phase 20.9 UPGRADE (existing install at vegatest1.distrosku.com)
 
 For a site already installed from `vega-erp-phase1.zip` and upgraded through phase 3 (a phase-2 site can also take this zip: seeders are cumulative). TEST data only. No secrets in this package.
 This zip contains **no `laravel/.env` and no `laravel/storage/`**, so extracting it over the live site keeps both.
+
+## What's new in 0.20.9 (includes everything through 0.20.8)
+
+**MSA weekly file matches the accepted sample; MSA page and driver layout fixes; CI tests. No migrations.**
+
+- **MSA file profile** (*MSA Weekly > File profile*): *Match sample* (default) or *MSA 2019 spec*. Match sample writes quantities and dollars with 2 fixed decimals (D2), zero-pads customer and ship-to numbers to 8 digits, writes each SID followed by its PURs, and blanks the fields the sample leaves empty.
+- **TOT totals** are now sums of the per-line rounded values, and the file checks itself before saving (record counts and PUR quantity must match TOT).
+- **Pre-checks:** UPC 0 blocks the file; bad check digit or unusual UPC length, lowercase state and PO-box addresses are warnings.
+- **MSA Weekly page (#9):** preview tables, generated files and the raw view scroll inside their card instead of widening the page. **Driver app:** the horizontal-scroll rule no longer locks the body.
+- **CI (#31):** GitHub Actions runs the test suite on SQLite and MariaDB.
 
 ## What's new in 0.20.8 (includes everything through 0.20.7)
 

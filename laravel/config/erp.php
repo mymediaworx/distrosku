@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'version' => '0.20.8',
+    'version' => '0.20.9',
     // 0.15: signature required for regulated deliveries/pickups. Always on in production (no env switch); pre-0.15 tests turn it off.
     'require_signature' => true,
     'company' => env('ERP_COMPANY', 'Vega Distribution LLC'),

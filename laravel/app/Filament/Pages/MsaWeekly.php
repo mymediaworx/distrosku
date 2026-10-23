@@ -67,6 +67,7 @@ class MsaWeekly extends Page implements HasForms
                 Forms\Components\Toggle::make('msa_report_dollars')->label('Report dollars sold (002)'),
                 Forms\Components\Toggle::make('msa_altria_fields')->label('Altria STARS fields (transaction date, 004/005/006 returns)'),
                 Forms\Components\Select::make('msa_tax_jurisdiction')->label('State tax jurisdiction')->options(['none' => 'Not reported', 'sid' => 'Ship-to state in SID'])->required(),
+                Forms\Components\Select::make('msa_profile')->label('File profile')->options(MsaSettings::PROFILES)->required(),
                 Forms\Components\Select::make('msa_line_ending')->label('Line ending')->options(['crlf' => 'CRLF (Windows)', 'lf' => 'LF'])->required(),
             ])->columns(3),
         ]);

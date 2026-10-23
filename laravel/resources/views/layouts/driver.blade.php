@@ -19,7 +19,7 @@ button[disabled]{opacity:.4}.btn2{background:#475569}.bad{background:#b91c1c}.wa
 .stop{display:flex;gap:.8rem;align-items:center;text-decoration:none;color:inherit}.seq{flex:none;width:40px;height:40px;border-radius:50%;background:#0f766e;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700}
 .pill{display:inline-block;padding:.15rem .6rem;border-radius:99px;background:#e2e8f0;font-size:.8rem}.pill.delivered{background:#d1fae5}.pill.partial{background:#fef3c7}.pill.refused{background:#fee2e2}
 .tbl{width:100%;border-collapse:collapse;font-size:.95rem}.tbl td,.tbl th{padding:.5rem .3rem;border-bottom:1px solid #e2e8f0;text-align:left}
-.tbl-wrap,.card{overflow-x:auto}html,body{overflow-x:hidden}
+.tbl-wrap,.card{overflow-x:auto}html{overflow-x:hidden}
 @media(max-width:420px){main{padding:.5rem}.card{padding:.75rem}.tbl{font-size:.88rem}header{padding:.6rem .75rem}}
 .ok{color:#047857;font-weight:600}.err{color:#b91c1c;font-weight:600}.muted{color:#64748b;font-size:.9rem}
 </style>

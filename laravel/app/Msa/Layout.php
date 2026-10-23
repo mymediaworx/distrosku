@@ -8,7 +8,7 @@ namespace App\Msa;
  * Each field: [name, start column, length, justification].
  *   LB = left-justify / blank-fill, RB = right-justify / blank-fill, RZ = right-justify / zero-fill,
  *   N  = real number with floating decimal, right-justified zero-filled (sign first),
- *   NB = real number, right-justified blank-fill, F = full literal (blank-filled if empty).
+ *   NB = real number, right-justified blank-fill, D2 = fixed 2 decimals, right-justified zero-filled (sign first), F = full literal (blank-filled if empty).
  * Fields not listed are blank (reserved / N/A); the writer blank-fills every gap up to the record length.
  */
 final class Layout

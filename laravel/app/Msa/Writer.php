@@ -29,11 +29,11 @@ final class Writer
 
     public static function field(mixed $v, int $len, string $just, string $name = ''): string
     {
-        if ($just === 'N' || $just === 'NB') {
-            $s = $just === 'NB' ? self::money($v) : self::number($v);
+        if ($just === 'N' || $just === 'NB' || $just === 'D2') {
+            $s = $just === 'N' ? self::number($v) : self::money($v);
             $neg = str_starts_with($s, '-');
             $abs = $neg ? substr($s, 1) : $s;
-            if ($just === 'N') {
+            if ($just === 'N' || $just === 'D2') {
                 $out = ($neg ? '-' : '').str_pad($abs, $len - ($neg ? 1 : 0), '0', STR_PAD_LEFT);
             } else {
                 $out = str_pad($s, $len, ' ', STR_PAD_LEFT);
@@ -79,6 +79,24 @@ final class Writer
         $s = (string) BigDecimal::of((string) $v)->toScale(2, RoundingMode::HALF_UP);
 
         return $s === '-0.00' ? '0.00' : $s;
+    }
+
+    /** GS1 check digit valid for a 12-14 digit code (11 digits = UPC-A with the leading 0 suppressed). */
+    public static function gtinValid(string $digits): bool
+    {
+        if (strlen($digits) === 11) {
+            $digits = '0'.$digits;
+        }
+        if (! in_array(strlen($digits), [8, 12, 13, 14], true) || ! ctype_digit($digits)) {
+            return false;
+        }
+        $body = strrev(substr($digits, 0, -1));
+        $sum = 0;
+        for ($i = 0; $i < strlen($body); $i++) {
+            $sum += (int) $body[$i] * ($i % 2 === 0 ? 3 : 1);
+        }
+
+        return (10 - $sum % 10) % 10 === (int) substr($digits, -1);
     }
 
     /** 7-bit printable ASCII only (fixed-width file). */

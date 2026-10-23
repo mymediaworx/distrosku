@@ -26,7 +26,10 @@ final class MsaSettings
         'msa_altria_fields' => ['Altria STARS fields (transaction date per PUR, returns 004/005, floor returns 006)', '0'],
         'msa_tax_jurisdiction' => ['State tax jurisdiction', 'none'], // none | sid (ship-to state in SID cols 197-198)
         'msa_line_ending' => ['Line ending', 'crlf'],          // crlf | lf
+        'msa_profile' => ['File profile', 'sample'],           // sample = match Vega's accepted weekly file | spec = MSA 2019 spec literal
     ];
+
+    public const PROFILES = ['sample' => 'Match accepted sample file (2-decimal numbers, zero-padded customer #, SID followed by its PURs)', 'spec' => 'MSA 2019 spec (floating decimals, SIDs then PURs)'];
 
     public const DAYS = [0 => 'Sunday', 1 => 'Monday', 2 => 'Tuesday', 3 => 'Wednesday', 4 => 'Thursday', 5 => 'Friday', 6 => 'Saturday'];
 

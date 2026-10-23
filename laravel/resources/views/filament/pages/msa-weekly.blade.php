@@ -27,7 +27,7 @@
                'sid' => ['Ship-tos (SID)', ['Cust #', 'Ship #', 'Name', 'Address', 'Class of trade']],
                'pur' => ['Purchases (PUR)', ['Cust #', 'Ship #', 'SKU', 'Txn date', 'Kind', 'Selling units', 'Dollars']]] as $k => [$h, $cols])
         <x-filament::section :heading="$h" collapsible>
-            <div class="overflow-x-auto"><table class="w-full text-sm">
+            <div class="overflow-x-auto max-w-full" data-test="msa-table-wrap"><table class="w-full text-sm">
                 <thead><tr class="border-b">@foreach ($cols as $c)<th class="px-2 py-1 text-left">{{ $c }}</th>@endforeach</tr></thead>
                 <tbody>@forelse ($r['preview'][$k] ?? [] as $row)<tr class="border-b border-gray-100">@foreach ($row as $c)<td class="px-2 py-1">{{ $c }}</td>@endforeach</tr>@empty<tr><td class="px-2 py-2 text-gray-500" colspan="{{ count($cols) }}">None.</td></tr>@endforelse</tbody>
             </table></div>
@@ -36,12 +36,12 @@
 
     @if (! empty($r['lines']))
         <x-filament::section heading="Raw file preview" collapsible collapsed>
-            <pre class="text-xs overflow-x-auto">{{ implode("\n", $r['lines']) }}</pre>
+            <pre class="text-xs overflow-x-auto max-w-full max-h-96" data-test="msa-raw">{{ implode("\n", $r['lines']) }}</pre>
         </x-filament::section>
     @endif
 
     <x-filament::section heading="Generated files">
-        <table class="w-full text-sm">
+        <div class="overflow-x-auto max-w-full" data-test="msa-files-wrap"><table class="w-full text-sm">
             <thead><tr class="border-b"><th class="text-left px-2">Week ending</th><th class="text-left px-2">File</th><th class="text-left px-2">Mode</th><th class="text-left px-2">BID/SID/PUR</th><th class="text-left px-2">Qty</th><th class="text-left px-2">Status</th><th class="text-left px-2">Created</th><th></th></tr></thead>
             <tbody>
             @forelse ($this->submissions() as $s)
@@ -58,6 +58,6 @@
                 <tr><td colspan="8" class="px-2 py-2 text-gray-500">No files generated yet.</td></tr>
             @endforelse
             </tbody>
-        </table>
+        </table></div>
     </x-filament::section>
 </x-filament-panels::page>

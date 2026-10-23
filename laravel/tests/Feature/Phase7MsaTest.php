@@ -119,7 +119,7 @@ class Phase7MsaTest extends TestCase
 
     public function test_standard_file_records_and_totals(): void
     {
-        $r = app(MulticatBuilder::class)->build('2026-10-17', ['created' => '20261019']);
+        $r = app(MulticatBuilder::class)->build('2026-10-17', ['created' => '20261019', 'profile' => 'spec']);
         $this->assertSame([], $r['errors']);
         $this->assertSame('20261017.TOB', $r['file_name']);
         $this->assertTrue(collect($r['warnings'])->contains(fn ($w) => str_contains($w, 'GRZ-WG')));
@@ -178,7 +178,7 @@ class Phase7MsaTest extends TestCase
     public function test_altria_fields_and_dollars_when_enabled(): void
     {
         MsaSettings::put(['msa_altria_fields' => '1', 'msa_report_dollars' => '1', 'msa_tax_jurisdiction' => 'sid', 'msa_test_mode' => '0']);
-        $r = app(MulticatBuilder::class)->build('2026-10-17');
+        $r = app(MulticatBuilder::class)->build('2026-10-17', ['profile' => 'spec']);
         $this->assertSame([], $r['errors']);
         $hid = $r['lines'][0];
         $this->assertSame(' ', self::col($hid, 16, 16)); // live
@@ -211,7 +211,7 @@ class Phase7MsaTest extends TestCase
     public function test_selling_unit_conversion_and_partial_units(): void
     {
         $this->cig->update(['msa_units_per_sale' => '0.1']); // ERP sells packs, MSA reports cartons
-        $r = app(MulticatBuilder::class)->build('2026-10-17');
+        $r = app(MulticatBuilder::class)->build('2026-10-17', ['profile' => 'spec']);
         $ship = collect($this->lines($r, 'PUR'))->first(fn ($l) => str_contains($l, 'MARL-GLD-KS') && self::col($l, 106, 106) !== '-');
         $this->assertSame('00000000001', self::col($ship, 106, 116));
         $ret = collect($this->lines($r, 'PUR'))->first(fn ($l) => str_contains($l, 'MARL-GLD-KS') && self::col($l, 106, 106) === '-');
