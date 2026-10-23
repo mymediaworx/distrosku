@@ -189,14 +189,14 @@ class CounterPos extends Component
         if ($term === '') {
             return;
         }
-        $p = Product::where('active', true)->notArchived()->where(fn ($q) => $q->where('upc', $term)->orWhere('sku', $term))->first()
-            ?? Product::where('active', true)->notArchived()->where('name', 'like', "%{$term}%")->first();
-        if (! $p) {
+        $hit = \App\Pos\SaleScan::resolve($term); // #25: case / carton / pack barcodes all work
+        if (! $hit) {
             $this->error = "No product for \"{$term}\".";
 
             return;
         }
-        $this->addProduct($p, '1');
+        $this->addProduct($hit['product'], $hit['qty']);
+        $this->message = \App\Pos\SaleScan::addedMessage($hit);
         $this->scan = '';
     }
 
