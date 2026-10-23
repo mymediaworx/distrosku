@@ -49,7 +49,7 @@ class PosAccess
                 $s->forget(PosPin::SESSION_USER);
             }
             $enrolled = $request->cookie(PosPin::TERMINAL_COOKIE) === '1';
-            if ($request->hasHeader('X-Livewire')) {
+            if ($request->hasHeader('X-Livewire') || $request->expectsJson()) { // #26: offline sync gets a 401, not a login page
                 abort(401, 'POS locked');
             }
 
