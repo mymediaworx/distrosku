@@ -1,7 +1,17 @@
-# Vega ERP — Phase 20.9 UPGRADE (existing install at vegatest1.distrosku.com)
+# Vega ERP — Phase 20.10 UPGRADE (existing install at vegatest1.distrosku.com)
 
 For a site already installed from `vega-erp-phase1.zip` and upgraded through phase 3 (a phase-2 site can also take this zip: seeders are cumulative). TEST data only. No secrets in this package.
 This zip contains **no `laravel/.env` and no `laravel/storage/`**, so extracting it over the live site keeps both.
+
+## What's new in 0.20.10 (includes everything through 0.20.9)
+
+**POS: case/carton/pack barcodes, printable receipts, and the server side of offline sales. One migration.**
+
+- **Scan any unit (#32, part of #25):** counter POS and van sales accept case, carton and pack barcodes (and 12/13-digit UPC forms, MSA UPC, SKU in any case). A carton or case adds its factor in base units, e.g. "Added 1 CTN (10 Pack)". Inactive or archived products can't be sold by barcode. Pricing is unchanged (still priced per base unit).
+- **Receipts (#33, part of #27):** after each POS sale, *Print receipt / Letter / View*. 80 mm thermal roll (default) or letter, printed through Chrome's print dialog. A per-device checkbox prints a receipt after every sale automatically. Change due is shown when the cash tendered is known.
+- **Offline sales, server side (#34, part of #26):** `POST /pos/offline/sync` (POS sign-in required, rate limited, up to 25 sales per request) accepts sales recorded without a connection. Each one runs through the same checkout checks as a live sale (compliance, credit, stock, 21+ signature). Card tender or prices older than 48 hours go to review. A sale the server can't complete is never dropped: it appears under *Sales > Offline sales* for review (Retry, Retry with credit override, Mark handled). The device-side offline mode comes in a later release, so the POS screen behaves as before.
+- **Migration** `2026_11_22_000001_phase210_offline_sales` (re-runnable, creates `offline_sales`). Run the upgrade page as usual.
+- **No new PHP extensions, `.env` settings or cron changes.**
 
 ## What's new in 0.20.9 (includes everything through 0.20.8)
 

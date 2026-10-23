@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Schema;
 /**
  * Issue #26 offline sales: every sale a POS / van device recorded without a connection, as it arrived at sync.
  * The device's own UUID makes a resend harmless. A sale the server can't complete is kept for review, never dropped.
- * Re-runnable; deletes nothing. (Phase number left to Brandworx Dev.)
+ * Re-runnable; deletes nothing. (0.20.10)
  */
 return new class extends Migration
 {
