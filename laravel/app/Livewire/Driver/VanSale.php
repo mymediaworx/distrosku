@@ -78,23 +78,24 @@ class VanSale extends Component
         if ($t === '') {
             return;
         }
-        $p = Product::where('active', true)->notArchived()->where(fn ($q) => $q->where('upc', $t)->orWhere('sku', $t))->first()
-            ?? Product::where('active', true)->notArchived()->where('name', 'like', "%{$t}%")->first();
-        if (! $p) {
+        $hit = \App\Pos\SaleScan::resolve($t); // #25: case / carton / pack barcodes all work
+        if (! $hit) {
             $this->err = "No product for \"{$t}\".";
 
             return;
         }
+        $p = $hit['product'];
+        $this->ok = \App\Pos\SaleScan::addedMessage($hit);
         foreach ($this->cart as $i => $l) {
             if ($l['product_id'] === $p->id) {
-                $this->cart[$i]['qty'] = Money::s(Money::add($l['qty'], 1));
+                $this->cart[$i]['qty'] = Money::s(Money::add($l['qty'], $hit['qty']));
                 $this->scan = '';
                 $this->reprice();
 
                 return;
             }
         }
-        $this->cart[] = ['product_id' => $p->id, 'name' => $p->name, 'sku' => $p->sku, 'qty' => '1', 'price' => '0'];
+        $this->cart[] = ['product_id' => $p->id, 'name' => $p->name, 'sku' => $p->sku, 'qty' => $hit['qty'], 'price' => '0'];
         $this->scan = '';
         $this->reprice();
     }
