@@ -1,0 +1,122 @@
+# Runs the full PHPUnit suite on every pull request and on pushes to main (issue #20).
+# Two jobs: SQLite in memory (as phpunit.xml) and MariaDB (production database).
+# Both use PHP 8.2 to match SiteGround production. CI only reports; releases stay with Brandworx Dev.
+name: Tests
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PHP_VERSION: '8.2'
+  PHP_EXTENSIONS: bcmath, intl, gd, zip, mbstring, pdo_sqlite, sqlite3, pdo_mysql
+
+jobs:
+  sqlite:
+    name: PHPUnit (PHP 8.2, SQLite)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: laravel
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: ${{ env.PHP_EXTENSIONS }}
+          coverage: none
+
+      - name: Find Composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Composer packages
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: composer-${{ runner.os }}-php82-${{ hashFiles('laravel/composer.lock') }}
+          restore-keys: composer-${{ runner.os }}-php82-
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Prepare environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Run tests
+        run: vendor/bin/phpunit
+
+  mariadb:
+    name: PHPUnit (PHP 8.2, MariaDB 10.11)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    services:
+      mariadb:
+        image: mariadb:10.11
+        env:
+          MARIADB_DATABASE: vega_test
+          MARIADB_USER: vega
+          MARIADB_PASSWORD: ci-only-password
+          MARIADB_ROOT_PASSWORD: ci-only-root-password
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+    defaults:
+      run:
+        working-directory: laravel
+    env:
+      # Real environment variables win over phpunit.xml's <env> defaults (no force="true" there).
+      DB_CONNECTION: mariadb
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_DATABASE: vega_test
+      DB_USERNAME: vega
+      DB_PASSWORD: ci-only-password
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: ${{ env.PHP_EXTENSIONS }}
+          coverage: none
+
+      - name: Find Composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Composer packages
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: composer-${{ runner.os }}-php82-${{ hashFiles('laravel/composer.lock') }}
+          restore-keys: composer-${{ runner.os }}-php82-
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Prepare environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Run tests
+        run: vendor/bin/phpunit
