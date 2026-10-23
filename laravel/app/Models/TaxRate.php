@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class TaxRate extends Model
 {
+    use \App\Dba\ManagedByDba;
+
     protected $guarded = ['id'];
 
     protected function casts(): array

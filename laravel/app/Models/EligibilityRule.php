@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 /** 0.18: one product eligibility rule (federal or state, optional county/city), effective-dated and versioned. */
 class EligibilityRule extends Model
 {
+    use \App\Dba\ManagedByDba;
+
     use HasActivity;
 
     protected $guarded = ['id'];

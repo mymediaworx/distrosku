@@ -28,6 +28,12 @@ if (is_file(base_path('.env')) || app()->configurationIsCached() || app()->runni
     Schedule::command('marketing:reconcile')->dailyAt('02:45')->withoutOverlapping(); // 0.19.2: nightly, NEW (unlinked) customers only
     Schedule::command('po:inbound-digest')->dailyAt('06:30')->withoutOverlapping(); // 0.20.1 receiving-team morning digest
     Schedule::command('marketing:invoice-events')->dailyAt('07:00')->withoutOverlapping(); // 0.19 (no-op when BrandWorx Marketing is off)
+
+    // 0.20.8: suspended by the instance manager = pause every scheduled job and alert (queue included). Backups keep running.
+    foreach (app(\Illuminate\Console\Scheduling\Schedule::class)->events() as $event) {
+        $event->skip(fn () => \App\Dba\InstanceState::suspended());
+    }
+    Schedule::command('erp:backup --trigger=nightly')->dailyAt('01:30')->withoutOverlapping(); // 0.20.8 nightly backup + retention
 }
 
 Artisan::command('rules:sync', function () {
@@ -94,3 +100,40 @@ Artisan::command('po:inbound-digest', function () {
     $n = \App\Purchasing\ReceivingAlerts::digest();
     $this->line("Inbound digest: {$n} notification(s) sent.");
 })->purpose('0.20.1: morning digest of POs expected today/tomorrow and overdue, to each warehouse receiving team');
+
+// 0.20.8: instance backup / restore (archives outside the web root; see config erp.dba.backup_path).
+Artisan::command('erp:backup {--trigger=manual} {--list : list backups instead} {--verify : with --list, re-hash every archive}', function () {
+    $b = app(\App\Dba\BackupService::class);
+    if ($this->option('list')) {
+        $this->table(['File', 'Size', 'Created (UTC)', 'Status'], array_map(fn ($r) => [$r['file'], number_format($r['size']), $r['created_at'], $r['status']], $b->list((bool) $this->option('verify'))));
+
+        return 0;
+    }
+    $r = $b->create((string) $this->option('trigger'), 'cli');
+    $this->info("Backup {$r['file']} ({$r['tables']} tables, {$r['rows']} rows) sha256 {$r['sha256']}");
+    $this->line('Stored in '.$b->dir());
+
+    return 0;
+})->purpose('Back up the database, .env and storage/app into a checksummed archive (14 daily + 8 weekly kept)');
+
+Artisan::command('erp:restore {backup : file name in this instance\'s backup folder, or a full path (e.g. another instance\'s backup)} {--with-env : also restore .env (same instance only)} {--force}', function () {
+    $b = app(\App\Dba\BackupService::class);
+    $path = $b->resolve($this->argument('backup'));
+    $m = $b->verify($path);
+    $this->info('Checksum OK. Backup of '.$m['instance'].' taken '.$m['created_at'].' on '.$m['erp_version'].'.');
+    if (! $this->option('force') && ! $this->confirm('Replace ALL data in '.$b->instance().' with this backup? A safety backup is taken first.')) {
+        return 1;
+    }
+    $r = $b->restore($path, (bool) $this->option('with-env'), true, 'cli');
+    $this->info("Restored {$r['tables']} tables ({$r['rows']} rows) and {$r['files']} files. Safety backup: {$r['safety_backup']}");
+    if ($r['version_warning']) {
+        $this->warn($r['version_warning']);
+    }
+
+    return 0;
+})->purpose('Restore a backup (verifies checksums; takes a safety backup first)');
+
+Artisan::command('erp:rules-export {--out=}', function () {
+    $json = json_encode(app(\App\Dba\RulesApplier::class)->export(), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    $this->option('out') ? file_put_contents($this->option('out'), $json) : $this->line($json);
+})->purpose('Export license types, eligibility, compliance rules and tax rates as a distrosku-rules/1 rule set');

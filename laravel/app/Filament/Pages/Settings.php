@@ -26,7 +26,7 @@ class Settings extends Page implements HasForms
 
     protected static ?string $slug = 'settings';
 
-    public const SECRETS = ['authnet_login_id', 'authnet_transaction_key'];
+    public const SECRETS = ['authnet_login_id', 'authnet_transaction_key', 'dba_secret'];
 
     public ?array $data = [];
 
@@ -65,6 +65,11 @@ class Settings extends Page implements HasForms
                     Forms\Components\TextInput::make('authnet_transaction_key')->label('Transaction Key')->password()->revealable(false)->helperText($set('authnet_transaction_key')),
                     Forms\Components\TextInput::make('authnet_client_key')->label('Public Client Key (Accept.js)'),
                 ])->columns(3),
+            Forms\Components\Section::make('Instance manager')->description('Links this ERP to the DistroSKU instance manager (dba.distrosku.com). Paste the shared secret shown once when the instance was registered.')
+                ->schema([
+                    Forms\Components\TextInput::make('dba_secret')->label('Shared secret')->password()->revealable(false)->helperText($set('dba_secret'))
+                        ->rule('nullable')->rule('min:32'),
+                ])->collapsible(),
             Forms\Components\Section::make('Rules Hub')->schema([
                 Forms\Components\TextInput::make('rules_hub_url')->label('Package URL')->url(),
                 Forms\Components\Textarea::make('rules_hub_public_key')->label('Ed25519 public key (base64)')->rows(2),

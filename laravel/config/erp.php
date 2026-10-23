@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'version' => '0.20.7',
+    'version' => '0.20.8',
     // 0.15: signature required for regulated deliveries/pickups. Always on in production (no env switch); pre-0.15 tests turn it off.
     'require_signature' => true,
     'company' => env('ERP_COMPANY', 'Vega Distribution LLC'),
@@ -12,6 +12,13 @@ return [
         'transaction_key' => env('AUTHNET_TRANSACTION_KEY'),
         'client_key' => env('AUTHNET_CLIENT_KEY'),
         'environment' => env('AUTHNET_ENV', 'sandbox'),
+    ],
+    // 0.20.8: instance manager (dba.distrosku.com). The shared secret is entered in Settings (stored encrypted) or ERP_DBA_SECRET.
+    'dba' => [
+        'secret' => env('ERP_DBA_SECRET'),
+        'instance' => env('ERP_INSTANCE'), // defaults to the APP_URL host
+        'backup_path' => env('ERP_BACKUP_PATH'), // defaults to ~/erp-backups/<instance> (outside every web root)
+        'window' => 300,
     ],
     'rules_hub' => [
         // Signed rules package (static JSON). Only a GET with install_id + app_version is sent; never customer data.

@@ -92,3 +92,4 @@ Route::middleware(['auth', BlockWhenSuspended::class])->prefix('compliance/pact'
     Route::get('/registration/{registration}', [\App\Http\Controllers\PactController::class, 'registration'])->name('registration');
 });
 
+

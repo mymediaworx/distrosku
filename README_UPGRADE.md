@@ -1,7 +1,21 @@
-# Vega ERP — Phase 20.7 UPGRADE (existing install at vegatest1.distrosku.com)
+# Vega ERP — Phase 20.8 UPGRADE (existing install at vegatest1.distrosku.com)
 
 For a site already installed from `vega-erp-phase1.zip` and upgraded through phase 3 (a phase-2 site can also take this zip: seeders are cumulative). TEST data only. No secrets in this package.
 This zip contains **no `laravel/.env` and no `laravel/storage/`**, so extracting it over the live site keeps both.
+
+## What's new in 0.20.8 (includes everything through 0.20.7)
+
+**Instance manager link (dba.distrosku.com): health check-ins, backup/restore, a suspend switch and managed global rules. One migration.**
+
+- **Signed manager API** at `/dba-api/*` (POST only, no session/cookies). Every call is HMAC-SHA256 signed with this instance's own secret, must be within 5 minutes and can't be replayed. Without a secret the API answers 503 and does nothing.
+- **Link the instance:** *Settings > Instance manager* — paste the secret shown once by the manager when you register the instance (or set `ERP_DBA_SECRET` / `ERP_INSTANCE` in `.env`). The secret is stored encrypted and is write-only on screen.
+- **Backups:** `php artisan erp:backup` writes a checksummed zip (database as portable JSON lines, plus a mysqldump when available, `.env` and `storage/app`) to `~/erp-backups/<instance>/`, **outside the web root** (override with `ERP_BACKUP_PATH`). Runs nightly at 01:30; keeps 14 daily + 8 weekly. `erp:backup --list --verify` checks every archive.
+- **Restore:** `php artisan erp:restore <file|path>` verifies the checksum, takes a safety backup first, then restores data and files (`--with-env` also restores `.env`). A backup from another instance can be restored here (encrypted settings only stay readable if both share the same APP_KEY).
+- **Suspend switch:** the manager can suspend the instance. Admin, portal, POS, driver and warehouse show a "This account is suspended" page (HTTP 503) for everyone; **no data is changed**; scheduled jobs pause (except the nightly backup). Resume restores everything. This is separate from the existing BrandWorx billing suspension.
+- **Global rules:** license types, eligibility rules, compliance rule versions and tax rates can be pushed from the manager. Rows are upserted by code and never deleted. Pushed rows are marked *managed* and become read-only here; eligibility rules are *overridable* (a local edit is kept on later pushes). Local-only rows are untouched. `erp:rules-export` writes the current set.
+- **Audit:** suspend, resume, backup, restore and rule pushes are written to the activity log (`dba_*`).
+- **Migration** `2026_11_21_000001_phase208_instance_manager` (re-runnable): adds `dba_nonces` and the `managed*` / `local_override` columns. Run the upgrade page as usual.
+- **Cron:** no change — the existing `schedule:run` cron line runs the nightly backup.
 
 ## What's new in 0.20.7 (includes everything through 0.20.6)
 

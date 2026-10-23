@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 /** 0.20.6: Settings › License types. `code` is what customer_licenses.type and compliance rules store. */
 class LicenseType extends Model
 {
+    use \App\Dba\ManagedByDba;
+
     protected $guarded = ['id'];
 
     protected function casts(): array

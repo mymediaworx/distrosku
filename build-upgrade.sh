@@ -41,7 +41,7 @@ case "$PHASE" in
   17.2) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
   17.3) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
   18) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
-  19|19.1|19.2|19.3|19.4|19.5|19.6|20.0|20.1|20.2|20.3|20.4|20.5|20.6|20.7) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
+  19|19.1|19.2|19.3|19.4|19.5|19.6|20.0|20.1|20.2|20.3|20.4|20.5|20.6|20.7|20.8) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
   18.2) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
   18.1) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
   *) echo "No seeder list for phase $PHASE"; exit 1 ;;
@@ -238,6 +238,34 @@ if [ "$PHASE" = "13" ]; then
       | cmp -s - $L/resources/ky-edi/KYTobacco2017V1.5-local/Documents/LOCAL-PATCH.lines || { echo "CHECK FAILED: tobacco XSD differs from docs/xsd beyond the documented patch"; exit 1; }
   fi
   echo "Phase 13 checks OK"
+fi
+if [ "$PHASE" = "20.8" ]; then
+  L=stage-up/laravel
+  test -f $L/vendor/livewire/livewire/dist/livewire.min.js || { echo "CHECK FAILED: livewire dist missing"; exit 1; }
+  grep -q "'version' => '0.20.8'" $L/config/erp.php || { echo "CHECK FAILED: erp version is not 0.20.8"; exit 1; }
+  for f in app/Dba/Signature.php app/Dba/InstanceState.php app/Dba/BackupService.php app/Dba/RulesApplier.php app/Dba/ManagedByDba.php \
+           app/Http/Controllers/DbaController.php app/Http/Middleware/VerifyDbaSignature.php app/Http/Middleware/DbaSuspended.php \
+           resources/views/dba/suspended.blade.php routes/dba.php database/migrations/2026_11_21_000001_phase208_instance_manager.php; do
+    test -f $L/$f || { echo "CHECK FAILED: $f missing"; exit 1; }
+  done
+  LAST=$(ls $L/database/migrations | sort | tail -1)
+  [ "$LAST" = "2026_11_21_000001_phase208_instance_manager.php" ] || { echo "CHECK FAILED: last migration is $LAST"; exit 1; }
+  grep -q "DbaSuspended::class" $L/bootstrap/app.php || { echo "CHECK FAILED: suspend middleware not registered"; exit 1; }
+  grep -q "routes/dba.php" $L/bootstrap/app.php || { echo "CHECK FAILED: dba routes not loaded"; exit 1; }
+  grep -q "erp:backup" $L/routes/console.php || { echo "CHECK FAILED: backup command/schedule missing"; exit 1; }
+  grep -q "InstanceState::suspended" $L/routes/console.php || { echo "CHECK FAILED: scheduler not paused on suspend"; exit 1; }
+  for m in LicenseType EligibilityRule ComplianceRuleVersion TaxRate; do
+    grep -q "ManagedByDba" $L/app/Models/$m.php || { echo "CHECK FAILED: $m not managed"; exit 1; }
+  done
+  ! grep -rqE "ERP_DBA_SECRET=.+" $L --include=*.php --include=*.example || { echo "CHECK FAILED: DBA secret value in package"; exit 1; }
+  ! has_val "$CLIENT_ID" $L/app $L/config $L/database $L/resources || { echo "CHECK FAILED: client MSA ID in package"; exit 1; }
+  ! has_val "$GHL_LOC" $L/app $L/config $L/database $L/resources $L/routes || { echo "CHECK FAILED: live location id in package"; exit 1; }
+  if [ -f secrets/ghl.env ]; then
+    PIT=$(sed -n 's/^GHL_PIT=//p' secrets/ghl.env | tr -d '\r\n')
+    [ -n "$PIT" ] && grep -rqF "$PIT" stage-up && { echo "CHECK FAILED: marketing token found in package"; exit 1; }
+  fi
+  test ! -e stage-up/laravel/.env -a ! -e stage-up/laravel/storage || { echo "CHECK FAILED: .env or storage in package"; exit 1; }
+  echo "Phase 20.8 files OK"
 fi
 if [ "$PHASE" = "20.7" ]; then
   L=stage-up/laravel

@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class ComplianceRuleVersion extends Model
 {
+    use \App\Dba\ManagedByDba;
+
     use HasFactory;
 
     protected $guarded = ['id'];
