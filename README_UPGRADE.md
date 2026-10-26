@@ -1,7 +1,15 @@
-# Vega ERP — Phase 20.10 UPGRADE (existing install at vegatest1.distrosku.com)
+# Vega ERP — Phase 20.11 UPGRADE (existing install at vegatest1.distrosku.com)
 
 For a site already installed from `vega-erp-phase1.zip` and upgraded through phase 3 (a phase-2 site can also take this zip: seeders are cumulative). TEST data only. No secrets in this package.
 This zip contains **no `laravel/.env` and no `laravel/storage/`**, so extracting it over the live site keeps both.
+
+## What's new in 0.20.11 (includes everything through 0.20.10)
+
+**Offline sales: risky prices wait for review. No migrations.**
+
+- **Price rules (#26):** a synced offline sale goes to *Sales > Offline sales* as *Needs review* (instead of completing with a note) when any line is priced **below the product's cost**, or **more than 20% below the current price** for that customer, or when the device **didn't send the age of its saved prices**.
+- **Approve prices and complete:** owner/admin action on a held sale. Records the reason in the Activity log, then completes the sale (all other checks still apply). Plain *Retry* keeps a price-held sale held.
+- **Optional `.env` setting** `OFFLINE_SALE_MAX_BELOW_PRICE_PCT` (default 20). No new PHP extensions or cron changes.
 
 ## What's new in 0.20.10 (includes everything through 0.20.9)
 
