@@ -46,7 +46,7 @@ class StockMovementResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Select::make('product_id')->relationship('product', 'name')->searchable()->preload()->required(),
+                Forms\Components\Select::make('product_id')->relationship('product', 'name')->searchable()->required(),
                 Forms\Components\Select::make('warehouse_id')->relationship('warehouse', 'name')->searchable()->preload()->required(),
                 Forms\Components\TextInput::make('qty')
                     ->required()

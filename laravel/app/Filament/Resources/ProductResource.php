@@ -134,7 +134,7 @@ class ProductResource extends Resource
                 ]),
                 Forms\Components\Section::make('Reordering')->collapsible()->columns(3)->schema([
                     Forms\Components\TextInput::make('reorder_qty')->label('Order multiple')->numeric()->minValue(0)->helperText('Suggested qty rounds up to this (e.g. a case).'),
-                    Forms\Components\Select::make('preferred_vendor_id')->label('Preferred vendor')->relationship('preferredVendor', 'name')->searchable()->preload(),
+                    Forms\Components\Select::make('preferred_vendor_id')->label('Preferred vendor')->relationship('preferredVendor', 'name')->searchable(),
                     Forms\Components\TextInput::make('lead_time_days')->label('Lead time (days)')->integer()->minValue(0)->placeholder('Vendor / default'),
                 ]),
                 Forms\Components\Section::make('Units, barcodes and lots')->collapsible()->columns(2)->schema([

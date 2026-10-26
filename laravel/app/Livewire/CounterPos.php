@@ -68,6 +68,13 @@ class CounterPos extends Component
 
     public ?string $browseBrand = null;
 
+    /** 0.20.12: browse by department, a page at a time (Load more), with the total shown. */
+    public ?int $browseDepartment = null;
+
+    public const BROWSE_PAGE = 60;
+
+    public int $browseLimit = self::BROWSE_PAGE;
+
     public ?int $pickProductId = null;
 
     public string $pickQty = '1';
@@ -240,6 +247,42 @@ class CounterPos extends Component
     {
         $this->browseCategory = $category;
         $this->browseBrand = $brand;
+        $this->browseLimit = self::BROWSE_PAGE;
+    }
+
+    public function browseDept(?int $departmentId = null): void
+    {
+        $this->browseDepartment = $departmentId ?: null;
+        $this->browseBrand = null;
+        $this->browseLimit = self::BROWSE_PAGE;
+    }
+
+    /** Next page of tiles. Only the visible rows are ever loaded (limit grows by one page per tap). */
+    public function loadMore(): void
+    {
+        $this->browseLimit = min($this->browseLimit + self::BROWSE_PAGE, max(self::BROWSE_PAGE, $this->browseTotal));
+    }
+
+    public function updatedBrowseFilter(): void
+    {
+        $this->browseLimit = self::BROWSE_PAGE;
+    }
+
+    private function browseQuery()
+    {
+        $f = trim($this->browseFilter);
+
+        return $this->catalogQuery()
+            ->when($this->browseDepartment, fn ($q) => $q->where('department_id', $this->browseDepartment))
+            ->when($this->browseCategory, fn ($q) => $q->where('category', $this->browseCategory))
+            ->when($this->browseBrand, fn ($q) => $q->where('brand', $this->browseBrand))
+            ->when($f !== '', fn ($q) => $q->where(fn ($w) => $w->where('name', 'like', "%{$f}%")->orWhere('sku', 'like', "%{$f}%")->orWhere('upc', $f)->orWhere('brand', 'like', "%{$f}%")));
+    }
+
+    /** Products matching the current department / category / brand / filter (all pages). */
+    public function getBrowseTotalProperty(): int
+    {
+        return $this->browsing ? $this->browseQuery()->count() : 0;
     }
 
     public function pick(int $id): void
@@ -290,12 +333,7 @@ class CounterPos extends Component
         if (! $this->browsing) {
             return [];
         }
-        $f = trim($this->browseFilter);
-        $ps = $this->catalogQuery()
-            ->when($this->browseCategory, fn ($q) => $q->where('category', $this->browseCategory))
-            ->when($this->browseBrand, fn ($q) => $q->where('brand', $this->browseBrand))
-            ->when($f !== '', fn ($q) => $q->where(fn ($w) => $w->where('name', 'like', "%{$f}%")->orWhere('sku', 'like', "%{$f}%")->orWhere('upc', $f)->orWhere('brand', 'like', "%{$f}%")))
-            ->orderBy('name')->limit(60)->get();
+        $ps = $this->browseQuery()->orderBy('name')->orderBy('id')->limit(max(self::BROWSE_PAGE, $this->browseLimit))->get();
         $stock = Inventory::where('warehouse_id', $this->warehouseId)->whereIn('product_id', $ps->pluck('id'))->get()->keyBy('product_id');
         $c = Customer::find($this->customerId);
 
@@ -307,13 +345,15 @@ class CounterPos extends Component
     public function getBrowseFacetsProperty(): array
     {
         if (! $this->browsing) {
-            return ['categories' => [], 'brands' => []];
+            return ['categories' => [], 'brands' => [], 'departments' => []];
         }
         $q = $this->catalogQuery();
 
-        return ['categories' => (clone $q)->whereNotNull('category')->where('category', '!=', '')->distinct()->orderBy('category')->pluck('category')->all(),
+        return ['departments' => \App\Models\Department::whereIn('id', (clone $q)->whereNotNull('department_id')->select('department_id'))
+            ->orderBy('name')->pluck('name', 'id')->all(),
+            'categories' => (clone $q)->whereNotNull('category')->where('category', '!=', '')->distinct()->orderBy('category')->pluck('category')->all(),
             'brands' => (clone $q)->whereNotNull('brand')->where('brand', '!=', '')->when($this->browseCategory, fn ($w) => $w->where('category', $this->browseCategory))
-                ->distinct()->orderBy('brand')->pluck('brand')->all()];
+                ->when($this->browseDepartment, fn ($w) => $w->where('department_id', $this->browseDepartment))->distinct()->orderBy('brand')->pluck('brand')->all()];
     }
 
     // ---- 0.19.3 Hold / Recall ----------------------------------------------------

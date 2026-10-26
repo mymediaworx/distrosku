@@ -60,7 +60,7 @@ class VendorBillResource extends Resource
         // 0.20.5: wider layout: tidy header grid, full-width compact table-style lines, totals right-aligned.
         return $form->columns(1)->schema([
             Forms\Components\Section::make('Bill')->columns(['default' => 1, 'sm' => 2, 'lg' => 4])->schema([
-                Forms\Components\Select::make('vendor_id')->relationship('vendor', 'name')->searchable()->preload()->required()
+                Forms\Components\Select::make('vendor_id')->relationship('vendor', 'name')->searchable()->required()
                     ->disabled(fn (?VendorBill $record) => (bool) $record?->purchase_order_id)->columnSpan(['sm' => 2]),
                 Forms\Components\TextInput::make('vendor_invoice')->label('Vendor invoice #')->maxLength(120),
                 Forms\Components\TextInput::make('number')->label('Bill #')->disabled()->dehydrated(false)->placeholder('Assigned on save'),

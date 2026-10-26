@@ -124,6 +124,15 @@
                     <button type="button" wire:click="browseBy(null, null)" class="{{ ! $browseCategory && ! $browseBrand ? 'on' : '' }}">All</button>
                     @foreach($this->browseFacets['categories'] as $cat)<button type="button" wire:click="browseBy(@js($cat), null)" class="{{ $browseCategory === $cat ? 'on' : '' }}">{{ $cat }}</button>@endforeach
                 </div>
+                @if($this->browseFacets['departments'])
+                    <div style="display:flex;gap:.5rem;align-items:center;margin:.25rem 0">
+                        <label for="pos-dept"><strong>Department</strong></label>
+                        <select id="pos-dept" data-test="browse-dept" wire:change="browseDept($event.target.value ? parseInt($event.target.value) : null)" style="flex:1">
+                            <option value="">All departments</option>
+                            @foreach($this->browseFacets['departments'] as $id => $dn)<option value="{{ $id }}" @selected($browseDepartment === $id)>{{ $dn }}</option>@endforeach
+                        </select>
+                    </div>
+                @endif
                 @if($this->browseFacets['brands'])
                     <div class="chips sm">@foreach($this->browseFacets['brands'] as $br)<button type="button" wire:click="browseBy(@js($browseCategory), @js($br))" class="{{ $browseBrand === $br ? 'on' : '' }}">{{ $br }}</button>@endforeach</div>
                 @endif
@@ -137,6 +146,11 @@
                         <p>No products match.</p>
                     @endforelse
                 </div>
+                @php($shown = count($this->browseTiles))
+                <p data-test="browse-count" style="text-align:center;margin:.5rem 0">Showing {{ number_format($shown) }} of {{ number_format($this->browseTotal) }} products</p>
+                @if($shown < $this->browseTotal)
+                    <button type="button" class="big" wire:click="loadMore" wire:loading.attr="disabled" data-test="browse-more">Load more</button>
+                @endif
             </div>
             @if($pickProductId)
                 <div class="ovl" style="background:rgba(0,0,0,.35)">

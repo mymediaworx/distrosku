@@ -43,7 +43,7 @@ class DeliveryManifestResource extends Resource
                 Forms\Components\TextInput::make('route_name')->maxLength(60)->helperText('Optional: plan only ship-tos on this route'),
                 Forms\Components\Repeater::make('stops')->relationship()->orderColumn('sequence')->columnSpanFull()->columns(['default' => 1, 'md' => 3])->schema([
                     Forms\Components\Select::make('sales_order_id')->label('Order')->required()->searchable()
-                        ->options(fn () => SalesOrder::whereIn('status', ['confirmed', 'picked', 'delivered'])->with('customer')->get()->mapWithKeys(fn ($o) => [$o->id => "{$o->number} - {$o->customer->name}"])),
+                        ->options(fn () => SalesOrder::whereIn('status', ['confirmed', 'picked', 'delivered'])->with('customer:id,name')->latest('id')->limit(500)->get()->mapWithKeys(fn ($o) => [$o->id => "{$o->number} - ".($o->customer?->name ?? '?')])), // 0.20.12: bounded
                     Forms\Components\Select::make('status')->options(['pending' => 'Pending', 'delivered' => 'Delivered', 'partial' => 'Partial', 'refused' => 'Refused'])->default('pending')
                         ->disabled(fn ($record) => $record && $record->status !== 'pending')
                         ->rule(fn (Forms\Get $get) => function ($attr, $value, $fail) use ($get) {

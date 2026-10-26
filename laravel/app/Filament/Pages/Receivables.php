@@ -81,7 +81,7 @@ class Receivables extends Page implements HasTable
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('customer_id')->label('Customer')->searchable()
-                    ->options(fn () => Customer::whereIn('id', self::query()->select('customer_id'))->orderBy('name')->pluck('name', 'id')),
+                    ->relationship('customer', 'name'),
                 Tables\Filters\SelectFilter::make('status')->label('Stage')->options(['delivered' => 'Delivered, not invoiced', 'invoiced' => 'Invoiced, unpaid']),
                 Tables\Filters\SelectFilter::make('aging')->label('Aging')->options(self::BUCKETS)
                     ->query(function (Builder $query, array $data) {

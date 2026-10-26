@@ -1,7 +1,15 @@
-# Vega ERP — Phase 20.11 UPGRADE (existing install at vegatest1.distrosku.com)
+# Vega ERP — Phase 20.12 UPGRADE (existing install at vegatest1.distrosku.com)
 
 For a site already installed from `vega-erp-phase1.zip` and upgraded through phase 3 (a phase-2 site can also take this zip: seeders are cumulative). TEST data only. No secrets in this package.
 This zip contains **no `laravel/.env` and no `laravel/storage/`**, so extracting it over the live site keeps both.
+
+## What's new in 0.20.12 (includes everything through 0.20.11)
+
+**Fix: Customers and Products lists 500 with large data. No migrations, no .env changes.**
+
+- **Per page is now 10 / 25 / 50 / 100 on every admin table ("All" removed).** With a real customer file (900+ customers, 8,000+ products) "All" drew every row and ran PHP out of memory. The list remembered that choice, so every later visit failed too. A remembered "All" is now ignored and the list opens at 25 per page. Inventory count lines offer 50 / 100 / 250.
+- **Customer, product, vendor and ship-to pickers search as you type** instead of loading every record when a form opens. This covers sales orders, price rules, ship-tos, licenses, promotions, price overrides, inventory, stock movements, buydowns, purchase orders, vendor bills and the product's preferred vendor. The Receivables customer filter also searches. The delivery manifest order picker shows the latest 500 open orders.
+- **Counter POS Browse: every product in a department.** Browse now has a Department picker and shows "Showing X of Y products". Results load 60 at a time; tap **Load more** to keep going until you reach the end of the department. The filter box searches only inside the chosen department (and category/brand chips). Van sales use scan/search, not Browse, so they are unchanged.
 
 ## What's new in 0.20.11 (includes everything through 0.20.10)
 

@@ -46,7 +46,7 @@ class CustomerPriceOverrideResource extends Resource
             Forms\Components\Select::make('product_id')->label('Product')->required()->searchable()
                 ->getSearchResultsUsing(fn (string $search) => Product::notArchived()->where(fn ($w) => $w->where('sku', 'like', "%$search%")->orWhere('name', 'like', "%$search%"))->limit(30)->get()->mapWithKeys(fn ($p) => [$p->id => "{$p->sku} {$p->name}"]))
                 ->getOptionLabelUsing(fn ($value) => ($p = Product::find($value)) ? "{$p->sku} {$p->name} (list \${$p->price})" : null),
-            Forms\Components\Select::make('customer_id')->label('Customer')->relationship('customer', 'name')->searchable()->preload()->nullable()
+            Forms\Components\Select::make('customer_id')->label('Customer')->relationship('customer', 'name')->searchable()->nullable()
                 ->helperText('Blank = all customers. A customer-specific price beats an all-customers one.'),
             Forms\Components\TextInput::make('price')->numeric()->required()->prefix('$')->minValue(0),
             Forms\Components\Select::make('duration')->options(CustomerPriceOverride::DURATIONS)->default('ongoing')->required()->live()

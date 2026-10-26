@@ -45,7 +45,7 @@ class LicensesRelationManager extends RelationManager
     public static function licenseFields(bool $withCustomer = false): array
     {
         return array_values(array_filter([
-            $withCustomer ? Forms\Components\Select::make('customer_id')->relationship('customer', 'name')->searchable()->preload()->required() : null,
+            $withCustomer ? Forms\Components\Select::make('customer_id')->relationship('customer', 'name')->searchable()->required() : null,
             Forms\Components\Select::make('type')->label('License type')
                 ->options(fn (?Model $record) => LicenseType::options($record?->type))->required()->searchable()
                 ->live()->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
@@ -59,7 +59,7 @@ class LicensesRelationManager extends RelationManager
                 ->dehydrateStateUsing(fn ($state) => strtoupper(trim((string) $state))),
             Forms\Components\DatePicker::make('expires_at')->label('Expires'),
             $withCustomer
-                ? Forms\Components\Select::make('ship_to_id')->label('Ship-to (blank = all)')->relationship('shipTo', 'name')->searchable()->preload()
+                ? Forms\Components\Select::make('ship_to_id')->label('Ship-to (blank = all)')->relationship('shipTo', 'name')->searchable()
                 : Forms\Components\Select::make('ship_to_id')->label('Ship-to (blank = all)')
                     ->options(fn (RelationManager $livewire) => $livewire->getOwnerRecord()->shipTos()->pluck('name', 'id'))->searchable(),
         ]));

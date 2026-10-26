@@ -41,7 +41,7 @@ case "$PHASE" in
   17.2) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
   17.3) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
   18) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
-  19|19.1|19.2|19.3|19.4|19.5|19.6|20.0|20.1|20.2|20.3|20.4|20.5|20.6|20.7|20.8|20.9|20.10|20.11) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
+  19|19.1|19.2|19.3|19.4|19.5|19.6|20.0|20.1|20.2|20.3|20.4|20.5|20.6|20.7|20.8|20.9|20.10|20.11|20.12) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
   18.2) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
   18.1) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
   *) echo "No seeder list for phase $PHASE"; exit 1 ;;
@@ -824,6 +824,16 @@ if [ "$PHASE" = "12" ]; then
   ! grep -rqiE "Http::|curl_|guzzle" $L/app/Warehouse/ShippingService.php $L/app/Compliance || { echo "CHECK FAILED: no live carrier / state API calls"; exit 1; }
   echo "Phase 12 files OK"
 fi
+if [ "$PHASE" = "20.12" ]; then
+  L=stage-up/laravel
+  grep -q "'version' => '0.20.12'" $L/config/erp.php || { echo "CHECK FAILED: erp version is not 0.20.12"; exit 1; }
+  grep -q "TABLE_PAGE_OPTIONS = \[10, 25, 50, 100\]" $L/app/Providers/AppServiceProvider.php || { echo "CHECK FAILED: per-page cap missing"; exit 1; }
+  grep -q "function loadMore" $L/app/Livewire/CounterPos.php || { echo "CHECK FAILED: POS browse Load more missing"; exit 1; }
+  grep -q 'data-test="browse-count"' $L/resources/views/livewire/counter-pos.blade.php || { echo "CHECK FAILED: POS browse total missing"; exit 1; }
+  ! grep -rqE "paginat[a-zA-Z]*\([^)]*'all'" $L/app || { echo "CHECK FAILED: an 'all' per-page option is back"; exit 1; }
+  ! grep -rqE "relationship\('(customer|product|vendor|preferredVendor|shipTo)'.*->preload\(\)" $L/app/Filament || { echo "CHECK FAILED: preload on a large table select"; exit 1; }
+  echo "Phase 20.12 checks OK"
+fi
 cp "$README" stage-up/README_UPGRADE.md
 # ---- self-deploy: endpoint + manifest (seeders / version). Only the PUBLIC key ships (laravel/config/deploy.php). ----
 cp deploy/deploy.php stage-up/public_html/deploy.php && php -l stage-up/public_html/deploy.php >/dev/null
@@ -831,7 +841,7 @@ VERSION="phase${PHASE}-$(date +%Y%m%d-%H%M%S)"
 php -r '$s=array_values(array_filter(explode(" ", $argv[2]))); echo json_encode(["format"=>1,"phase"=>$argv[1],"version"=>$argv[3],"built_at"=>date("c"),"seeders"=>$s], JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES);' "$PHASE" "$SEEDERS" "$VERSION" > stage-up/deploy-manifest.json
 cp stage-up/deploy-manifest.json stage-up/laravel/deploy-manifest.json
 grep -qF "$(tr -d '\n' < secrets/deploy_ed25519_public)" stage-up/laravel/config/deploy.php || { echo "CHECK FAILED: config/deploy.php public key != secrets/deploy_ed25519_public"; exit 1; }
-for f in secrets/deploy_hmac_secret secrets/deploy_ed25519_secret secrets/adminpass; do
+for f in secrets/deploy_hmac_secret secrets/deploy_ed25519_secret secrets/adminpass secrets/client_id; do
   [ -f "$f" ] || continue
   if grep -rqF "$(tr -d '\n' < "$f")" stage-up/; then echo "CHECK FAILED: secret $f found in package"; exit 1; fi
 done

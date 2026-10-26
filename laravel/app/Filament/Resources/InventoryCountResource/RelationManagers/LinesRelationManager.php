@@ -29,7 +29,7 @@ class LinesRelationManager extends RelationManager
     {
         $show = fn () => CountService::showExpected($this->getOwnerRecord(), auth()->user());
 
-        return $table->modifyQueryUsing(fn ($query) => $query->with('product', 'bin', 'lot'))->defaultSort('id')->paginated([50, 100, 'all'])
+        return $table->modifyQueryUsing(fn ($query) => $query->with('product', 'bin', 'lot'))->defaultSort('id')->paginated([50, 100, 250]) // 0.20.12: no 'all' (a full count can be 8000+ lines)
             ->columns([
                 Tables\Columns\TextColumn::make('bin.code')->label('Bin')->placeholder('—'),
                 Tables\Columns\TextColumn::make('product.sku')->label('SKU')->searchable(),

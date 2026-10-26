@@ -40,7 +40,7 @@ class PromotionResource extends Resource
                     ->getSearchResultsUsing(fn (string $search) => Product::notArchived()->where(fn ($w) => $w->where('sku', 'like', "%$search%")->orWhere('name', 'like', "%$search%"))->limit(30)->get()->mapWithKeys(fn ($p) => [$p->id => "{$p->sku} {$p->name}"]))
                     ->getOptionLabelUsing(fn ($value) => ($p = Product::find($value)) ? "{$p->sku} {$p->name}" : null),
                 Forms\Components\Select::make('department_id')->label('Department')->relationship('department', 'name')->preload()->nullable(),
-                Forms\Components\Select::make('customer_id')->label('Customer')->relationship('customer', 'name')->searchable()->preload()->nullable(),
+                Forms\Components\Select::make('customer_id')->label('Customer')->relationship('customer', 'name')->searchable()->nullable(),
                 Forms\Components\Select::make('customer_group_id')->label('Price group')->relationship('customerGroup', 'name')->preload()->nullable(),
             ])->columns(2),
         ])->columns(3);

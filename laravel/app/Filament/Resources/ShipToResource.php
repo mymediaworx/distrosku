@@ -35,7 +35,7 @@ class ShipToResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Select::make('customer_id')->relationship('customer', 'name')->searchable()->preload()->required(),
+                Forms\Components\Select::make('customer_id')->relationship('customer', 'name')->searchable()->required(),
                 ...static::addressFields(),
             ]);
     }

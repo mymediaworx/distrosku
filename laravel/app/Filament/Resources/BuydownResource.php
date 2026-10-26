@@ -32,9 +32,9 @@ class BuydownResource extends Resource
                 Forms\Components\Select::make('kind')->options(['buydown' => 'Buydown', 'rebate' => 'Manufacturer rebate'])->default('buydown')->required(),
                 Forms\Components\TextInput::make('manufacturer')
                     ->required(),
-                Forms\Components\Select::make('vendor_id')->label('Claim from vendor')->relationship('vendor', 'name')->searchable()->preload()->nullable(),
+                Forms\Components\Select::make('vendor_id')->label('Claim from vendor')->relationship('vendor', 'name')->searchable()->nullable(),
                 Forms\Components\TextInput::make('program_code')->maxLength(50),
-                Forms\Components\Select::make('product_id')->relationship('product', 'name')->searchable()->preload(),
+                Forms\Components\Select::make('product_id')->relationship('product', 'name')->searchable(),
                 Forms\Components\TextInput::make('description')
                     ->required(),
                 Forms\Components\TextInput::make('amount_per_unit')

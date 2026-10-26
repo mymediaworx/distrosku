@@ -39,7 +39,7 @@ class PurchaseOrderResource extends Resource
         return $form->schema([
             Forms\Components\Section::make()->columns(['default' => 1, 'md' => 3])->schema([
                 Forms\Components\TextInput::make('number')->disabled()->dehydrated(false)->placeholder('Assigned on save'),
-                Forms\Components\Select::make('vendor_id')->relationship('vendor', 'name')->searchable()->preload()->required(),
+                Forms\Components\Select::make('vendor_id')->relationship('vendor', 'name')->searchable()->required(),
                 Forms\Components\Select::make('warehouse_id')->relationship('warehouse', 'name')->required()->default(1),
                 Forms\Components\DatePicker::make('order_date')->default(now())->required(),
                 Forms\Components\Select::make('status')->options(['draft' => 'Draft', 'ordered' => 'Ordered', 'cancelled' => 'Cancelled'])->default('draft')
