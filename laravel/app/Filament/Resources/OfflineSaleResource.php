@@ -106,6 +106,11 @@ class OfflineSaleResource extends Resource
                         ->modalDescription('Owner/admin only. Records the override and reason in the Activity log, then completes the sale.')
                         ->form([Forms\Components\Textarea::make('reason')->label('Reason for override')->required()->minLength(3)->maxLength(500)])
                         ->action(fn (OfflineSale $r, array $data) => self::notify(app(OfflineSaleSync::class)->process($r, auth()->user(), $data['reason']))),
+                    Tables\Actions\Action::make('approvePrices')->label('Approve prices and complete')->icon('heroicon-o-currency-dollar')->color('warning')
+                        ->visible(fn (OfflineSale $r) => $r->status === OfflineSale::NEEDS_REVIEW && auth()->user()?->isAdmin())
+                        ->modalDescription('Owner/admin only. Accepts the prices the device used (below cost, well below current, or unknown price age), records the reason in the Activity log, then completes the sale. Other checks still apply.')
+                        ->form([Forms\Components\Textarea::make('reason')->label('Why these prices are OK')->required()->minLength(3)->maxLength(500)])
+                        ->action(fn (OfflineSale $r, array $data) => self::notify(app(OfflineSaleSync::class)->process($r, null, null, auth()->user(), $data['reason']))),
                     Tables\Actions\Action::make('resolve')->label('Mark handled')->icon('heroicon-o-check')->color('gray')
                         ->visible(fn (OfflineSale $r) => $r->status === OfflineSale::NEEDS_REVIEW && auth()->user()?->isAdmin())
                         ->modalDescription('Use when the sale was dealt with outside this screen (goods returned, entered by hand). Nothing is posted.')

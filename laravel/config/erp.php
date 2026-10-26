@@ -1,7 +1,12 @@
 <?php
 
 return [
-    'version' => '0.20.10',
+    'version' => '0.20.11',
+    // 0.20.11 (#26): an offline sale goes to Needs review when a line is priced below cost, or more than this % below the
+    // current price, or when the device didn't send the age of its saved prices. Owner/admin can approve and complete it.
+    'offline_sales' => [
+        'max_below_price_pct' => (float) env('OFFLINE_SALE_MAX_BELOW_PRICE_PCT', 20),
+    ],
     // 0.15: signature required for regulated deliveries/pickups. Always on in production (no env switch); pre-0.15 tests turn it off.
     'require_signature' => true,
     'company' => env('ERP_COMPANY', 'Vega Distribution LLC'),

@@ -63,7 +63,7 @@ final class OfflineSaleSync
     }
 
     /** Try (or retry) completing a stored offline sale. $creditOverrideBy + reason: owner/admin resolving a credit-limit block. */
-    public function process(OfflineSale $row, ?User $creditOverrideBy = null, ?string $creditReason = null): OfflineSale
+    public function process(OfflineSale $row, ?User $creditOverrideBy = null, ?string $creditReason = null, ?User $priceApprovedBy = null, ?string $priceReason = null): OfflineSale
     {
         if (in_array($row->status, [OfflineSale::COMPLETED, OfflineSale::RESOLVED], true)) {
             return $row;
@@ -72,6 +72,9 @@ final class OfflineSaleSync
         $sale = $row->payload;
 
         $problems = $this->precheck($sale);
+        if (! $problems && ! $priceApprovedBy) {
+            $problems = $this->priceRules($row, $sale); // 0.20.11: risky prices wait for an owner/admin
+        }
         if ($problems) {
             return $this->review($row, $problems);
         }
@@ -99,6 +102,11 @@ final class OfflineSaleSync
         }
 
         $row->update(['status' => OfflineSale::COMPLETED, 'sales_order_id' => $so->id, 'problems' => null, 'warnings' => $this->warnings($row, $sale) ?: null]);
+        if ($priceApprovedBy) {
+            Audit::action('offline_sale_prices_approved', $so, "Offline sale {$row->uuid} prices approved: ".trim((string) $priceReason), [
+                'problems' => $row->getOriginal('problems'),
+            ], [], $priceApprovedBy->id);
+        }
         Audit::action('offline_sale_synced', $so, "Offline sale {$row->uuid} recorded as {$so->number}", [
             'device_id' => $row->device_id, 'sold_at' => $row->sold_at?->toIso8601String(), 'cashier_id' => $row->user_id, 'attempts' => $row->attempts,
         ]);
@@ -145,6 +153,45 @@ final class OfflineSaleSync
         }
 
         return $problems;
+    }
+
+    /**
+     * 0.20.11 (Michael, Oct 26 "1. yes / 2. yes"): server-side price rules. A sale is held for review when the device
+     * didn't say how old its saved prices were, or any line is below cost or well below the current price.
+     *
+     * @return list<string>
+     */
+    private function priceRules(OfflineSale $row, array $sale): array
+    {
+        $out = [];
+        if ($this->time($sale['catalog_at'] ?? null) === null) {
+            $out[] = "The device didn't send how old its saved prices were, so the prices can't be trusted automatically.";
+        }
+        $pct = max(0.0, (float) config('erp.offline_sales.max_below_price_pct', 20));
+        $customer = Customer::find($sale['customer_id']);
+        $date = ($row->sold_at ?? now())->timezone(config('app.timezone'))->toDateString();
+        foreach ($sale['lines'] as $l) {
+            $p = Product::find($l['product_id']);
+            if (! $p) {
+                continue;
+            }
+            $price = Money::of($l['price']);
+            $cost = Money::of($p->cost ?? 0);
+            if ($cost->isGreaterThan(Money::of(0)) && $price->isLessThan($cost)) {
+                $out[] = "{$p->sku}: sold offline at \$".number_format((float) $l['price'], 2).', below cost.';
+
+                continue;
+            }
+            $q = $this->pricing->quote($p, $customer, $l['qty'], $date);
+            if ($q && (float) $q->price > 0) {
+                $floor = (float) $q->price * (1 - $pct / 100);
+                if ((float) $l['price'] < $floor - 0.00005) {
+                    $out[] = "{$p->sku}: sold offline at \$".number_format((float) $l['price'], 2).', more than '.rtrim(rtrim(number_format($pct, 2), '0'), '.').'% below the current price $'.number_format((float) $q->price, 2).'.';
+                }
+            }
+        }
+
+        return $out;
     }
 
     /** @return list<string> notes on a completed sale worth a manager's glance */
