@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources\CustomerPriceOverrideResource\Pages;
 
-use App\Filament\Concerns\InteractsWithSpecialPriceProductLookup;
 use App\Filament\Resources\CustomerPriceOverrideResource;
 use App\Models\CustomerPriceOverride;
 use Filament\Notifications\Notification;
@@ -12,20 +11,12 @@ use Illuminate\Validation\ValidationException;
 
 class CreateCustomerPriceOverride extends CreateRecord
 {
-    use InteractsWithSpecialPriceProductLookup;
-
     protected static string $resource = CustomerPriceOverrideResource::class;
-
-    public function mount(): void
-    {
-        parent::mount();
-        $this->productLookupMulti = true;
-    }
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         $ids = array_values(array_unique(array_filter(array_map('intval',
-            $data['product_ids'] ?? $this->pickedProductIds ?: (($data['product_id'] ?? null) ? [(int) $data['product_id']] : [])
+            $data['product_ids'] ?? (($data['product_id'] ?? null) ? [(int) $data['product_id']] : [])
         ))));
         if ($ids === []) {
             throw ValidationException::withMessages(['product_id' => 'Select at least one product (search, scan, or browse).']);

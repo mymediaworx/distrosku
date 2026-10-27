@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Credit\CreditLimit;
 use App\Enums\SalesOrderStatus as S;
 use App\Filament\Concerns\RoleGated;
+use App\Filament\Forms\Components\ProductPickerField;
 use App\Filament\Support\OrderActions;
 use App\Filament\RelationManagers\HistoryRelationManager;
 use App\Filament\Resources\SalesOrderResource\Pages;
@@ -19,6 +20,7 @@ use App\Pricing\PricingEngine;
 use App\Services\ComplianceChecker;
 use App\Services\CreditMemoService;
 use App\Services\Money;
+use App\Support\ProductSearch;
 use App\Services\SalesOrderService;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -88,6 +90,14 @@ class SalesOrderResource extends Resource
                     ->content(fn (?SalesOrder $record) => collect($record?->elig_warnings ?? [])->map(fn ($m, $sku) => $sku.': '.implode(' ', $m))->implode(' | ')),
                 Forms\Components\Placeholder::make('status_display')->label('Status')->content(fn (?SalesOrder $record) => ucfirst($record?->status?->value ?? 'draft')),
             ]),
+            // 0.20.17: the standard product picker (search / scan / browse, thumbnails, multi-add) feeds the lines.
+            Forms\Components\Actions::make([
+                ProductPickerField::addLinesAction('lines', function (Product $p, Get $get) {
+                    $q = app(PricingEngine::class)->quote($p, Customer::find($get('customer_id')), 1, $get('order_date'));
+
+                    return ['product_id' => $p->id, 'qty' => 1, 'unit_price' => self::displayPrice($q->price), 'quoted' => $q->price];
+                }),
+            ])->visible(fn (?SalesOrder $record) => ! $record || $record->status === S::Draft)->columnSpanFull()->key('add_products'),
             Forms\Components\Repeater::make('lines')->relationship()->columns(['default' => 2, 'md' => 5])
                 ->disabled(fn (?SalesOrder $record) => $record && $record->status !== S::Draft)
                 ->schema([
@@ -99,7 +109,7 @@ class SalesOrderResource extends Resource
                                 $fail("Product {$p->sku} is archived and can't be added to new orders.");
                             }
                         })
-                        ->getSearchResultsUsing(fn (string $search) => Product::where('active', true)->notArchived()->where(fn ($w) => $w->where('sku', 'like', "%$search%")->orWhere('upc', 'like', "%$search%")->orWhere('name', 'like', "%$search%"))->limit(30)->get()->mapWithKeys(fn ($p) => [$p->id => "{$p->sku} {$p->name}"]))
+                        ->getSearchResultsUsing(fn (string $search) => ProductSearch::options($search)) // 0.20.17: same matching as the picker (name/SKU/barcode/vendor item #)
                         ->getOptionLabelUsing(fn ($value) => ($p = Product::find($value)) ? "{$p->sku} {$p->name}" : null)
                         ->live()->afterStateUpdated(fn (Get $get, Set $set) => self::fillQuote($get, $set))
                         ->columnSpan(['default' => 2, 'md' => 2]),

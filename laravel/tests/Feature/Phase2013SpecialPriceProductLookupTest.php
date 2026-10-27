@@ -69,62 +69,12 @@ class Phase2013SpecialPriceProductLookupTest extends TestCase
         $this->assertFalse(ProductSearch::browseQuery(null, $vendorId, '')->whereKey($this->p2->id)->exists());
     }
 
-    public function test_create_scan_adds_product_and_shows_base_price(): void
-    {
-        Livewire::test(CreateCustomerPriceOverride::class)
-            ->assertSee('Scan barcode')
-            ->assertSee('Browse catalog')
-            ->set('productScan', $this->p1->upc)
-            ->call('applyProductScan')
-            ->assertSet('pickedProductIds', [$this->p1->id])
-            ->assertSee('9.99')
-            ->assertSee('list');
-    }
-
-    public function test_create_scan_by_vendor_item_and_barcode(): void
-    {
-        Livewire::test(CreateCustomerPriceOverride::class)
-            ->set('productScan', 'BC-COLA-CASE')
-            ->call('applyProductScan')
-            ->assertSet('pickedProductIds', [$this->p1->id]);
-
-        Livewire::test(CreateCustomerPriceOverride::class)
-            ->set('productScan', 'VND-COLA-99')
-            ->call('applyProductScan')
-            ->assertSet('pickedProductIds', [$this->p1->id]);
-
-        Livewire::test(CreateCustomerPriceOverride::class)
-            ->set('productScan', 'SKU-LOOKUP-1')
-            ->call('applyProductScan')
-            ->assertSet('pickedProductIds', [$this->p1->id]);
-    }
-
-    public function test_browse_select_and_load_more(): void
-    {
-        // Enough products that load-more matters if page size is small — call loadMore and ensure limit grows.
-        Livewire::test(CreateCustomerPriceOverride::class)
-            ->call('openProductBrowse')
-            ->assertSet('productBrowsing', true)
-            ->assertSee('Lookup Cola')
-            ->set('browseFilter', 'Lookup')
-            ->call('selectBrowseProduct', $this->p2->id)
-            ->assertSet('pickedProductIds', [$this->p2->id])
-            ->assertSet('productBrowsing', true); // multi keeps modal open on toggle path; selectBrowseProduct keeps open when multi
-
-        $lw = Livewire::test(CreateCustomerPriceOverride::class)
-            ->call('openProductBrowse')
-            ->assertSet('browseLimit', 60)
-            ->call('loadMoreBrowse');
-        $this->assertGreaterThanOrEqual(60, $lw->get('browseLimit'));
-    }
-
     public function test_multi_create_same_special_price_for_several_products(): void
     {
         $c = Customer::factory()->create();
         Livewire::test(CreateCustomerPriceOverride::class)
-            ->set('pickedProductIds', [$this->p1->id, $this->p2->id])
-            ->call('syncPickedToForm')
             ->fillForm([
+                'product_ids' => [$this->p1->id, $this->p2->id],
                 'customer_id' => $c->id,
                 'price' => '3.25',
                 'duration' => 'ongoing',
@@ -146,27 +96,27 @@ class Phase2013SpecialPriceProductLookupTest extends TestCase
         }
     }
 
-    public function test_edit_seeds_picked_product_and_scan_replaces(): void
+    public function test_create_page_renders_the_standard_picker(): void
+    {
+        $this->get('/admin/customer-price-overrides/create')
+            ->assertOk()
+            ->assertSee('data-test="product-picker"', false)
+            ->assertSee('data-test="picker-scan"', false)
+            ->assertSee('data-test="picker-browse"', false)
+            ->assertSee('Current list price');
+    }
+
+    public function test_edit_single_product_uses_picker_and_saves(): void
     {
         $o = CustomerPriceOverride::create([
             'product_id' => $this->p1->id, 'price' => '2.00', 'duration' => 'ongoing', 'active' => true,
             'created_by' => $this->admin->id,
         ]);
         Livewire::test(EditCustomerPriceOverride::class, ['record' => $o->getKey()])
-            ->assertSet('pickedProductIds', [$this->p1->id])
-            ->assertSee('9.99')
-            ->set('productScan', $this->p2->sku)
-            ->call('applyProductScan')
-            ->assertSet('pickedProductIds', [$this->p2->id]);
-    }
-
-    public function test_create_page_renders_lookup_ui(): void
-    {
-        $this->get('/admin/customer-price-overrides/create')
-            ->assertOk()
-            ->assertSee('data-test="special-price-product-lookup"', false)
-            ->assertSee('data-test="special-price-scan"', false)
-            ->assertSee('data-test="special-price-browse"', false)
-            ->assertSee('Current list price');
+            ->assertFormSet(['product_id' => $this->p1->id])
+            ->fillForm(['product_id' => $this->p2->id])
+            ->call('save')
+            ->assertHasNoFormErrors();
+        $this->assertSame($this->p2->id, $o->fresh()->product_id);
     }
 }

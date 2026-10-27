@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Concerns\RoleGated;
+use App\Filament\Forms\Components\ProductPickerField;
 use App\Filament\Resources\CustomerPriceOverrideResource\Pages;
 use App\Models\CustomerPriceOverride;
 use App\Models\Product;
@@ -45,49 +46,34 @@ class CustomerPriceOverrideResource extends Resource
     public static function form(Form $form): Form
     {
         return $form->columns(2)->schema([
-            // 0.20.13: full product lookup (search / scan / browse). Select kept for Filament search + edit; chips + scan UI above.
-            Forms\Components\View::make('filament.forms.special-price-product-lookup')->columnSpanFull(),
-            Forms\Components\Select::make('product_id')->label('Product (search)')
-                ->required(fn ($livewire) => ! ($livewire->productLookupMulti ?? false))
-                ->searchable()
-                ->getSearchResultsUsing(fn (string $search) => ProductSearch::options($search))
-                ->getOptionLabelUsing(fn ($value) => ($p = Product::find($value)) ? ProductSearch::label($p) : null)
-                ->live()
-                ->afterStateUpdated(function ($state, $livewire) {
-                    if (! $state) {
-                        return;
-                    }
-                    $id = (int) $state;
-                    if ($livewire->productLookupMulti ?? false) {
-                        if (! in_array($id, $livewire->pickedProductIds, true)) {
-                            $livewire->pickedProductIds[] = $id;
-                        }
-                        $livewire->syncPickedToForm();
-                    } else {
-                        $livewire->pickedProductIds = [$id];
-                    }
-                })
-                ->helperText('Type SKU, name, barcode/UPC, or vendor item #. Or use Scan / Browse catalog above.'),
-            Forms\Components\Hidden::make('product_ids')
-                ->default([])
-                ->dehydrated(fn ($livewire) => (bool) ($livewire->productLookupMulti ?? false)),
+            // 0.20.17: the ONE standard product picker (search / scan / browse, thumbnails). Several products on create, one on edit.
+            ProductPickerField::make('product_ids')->label('Products')->multiple()->columnSpanFull()
+                ->visible(fn ($livewire) => $livewire instanceof Pages\CreateCustomerPriceOverride)
+                ->required(fn ($livewire) => $livewire instanceof Pages\CreateCustomerPriceOverride)
+                ->helperText('The same special price is created for every product you pick.'),
+            ProductPickerField::make('product_id')->label('Product')->columnSpanFull()
+                ->visible(fn ($livewire) => ! ($livewire instanceof Pages\CreateCustomerPriceOverride))
+                ->required(fn ($livewire) => ! ($livewire instanceof Pages\CreateCustomerPriceOverride)),
             Forms\Components\Select::make('customer_id')->label('Customer')->searchable()->nullable()
                 ->getSearchResultsUsing(fn (string $search) => \App\Models\Customer::optionsForSelect($search))
                 ->getOptionLabelUsing(fn ($value) => ($c = \App\Models\Customer::find($value))?->labelWithAccount())
                 ->helperText('Blank = all customers. A customer-specific price beats an all-customers one.'),
             Forms\Components\Placeholder::make('base_price_display')
                 ->label('Current list price')
-                ->content(function (Get $get, $livewire) {
-                    $ids = $livewire->pickedProductIds ?? [];
+                ->content(function (Get $get) {
+                    $ids = array_values(array_filter((array) ($get('product_ids') ?: $get('product_id'))));
                     if (count($ids) > 1) {
                         return count($ids).' products selected — each keeps its own list price; the special price below applies to all.';
                     }
-                    $id = $ids[0] ?? $get('product_id');
 
-                    return ProductSearch::basePriceLabel($id ? Product::find($id) : null);
+                    return ProductSearch::basePriceLabel($ids ? Product::find($ids[0]) : null);
                 }),
             Forms\Components\TextInput::make('price')->numeric()->required()->prefix('$')->minValue(0)
-                ->helperText(fn (Get $get, $livewire) => ($livewire->primaryBasePriceLabel ?? null) ?: null),
+                ->helperText(function (Get $get) {
+                    $ids = array_values(array_filter((array) ($get('product_ids') ?: $get('product_id'))));
+
+                    return count($ids) === 1 ? ProductSearch::basePriceLabel(Product::find($ids[0])) : null;
+                }),
             Forms\Components\Select::make('duration')->options(CustomerPriceOverride::DURATIONS)->default('ongoing')->required()->live()
                 ->helperText('One time: used by the first confirmed order line, then marked Used.'),
             Forms\Components\DatePicker::make('starts_on')->label('From')->required(fn (Get $get) => $get('duration') === 'range'),
