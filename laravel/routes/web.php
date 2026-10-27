@@ -66,6 +66,9 @@ Route::middleware(['auth', BlockWhenSuspended::class])->get('/admin/branding', f
     return new \Illuminate\Http\RedirectResponse(\App\Filament\Pages\Settings::getUrl());
 });
 
+// 0.20.17: Counter Pickup Board TV page (full screen, no navigation, auto-refresh)
+Route::middleware(['auth', BlockWhenSuspended::class])->get('/board/pickup', \App\Http\Controllers\PickupBoardTvController::class)->name('pickup.tv');
+
 // Staff: invoice / statement PDFs
 Route::middleware(['auth', BlockWhenSuspended::class])->group(function () {
     Route::get('/admin-docs/invoice/{so}.pdf', [PortalDocumentsController::class, 'adminInvoice'])->name('docs.invoice');

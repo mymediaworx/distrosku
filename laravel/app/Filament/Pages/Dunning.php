@@ -16,7 +16,8 @@ use Filament\Tables\Table;
 
 /**
  * Overdue reminders. "Run dunning" makes a batch of DRAFT notices and a statement PDF batch.
- * The ERP never emails: download a notice as an unsent .eml draft and send it from your own mailbox.
+ * The ERP never emails (0.20.17 answer: dunning needs NO SMTP / mail credentials). Each notice can be printed or saved as a PDF letter,
+ * or downloaded as an unsent .eml draft and sent from your own mailbox. The page says so when the server has no real mail transport.
  */
 class Dunning extends Page implements HasTable
 {
@@ -41,11 +42,24 @@ class Dunning extends Page implements HasTable
         return (bool) $u && $u->canModule('dunning');
     }
 
+    /** True when the server has no real mail transport (log / array / default local SMTP). Dunning is unaffected; this only explains the page. */
+    public static function emailNotConfigured(): bool
+    {
+        $m = (string) config('mail.default');
+
+        return in_array($m, ['log', 'array'], true) || ($m === 'smtp' && in_array((string) config('mail.mailers.smtp.host'), ['', '127.0.0.1', 'localhost'], true));
+    }
+
     public function intro(): string
     {
         $lv = collect(DunningService::levels())->map(fn ($l) => "Level {$l['level']} \u{2013} ".e($l['name'])." ({$l['days']}+ days late)")->implode(' · ');
 
-        return 'Due date = invoice date + the customer\'s terms (Net N). '.$lv.'. Notices are <strong>drafts only</strong>: nothing is emailed by the ERP. '
+        $notice = static::emailNotConfigured()
+            ? '<p class="mb-2 font-semibold text-warning-600" data-test="email-not-configured">Email is not configured on this server. That is fine: dunning never sends email itself. '
+                .'Use <em>Print / PDF</em> on a notice (or the statement batch PDF) to mail or hand it over, or <em>Download draft (.eml)</em> to send from your own mailbox.</p>'
+            : '';
+
+        return $notice.'Due date = invoice date + the customer\'s terms (Net N). '.$lv.'. Notices are <strong>drafts only</strong>: nothing is emailed by the ERP. '
             .'Download a notice as an unsent email draft (.eml) to review and send from your own mailbox, or print the statement batch.';
     }
 
@@ -71,6 +85,13 @@ class Dunning extends Page implements HasTable
                 ])->minItems(1)->maxItems(6)])
                 ->action(fn (array $data) => DunningService::saveLevels($data['levels'])),
         ];
+    }
+
+    /** Printable PDF letter for one notice (no email needed). */
+    public static function noticePdf(DunningNotice $n): string
+    {
+        return \Barryvdh\DomPDF\Facade\Pdf::loadView('docs.dunning-notice', ['n' => $n->loadMissing('customer'), 'company' => \App\Models\Company::current(), 'info' => config('erp.company')])
+            ->setPaper('letter')->output();
     }
 
     public static function eml(DunningNotice $n): string
@@ -103,6 +124,8 @@ class Dunning extends Page implements HasTable
                 Tables\Actions\Action::make('preview')->label('Preview')->modalSubmitAction(false)
                     ->modalHeading(fn (DunningNotice $n) => $n->subject)
                     ->modalContent(fn (DunningNotice $n) => new \Illuminate\Support\HtmlString('<pre class="whitespace-pre-wrap text-sm">'.e($n->body).'</pre>')),
+                Tables\Actions\Action::make('pdf')->label('Print / PDF')->icon('heroicon-o-printer')
+                    ->action(fn (DunningNotice $n) => response()->streamDownload(fn () => print (self::noticePdf($n)), "dunning-{$n->id}-{$n->customer->code}.pdf", ['Content-Type' => 'application/pdf'])),
                 Tables\Actions\Action::make('eml')->label('Download draft (.eml)')->icon('heroicon-o-envelope')
                     ->action(fn (DunningNotice $n) => response()->streamDownload(fn () => print (self::eml($n)), "dunning-{$n->id}-{$n->customer->code}.eml", ['Content-Type' => 'message/rfc822'])),
                 Tables\Actions\Action::make('reviewed')->label('Mark reviewed')->visible(fn (DunningNotice $n) => $n->status === 'draft')

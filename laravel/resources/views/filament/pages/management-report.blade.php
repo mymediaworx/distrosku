@@ -29,6 +29,11 @@
                     @foreach ($this->productOptions() as $id => $n)<option value="{{ $id }}">{{ $n }}</option>@endforeach
                 </x-filament::input.select></x-filament::input.wrapper></label>
             @endif
+            @if (in_array('window', $used))
+                <label>No order in the last<x-filament::input.wrapper><x-filament::input.select wire:model.live="window">
+                    @foreach (\App\Analytics\DroppedCustomers::WINDOWS as $d)<option value="{{ $d }}">{{ $d }} days</option>@endforeach
+                </x-filament::input.select></x-filament::input.wrapper></label>
+            @endif
             @if (in_array('compare', $used))
                 <label>Compare<x-filament::input.wrapper><x-filament::input.select wire:model.live="compare">
                     @foreach (\App\Accounting\FinancialStatements::COMPARE as $k => $n)<option value="{{ $k }}">{{ $n }}</option>@endforeach

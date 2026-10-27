@@ -180,6 +180,9 @@ class SalesOrderResource extends Resource
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('status')->options(S::options()),
+                // 0.20.17: target of the dashboard "Open orders" tile (same definition as KpiService::openOrders)
+                Tables\Filters\Filter::make('open')->label('Open (confirmed, picked or delivered)')->toggle()
+                    ->query(fn ($query) => $query->whereIn('status', [S::Confirmed->value, S::Picked->value, S::Delivered->value])),
                 Tables\Filters\SelectFilter::make('payment')->label('Payment')->options(['unpaid' => 'Unpaid', 'partial' => 'Partial', 'paid' => 'Paid'])
                     ->query(fn ($query, array $data) => filled($data['value'] ?? null) ? $query->wherePayment($data['value']) : $query),
             ])

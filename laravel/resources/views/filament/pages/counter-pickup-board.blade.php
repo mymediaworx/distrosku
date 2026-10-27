@@ -20,6 +20,9 @@
             </select>
             <input type="search" wire:model.live.debounce.400ms="search" placeholder="Search order #, customer, phone"
                    style="border:1px solid #d1d5db; border-radius:.5rem; padding:.4rem .6rem; min-width:0; width:min(16rem,100%); font-size:inherit">
+ <x-filament::button tag="a" color="gray" size="sm" icon="heroicon-o-arrow-top-right-on-square" data-test="tv-popout" target="_blank" rel="noopener"
+                href="{{ route('pickup.tv', array_filter(['wh' => $this->warehouseId])) }}"
+                onclick="window.open(this.href,'pickupTv','popup=yes,width=1600,height=900');return false;">Open TV view (new window)</x-filament::button>
             <x-filament::button color="gray" wire:click="toggleTv" icon="heroicon-o-tv" size="sm">
                 {{ $tv ? 'Normal view' : 'TV mode (large type)' }}
             </x-filament::button>
