@@ -831,7 +831,7 @@ if [ "$PHASE" = "20.17" ]; then
     test -f $L/$f || { echo "CHECK FAILED: $f missing"; exit 1; }
   done
   test ! -f $L/app/Filament/Pages/CompanyBranding.php || { echo "CHECK FAILED: CompanyBranding page should be gone"; exit 1; }
-  grep -q "chew_percent" $L/database/seeders/TaxRateSeeder.php || { echo "CHECK FAILED: chew percent seeder row missing"; exit 1; }
+  grep -q "CHEW_PCT" $L/database/seeders/TaxRateSeeder.php || { echo "CHECK FAILED: chew percent seeder row missing"; exit 1; }
   echo "Phase 20.17 checks OK"
 fi
 if [ "$PHASE" = "20.15" ] || [ "$PHASE" = "20.16" ]; then
