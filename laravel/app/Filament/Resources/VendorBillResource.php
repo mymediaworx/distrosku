@@ -27,13 +27,13 @@ class VendorBillResource extends Resource
 
     protected static ?string $model = VendorBill::class;
 
-    protected static ?string $navigationGroup = 'Bills (AP)';
+    protected static ?string $navigationGroup = 'Purchasing';
 
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
 
     protected static ?string $navigationLabel = 'Vendor bills';
 
-    protected static ?int $navigationSort = 1;
+    protected static ?int $navigationSort = 4;
 
     protected static ?string $recordTitleAttribute = 'number';
 

@@ -59,6 +59,13 @@ Route::middleware('throttle:quick-tools')->group(function () {
     Route::get('/q/{token}/labels', [CatalogController::class, 'labels'])->where('token', '[A-Fa-f0-9]{16,64}')->name('quick-tools.labels');
 });
 
+// 0.20.17: Brand + Quick tools moved into Company Settings; the old address still works for bookmarks.
+Route::middleware(['auth', BlockWhenSuspended::class])->get('/admin/branding', function () {
+    abort_unless(auth()->user()?->canModule('company', 'manage'), 403);
+
+    return new \Illuminate\Http\RedirectResponse(\App\Filament\Pages\Settings::getUrl());
+});
+
 // Staff: invoice / statement PDFs
 Route::middleware(['auth', BlockWhenSuspended::class])->group(function () {
     Route::get('/admin-docs/invoice/{so}.pdf', [PortalDocumentsController::class, 'adminInvoice'])->name('docs.invoice');
@@ -69,7 +76,7 @@ Route::middleware(['auth', BlockWhenSuspended::class])->group(function () {
 });
 
 // B2B customer portal (guard "portal"). No emails: contacts set their password from an admin-issued one-time link.
-Route::prefix('portal')->name('portal.')->group(function () {
+Route::prefix('portal')->name('portal.')->middleware(\App\Http\Middleware\PortalEnabled::class)->group(function () {
     Route::middleware('throttle:portal-public')->group(function () {
         Route::get('/login', Portal\Login::class)->name('login');
         Route::get('/set-password/{token}', Portal\SetPassword::class)->where('token', '[A-Za-z0-9]{48}')->name('set-password');

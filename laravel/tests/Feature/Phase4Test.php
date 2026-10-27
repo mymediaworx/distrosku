@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Catalog\CatalogService;
 use App\Catalog\ImageService;
-use App\Filament\Pages\CompanyBranding;
 use App\Filament\Pages\PlatformCompany;
 use App\Filament\Pages\PlatformUsers;
 use App\Filament\Resources\ProductResource\Pages\CreateProduct;
@@ -125,7 +124,8 @@ class Phase4Test extends TestCase
         $this->get(route('catalog.csv'))->assertForbidden();
         $this->actingAs(User::factory()->create(['role' => 'admin']));
         $this->get('/admin/departments/create')->assertOk();
-        $this->get('/admin/branding')->assertOk();
+        $this->get('/admin/branding')->assertRedirect(\App\Filament\Pages\Settings::getUrl()); // 0.20.17: moved into Company Settings
+        $this->get('/admin/settings')->assertOk();
         $this->get('/admin/platform/company')->assertForbidden();
         $this->actingAs(User::factory()->create(['role' => 'brandworx_admin']));
         foreach (['/admin/platform/company', '/admin/platform/users', '/admin/platform/catalog'] as $u) {
@@ -137,7 +137,7 @@ class Phase4Test extends TestCase
     {
         $this->get('/q/'.str_repeat('a', 48))->assertNotFound();
         $this->actingAs(User::factory()->create(['role' => 'owner']));
-        Livewire::test(CompanyBranding::class)->callAction('token');
+        Livewire::test(\App\Filament\Pages\Settings::class)->callAction('token');
         $token = Company::current()->public_token;
         $this->assertSame(48, strlen($token));
         auth()->logout();

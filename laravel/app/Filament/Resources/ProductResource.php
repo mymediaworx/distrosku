@@ -276,6 +276,7 @@ class ProductResource extends Resource
     public static function getRelations(): array
     {
         return [
+            \App\Filament\Resources\ProductResource\RelationManagers\VendorItemsRelationManager::class,
             \App\Filament\Resources\ProductResource\RelationManagers\CoasRelationManager::class,
             \App\Filament\Resources\ProductResource\RelationManagers\VapeListingsRelationManager::class,
             \App\Filament\RelationManagers\HistoryRelationManager::class,

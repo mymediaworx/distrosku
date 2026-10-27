@@ -300,7 +300,7 @@ class Phase15DeliveryTest extends TestCase
         $this->assertContains('Driver', $labels);
         $this->assertContains('Delivery', $labels);
         $this->assertNotContains('Accounting', $labels);
-        $this->assertNotContains('Settings', $labels);
+        $this->assertNotContains('Company Settings', $labels);
         $this->get('/admin/modules')->assertOk()->assertDontSee("<span>Bills (AP)</span>", false);
         Livewire::test(Modules::class)->call('toggleHome');
         $this->assertSame('modules', $this->driver->fresh()->landing_page);

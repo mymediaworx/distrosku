@@ -36,9 +36,7 @@ class VendorItemsRelationManager extends RelationManager
     {
         return $form->schema([
             Forms\Components\Select::make('product_id')->label('Product')->required()->searchable()
-                ->getSearchResultsUsing(fn (string $search) => Product::query()->notArchived()
-                    ->where(fn ($q) => $q->where('sku', 'like', "%{$search}%")->orWhere('upc', 'like', "%{$search}%")->orWhere('name', 'like', "%{$search}%"))
-                    ->limit(50)->get()->mapWithKeys(fn ($p) => [$p->id => "{$p->sku} - {$p->name}"])->all())
+                ->getSearchResultsUsing(fn (string $search) => \App\Support\ProductSearch::options($search, 50)) // 0.20.17: standard catalog search (name/SKU/UPC/vendor #)
                 ->getOptionLabelUsing(fn ($value) => ($p = Product::find($value)) ? "{$p->sku} - {$p->name}" : null),
             Forms\Components\TextInput::make('vendor_item_no')->label('Vendor item #')->required()->maxLength(60)
                 ->unique(ignoreRecord: true, modifyRuleUsing: fn (Unique $rule) => $rule->where('vendor_id', $this->getOwnerRecord()->id)),
