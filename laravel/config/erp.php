@@ -1,7 +1,8 @@
 <?php
 
 return [
-    'version' => '0.20.12',
+    'version' => '0.20.13',
+    // 0.20.13: KY ABC Site ID, customer DBA, Customer Contacts / portal flag, mid-form relation tabs, beginning balance 2dp, special-price product lookup.
     // 0.20.12: admin tables offer 10/25/50/100 per page (no 'All'); big-table selects search instead of preloading.
     // 0.20.11 (#26): an offline sale goes to Needs review when a line is priced below cost, or more than this % below the
     // current price, or when the device didn't send the age of its saved prices. Owner/admin can approve and complete it.

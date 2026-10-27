@@ -2,10 +2,14 @@
 
 namespace App\Services;
 
+use App\Compliance\Eligibility;
+use App\Compliance\PactCategory;
 use App\Models\ComplianceRuleVersion;
 use App\Models\Customer;
+use App\Models\PactRegistration;
 use App\Models\Product;
 use App\Models\SalesOrder;
+use App\Models\Setting;
 use App\Models\ShipTo;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Carbon;
@@ -26,18 +30,18 @@ class ComplianceChecker
         $class = $product->tax_class?->value;
         $reasons = [];
 
-        $pactCat = \App\Compliance\PactCategory::of($product);
-        if (($product->pact_covered || ($pactCat && $pactCat !== 'other' && \App\Models\Setting::get('pact_interstate_enabled'))) && $state !== $home) {
+        $pactCat = PactCategory::of($product);
+        if (($product->pact_covered || ($pactCat && $pactCat !== 'other' && Setting::get('pact_interstate_enabled'))) && $state !== $home) {
             $d = $date->toDateString();
-            if (! \App\Models\Setting::get('pact_interstate_enabled')) {
+            if (! Setting::get('pact_interstate_enabled')) {
                 $reasons[] = "PACT Act item ({$class}) cannot ship outside {$home} (ship-to state {$state}).";
-            } elseif (! \App\Models\PactRegistration::current('US', $d) || ! \App\Models\PactRegistration::current($state, $d)) {
+            } elseif (! PactRegistration::current('US', $d) || ! PactRegistration::current($state, $d)) {
                 $reasons[] = "PACT Act item ({$class}): no current PACT registration with ATF and {$state} on file (15 U.S.C. 376(a)(1)).";
             }
         }
         // 0.18: MSA directory, hemp/THC, FDA vape status, vape directories etc. run through the eligibility registry.
         if ($withRegistry) {
-            array_push($reasons, ...app(\App\Compliance\Eligibility::class)->evaluate($product, $shipTo, $date)['block']);
+            array_push($reasons, ...app(Eligibility::class)->evaluate($product, $shipTo, $date)['block']);
         }
 
         foreach ($this->activeRules($state, $date) as $rule) {
@@ -106,6 +110,9 @@ class ComplianceChecker
             ->where('state', $state)
             ->where(fn ($q) => $q->whereNull('ship_to_id')->orWhere('ship_to_id', $shipTo->id))
             ->where(fn ($q) => $q->whereNull('expires_at')->orWhereDate('expires_at', '>=', $date))
+            // 0.20.13: empty rows (no Site ID and no License #) do not count.
+            ->where(fn ($q) => $q->whereNotNull('site_id')->where('site_id', '!=', '')
+                ->orWhere(fn ($q2) => $q2->whereNotNull('number')->where('number', '!=', '')))
             ->exists();
     }
 }

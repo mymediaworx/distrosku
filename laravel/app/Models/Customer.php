@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Audit\Audit;
+use App\Exceptions\WorkflowException;
 use App\Models\Concerns\HasActivity;
 use App\Services\CustomerBalanceService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -15,23 +17,23 @@ class Customer extends Model
         // 0.17.3: only owner/admin/brandworx_admin may delete a customer (any route, incl. bulk).
         static::deleting(function (Customer $c) {
             $u = auth()->user();
-            if ($u instanceof \App\Models\User && ! $u->isAdmin()) {
-                \App\Audit\Audit::action('customer_delete_blocked', $c, "Blocked: {$u->name} ({$u->role?->value}) tried to delete customer {$c->name}");
-                throw new \App\Exceptions\WorkflowException('Only an owner or admin can delete a customer.');
+            if ($u instanceof User && ! $u->isAdmin()) {
+                Audit::action('customer_delete_blocked', $c, "Blocked: {$u->name} ({$u->role?->value}) tried to delete customer {$c->name}");
+                throw new WorkflowException('Only an owner or admin can delete a customer.');
             }
         });
         // 0.17.2: only owner/admin/brandworx_admin may set or change a credit limit.
         // No signed-in user (console, seeders, queued jobs started by an admin) is allowed.
         static::saving(function (Customer $c) {
             $u = auth()->user();
-            if (! $u instanceof \App\Models\User || $u->isAdmin()) {
+            if (! $u instanceof User || $u->isAdmin()) {
                 return;
             }
             $changed = $c->exists
                 ? $c->isDirty('credit_limit') && bccomp((string) ($c->getOriginal('credit_limit') ?? 0), (string) ($c->credit_limit ?? 0), 2) !== 0
                 : bccomp((string) ($c->credit_limit ?? 0), '0', 2) !== 0;
             if ($changed) {
-                throw new \App\Exceptions\WorkflowException('Only an owner or admin can change a customer\'s credit limit.');
+                throw new WorkflowException('Only an owner or admin can change a customer\'s credit limit.');
             }
         });
     }
@@ -54,9 +56,9 @@ class Customer extends Model
             'ghl_tags' => 'array', 'ghl_dnd' => 'boolean', 'ghl_opportunity_value' => 'decimal:2', 'ghl_contact_updated_at' => 'datetime',
             'contact_fields_updated_at' => 'datetime', 'accept_marketing_contact_updates' => 'boolean', 'ghl_created_by_erp' => 'boolean',
             'credit_limit' => 'decimal:2',
-            'beginning_balance' => 'decimal:4',
+            'beginning_balance' => 'decimal:2',
             'beginning_balance_date' => 'date',
-            'beginning_balance_applied' => 'decimal:4',
+            'beginning_balance_applied' => 'decimal:2',
         ];
     }
 

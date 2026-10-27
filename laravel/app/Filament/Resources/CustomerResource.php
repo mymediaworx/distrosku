@@ -10,6 +10,7 @@ use App\Filament\Resources\CustomerResource\Pages;
 use App\Models\Customer;
 use App\Services\CustomerBalanceService;
 use App\Services\Money;
+use App\Support\CustomerType;
 use App\Support\Terms;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -17,11 +18,12 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 
 class CustomerResource extends Resource
 {
     /** 0.17.3: only owner / admin / brandworx_admin may delete customers. */
-    public static function canDelete(\Illuminate\Database\Eloquent\Model $record): bool
+    public static function canDelete(Model $record): bool
     {
         return static::canDeleteAny();
     }
@@ -47,18 +49,26 @@ class CustomerResource extends Resource
     {
         return $form
             ->schema([
-                // 0.20.6: grouped, responsive sections (stack on phones). Order per Michael:
-                // Price group after State tax ID + Federal EIN; Beginning balance right under Available credit; MSA below Balance & aging.
+                // 0.20.13: Customer → relation tabs → Terms & pricing → …
                 Forms\Components\Section::make('Customer')->schema([
                     Forms\Components\TextInput::make('code')->required(),
-                    Forms\Components\TextInput::make('name')->required(),
+                    Forms\Components\TextInput::make('name')->label('Customer Name')->required(),
+                    Forms\Components\TextInput::make('dba')->label('DBA')->maxLength(190)->nullable()
+                        ->helperText('Doing business as / trading name. Shown under the customer name on invoices and receipts when set.'),
                     Forms\Components\Select::make('type')->label('Customer type')
-                        ->options(\App\Support\CustomerType::OPTIONS)->default('retailer')->required()
+                        ->options(CustomerType::OPTIONS)->default('retailer')->required()
                         ->helperText(fn ($record) => $record?->type_legacy ? 'Before 0.20.3 this was: '.$record->type_legacy : null),
                     Forms\Components\TextInput::make('email')->email(),
                     Forms\Components\TextInput::make('phone')->tel(),
                     Forms\Components\Toggle::make('active')->required()->default(true)->inline(false),
                 ])->columns(['default' => 1, 'sm' => 2, 'xl' => 3]),
+                // Mid-form relation tabs (edit only; hidden on create until a record exists).
+                Forms\Components\Group::make()
+                    ->schema([
+                        Forms\Components\View::make('filament.customers.embedded-relations'),
+                    ])
+                    ->visible(fn (?Customer $record) => filled($record?->getKey()))
+                    ->columnSpanFull(),
                 Forms\Components\Section::make('Terms & pricing')->schema([
                     Forms\Components\Select::make('terms')->label('Terms')
                         ->options(fn (?Customer $record) => Terms::options($record?->terms))
@@ -75,18 +85,23 @@ class CustomerResource extends Resource
                 ])->columns(['default' => 1, 'sm' => 2, 'xl' => 3]),
                 Forms\Components\Section::make('Credit')->schema([
                     Forms\Components\TextInput::make('credit_limit')->required()->numeric()->default(0)
+                        ->step(0.01)->inputMode('decimal')
+                        ->rule('decimal:0,2')
                         ->disabled(fn () => ! auth()->user()?->isAdmin())
                         ->dehydrated(fn () => (bool) auth()->user()?->isAdmin())
+                        ->dehydrateStateUsing(fn ($state) => $state === null || $state === '' ? 0 : round((float) $state, 2))
                         ->helperText(fn () => (auth()->user()?->isAdmin() ? '' : 'Only an owner/admin can change the credit limit. ').'0 = no limit. Charges to the account that would go over the limit are blocked (owner/admin can override per order).'),
                     Forms\Components\Placeholder::make('available_credit')->label('Available credit')
                         ->visible(fn (?Customer $record) => $record !== null)
                         ->content(fn (?Customer $record) => $record ? CreditLimit::summary($record) : ''),
-                    // Admin-level only (owner/admin/brandworx_admin). Not dehydrated: saved via CustomerBalanceService (ledger + audit).
+                    // Admin-level only. Not dehydrated: saved via CustomerBalanceService (ledger + audit).
                     Forms\Components\Fieldset::make('Beginning balance (migrated from previous system)')
                         ->visible(fn () => CustomerBalanceService::canManage(auth()->user()))
                         ->schema([
-                            Forms\Components\TextInput::make('beginning_balance')->numeric()->default(0)
-                                ->helperText('Negative = customer credit. Changes post Dr/Cr 1100 AR vs 3900 Opening Balance Equity for the difference.')
+                            Forms\Components\TextInput::make('beginning_balance')->numeric()->default('0.00')
+                                ->step(0.01)->inputMode('decimal')
+                                ->rule('decimal:0,2')
+                                ->helperText('Format XXXXXXXXX.XX (2 decimal places). Negative = customer credit. Changes post Dr/Cr 1100 AR vs 3900 Opening Balance Equity for the difference.')
                                 ->dehydrated(false),
                             Forms\Components\DatePicker::make('beginning_balance_date')->dehydrated(false),
                             Forms\Components\TextInput::make('beginning_balance_note')->label('Reason for change')->dehydrated(false),
@@ -132,10 +147,12 @@ class CustomerResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('code')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('name')
+                Tables\Columns\TextColumn::make('name')->label('Customer Name')
                     ->searchable(),
+                Tables\Columns\TextColumn::make('dba')->label('DBA')
+                    ->searchable()->toggleable(isToggledHiddenByDefault: true)->placeholder('—'),
                 Tables\Columns\TextColumn::make('type')->label('Type')
-                    ->formatStateUsing(fn ($state) => \App\Support\CustomerType::label($state))->searchable()->sortable(),
+                    ->formatStateUsing(fn ($state) => CustomerType::label($state))->searchable()->sortable(),
                 Tables\Columns\TextColumn::make('email')
                     ->searchable()->visibleFrom('lg')->toggleable(),
                 Tables\Columns\TextColumn::make('phone')
@@ -145,7 +162,7 @@ class CustomerResource extends Resource
                 Tables\Columns\TextColumn::make('customerGroup.name')->label('Price group')->badge()->color('info')
                     ->visibleFrom('lg')->toggleable(),
                 Tables\Columns\TextColumn::make('credit_limit')
-                    ->numeric()
+                    ->numeric(2)
                     ->sortable()->visibleFrom('lg')->toggleable(),
                 Tables\Columns\TextColumn::make('ar_balance')->label('Balance')
                     ->state(fn (Customer $r) => $r->balance())->numeric(2),
@@ -165,7 +182,7 @@ class CustomerResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('type')->label('Customer type')->options(\App\Support\CustomerType::OPTIONS),
+                Tables\Filters\SelectFilter::make('type')->label('Customer type')->options(CustomerType::OPTIONS),
                 Tables\Filters\SelectFilter::make('customer_group_id')->label('Price group')->relationship('customerGroup', 'name'),
             ])
             ->actions([
@@ -174,13 +191,13 @@ class CustomerResource extends Resource
                     ->visible(fn (Customer $r) => CustomerBalanceService::canManage(auth()->user())
                         && Money::of(app(CustomerBalanceService::class)->openingRemaining($r))->isPositive())
                     ->form([
-                        Forms\Components\TextInput::make('amount')->numeric()->required()
-                            ->default(fn (Customer $r) => app(CustomerBalanceService::class)->openingRemaining($r)),
+                        Forms\Components\TextInput::make('amount')->numeric()->required()->step(0.01)->inputMode('decimal')->rule('decimal:0,2')
+                            ->default(fn (Customer $r) => number_format((float) app(CustomerBalanceService::class)->openingRemaining($r), 2, '.', '')),
                         Forms\Components\Select::make('method')->options(['cash' => 'Cash', 'check' => 'Check', 'ach' => 'ACH', 'card' => 'Card (manual)'])->default('check')->required(),
                         Forms\Components\TextInput::make('reference'),
                     ])
                     ->action(function (Customer $r, array $data) {
-                        app(CustomerBalanceService::class)->payOpening($r, $data['amount'], $data['method'], $data['reference'] ?? null);
+                        app(CustomerBalanceService::class)->payOpening($r, round((float) $data['amount'], 2), $data['method'], $data['reference'] ?? null);
                         Notification::make()->title('Payment applied to beginning balance')->success()->send();
                     }),
             ])
@@ -193,10 +210,11 @@ class CustomerResource extends Resource
 
     public static function getRelations(): array
     {
+        // 0.20.13 tab order: Customer Contacts, Ship To, Licenses, History (extras after History).
         return [
-            CustomerResource\RelationManagers\LicensesRelationManager::class,
-            CustomerResource\RelationManagers\ShipTosRelationManager::class,
             CustomerResource\RelationManagers\ContactsRelationManager::class,
+            CustomerResource\RelationManagers\ShipTosRelationManager::class,
+            CustomerResource\RelationManagers\LicensesRelationManager::class,
             HistoryRelationManager::class,
         ];
     }

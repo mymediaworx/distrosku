@@ -176,6 +176,11 @@ class Product extends Model
         return $this->belongsTo(Vendor::class, 'preferred_vendor_id');
     }
 
+    public function vendorItems()
+    {
+        return $this->hasMany(VendorItem::class);
+    }
+
     public const PACT_DEFAULT_CLASSES = ['cigarette_stamped', 'ryo', 'snuff_chew', 'vapor'];
 
     /** PACT covered defaults on for cigarette / RYO / smokeless / vapor unless set explicitly. */

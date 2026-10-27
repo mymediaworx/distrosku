@@ -1,7 +1,20 @@
-# Vega ERP — Phase 20.12 UPGRADE (existing install at vegatest1.distrosku.com)
+# Vega ERP — Phase 20.13 UPGRADE (existing install at vegatest1.distrosku.com)
 
 For a site already installed from `vega-erp-phase1.zip` and upgraded through phase 3 (a phase-2 site can also take this zip: seeders are cumulative). TEST data only. No secrets in this package.
 This zip contains **no `laravel/.env` and no `laravel/storage/`**, so extracting it over the live site keeps both.
+
+## What's new in 0.20.13 (includes everything through 0.20.12)
+
+**Customers: KY ABC Site ID, DBA, Customer Contacts / portal flag, mid-form tabs, beginning balance to 2 decimals, and a full product lookup on special prices. One migration.**
+
+- **License Site ID (KY ABC):** `customer_licenses.site_id` holds the ABC Site ID. On upgrade, numeric KY values that were stored in `number` move into `site_id` (reversible on rollback). For Kentucky, a license is valid with Site ID **or** license number (or both). Site ID and number are each unique per state when set. The license form links to the KY ABC lookup page (that page does not accept URL prefill — paste the Site ID there).
+- **Customer Name / DBA:** the customer name field is labelled **Customer Name**; optional **DBA** (`customers.dba`) shows under the name on invoices, delivery proofs, statements and POS receipts, and is available in the customer table, search and CSV import/export.
+- **Customer Contacts (was Portal contacts):** relation tab retitled; email is optional; new `is_portal_contact` flag (default off, backfilled for contacts that already have a portal password, invite or login). Only portal contacts can sign in or be invited; turning on portal requires an email; clearing email turns portal off.
+- **Relation tab order on Edit customer:** Customer Contacts → Ship To → Licenses → History (then any extras). Those tabs sit **below the Customer section and above Terms & pricing** on the edit screen (hidden until the customer exists). Create still uses the usual flow.
+- **Beginning balance:** stored and shown at **2 decimal places** (step 0.01). Migration rounds existing `beginning_balance` / `beginning_balance_applied` and balance-audit amounts, then changes the columns from decimal(12,4) to decimal(12,2). Credit limit was already (12,2).
+- **Customer special prices — product lookup:** the plain product dropdown is replaced with (a) a searchable picker matching SKU, name, barcode/UPC and vendor item number; (b) a scan field that adds on Enter (USB/wedge scanners work like POS; optional camera via the same html5-qrcode asset used by Quick Tools — POS itself uses typed/wedge scan, not camera); (c) a **Browse catalog** modal with department and vendor filters, search, and Load more (same paging idea as POS Browse in 0.20.12). On create you can select several products and create the same special price for each. The product's current list price is shown next to the special-price field.
+- **Migration** `2026_11_23_000001_phase2013_license_site_id_and_customer_dba` (re-runnable). Run the upgrade page as usual.
+- **No new PHP extensions, `.env` settings or cron changes.**
 
 ## What's new in 0.20.12 (includes everything through 0.20.11)
 

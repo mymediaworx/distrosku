@@ -45,7 +45,7 @@ class PortalTest extends TestCase
     private function contact(string $code = 'CTEST-KY', array $attrs = []): CustomerContact
     {
         $c = Customer::where('code', $code)->first();
-        $k = CustomerContact::create($attrs + ['customer_id' => $c->id, 'name' => 'Pat Buyer', 'email' => strtolower($code).'@example.test']);
+        $k = CustomerContact::create($attrs + ['customer_id' => $c->id, 'name' => 'Pat Buyer', 'email' => strtolower($code).'@example.test', 'is_portal_contact' => true]);
         $k->setPasswordFromLink('Secret12345');
 
         return $k->fresh();
@@ -126,7 +126,7 @@ class PortalTest extends TestCase
         $this->actingAs($admin);
         $ky = Customer::where('code', 'CTEST-KY')->first();
         Livewire::test(ContactsRelationManager::class, ['ownerRecord' => $ky, 'pageClass' => EditCustomer::class])
-            ->callTableAction('create', data: ['name' => 'Jo Store', 'email' => 'JO@Example.test', 'active' => true])->assertHasNoTableActionErrors();
+            ->callTableAction('create', data: ['name' => 'Jo Store', 'email' => 'JO@Example.test', 'active' => true, 'is_portal_contact' => true])->assertHasNoTableActionErrors();
         $k = CustomerContact::where('email', 'jo@example.test')->firstOrFail();
         $this->assertNull($k->password);
         Livewire::test(ContactsRelationManager::class, ['ownerRecord' => $ky, 'pageClass' => EditCustomer::class])

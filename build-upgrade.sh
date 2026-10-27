@@ -41,7 +41,7 @@ case "$PHASE" in
   17.2) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
   17.3) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
   18) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
-  19|19.1|19.2|19.3|19.4|19.5|19.6|20.0|20.1|20.2|20.3|20.4|20.5|20.6|20.7|20.8|20.9|20.10|20.11|20.12) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
+  19|19.1|19.2|19.3|19.4|19.5|19.6|20.0|20.1|20.2|20.3|20.4|20.5|20.6|20.7|20.8|20.9|20.10|20.11|20.12|20.13) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
   18.2) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
   18.1) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
   *) echo "No seeder list for phase $PHASE"; exit 1 ;;
@@ -823,6 +823,19 @@ if [ "$PHASE" = "12" ]; then
   done
   ! grep -rqiE "Http::|curl_|guzzle" $L/app/Warehouse/ShippingService.php $L/app/Compliance || { echo "CHECK FAILED: no live carrier / state API calls"; exit 1; }
   echo "Phase 12 files OK"
+fi
+if [ "$PHASE" = "20.13" ]; then
+  L=stage-up/laravel
+  grep -q "'version' => '0.20.13'" $L/config/erp.php || { echo "CHECK FAILED: erp version is not 0.20.13"; exit 1; }
+  test -f $L/database/migrations/2026_11_23_000001_phase2013_license_site_id_and_customer_dba.php || { echo "CHECK FAILED: phase2013 migration missing"; exit 1; }
+  grep -q "site_id" $L/app/Models/CustomerLicense.php || { echo "CHECK FAILED: CustomerLicense site_id missing"; exit 1; }
+  grep -q "is_portal_contact" $L/app/Models/CustomerContact.php || { echo "CHECK FAILED: is_portal_contact missing"; exit 1; }
+  grep -q "InteractsWithSpecialPriceProductLookup" $L/app/Filament/Resources/CustomerPriceOverrideResource/Pages/CreateCustomerPriceOverride.php || { echo "CHECK FAILED: special-price product lookup missing"; exit 1; }
+  test -f $L/app/Support/ProductSearch.php || { echo "CHECK FAILED: ProductSearch missing"; exit 1; }
+  test -f $L/resources/views/filament/forms/special-price-product-lookup.blade.php || { echo "CHECK FAILED: special-price lookup view missing"; exit 1; }
+  grep -q "Customer Contacts" $L/app/Filament/Resources/CustomerResource/RelationManagers/ContactsRelationManager.php || { echo "CHECK FAILED: Customer Contacts title missing"; exit 1; }
+  grep -q "embedded-relations" $L/app/Filament/Resources/CustomerResource.php || { echo "CHECK FAILED: mid-form embedded relations missing"; exit 1; }
+  echo "Phase 20.13 checks OK"
 fi
 if [ "$PHASE" = "20.12" ]; then
   L=stage-up/laravel

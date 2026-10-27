@@ -40,6 +40,9 @@ class OpeningBalancesImport extends ImportType
             $e[] = "Customer \"{$cc}\" does not exist.";
         }
         $bal = static::num($v, 'balance', $e, 'Opening balance', true);
+        if ($bal !== null) {
+            $bal = number_format((float) $bal, 2, '.', '');
+        }
         $date = static::date($v, 'as_of', $e);
         if ($c && $bal !== null && Money::of($bal)->isPositive() && Money::of($c->beginning_balance_applied ?? 0)->isGreaterThan(Money::of($bal))) {
             $e[] = "Payments of {$c->beginning_balance_applied} are already applied; the balance cannot go below that.";
