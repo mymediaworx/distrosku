@@ -14,8 +14,27 @@
             @endif
         @endif
         <div class="inline" style="margin-top:.5rem">
-            <input type="search" wire:model.live.debounce.400ms="q" placeholder="Search name, SKU or UPC" enterkeyhint="search">
+            <input type="search" wire:model.live.debounce.400ms="q" placeholder="Search name, SKU or UPC" enterkeyhint="search" aria-label="Search products">
             <select wire:model.live="departmentId" aria-label="Department"><option value="">All departments</option>@foreach($departments as $d)<option value="{{ $d->id }}">{{ $d->name }}</option>@endforeach</select>
+        </div>
+        <button type="button" class="scanbtn" x-data x-on:click="$dispatch('portal-scan-open')" data-test="scan-open">Scan barcodes with camera</button>
+    </div>
+
+    {{-- #37: camera scanning. Chrome on Android uses the built-in BarcodeDetector; other browsers (iPhone Safari) load
+         the bundled ZXing reader on first use. wire:ignore keeps the live video out of Livewire re-renders. --}}
+    <div wire:ignore x-data="portalScanner(@js(asset('js/vendor/zxing-browser-0.2.1.min.js')))"
+         x-on:portal-scan-open.window="start()" x-on:portal-scan.window="result($event.detail)" x-on:keydown.escape.window="stop()">
+        <div class="scanner" x-show="open" x-cloak role="dialog" aria-modal="true" aria-label="Scan barcodes" data-test="scanner">
+            <div class="scanner-top"><strong>Scan to add to cart</strong><button type="button" class="scan-done" x-on:click="stop()">Done</button></div>
+            <div class="scanner-view"><video x-ref="v" playsinline muted></video><div class="scanner-aim" aria-hidden="true"></div></div>
+            <p class="scanner-status" x-text="status" aria-live="polite"></p>
+            <form class="inline" x-on:submit.prevent="submitTyped()" style="margin:.25rem 0 .5rem">
+                <input type="text" x-model="typed" inputmode="numeric" placeholder="Or type the barcode" aria-label="Type a barcode">
+                <button type="submit" style="flex:0 0 auto;width:auto">Add</button>
+            </form>
+            <ul class="scanner-list">
+                <template x-for="(it, i) in items" :key="i"><li :class="it.ok ? 'ok' : 'err'" x-text="(it.ok ? '✓ ' : '✗ ') + it.text"></li></template>
+            </ul>
         </div>
     </div>
     @if($error)<div class="card err">{{ $error }}</div>@endif
@@ -116,6 +135,76 @@
             <p>No products found.</p>
         @endforelse
     @endif
+
+    @push('scripts')
+    <script>
+    // #37 portal camera scanning. Each code goes to the server (same lookup and availability rules as typing it).
+    document.addEventListener('alpine:init', () => Alpine.data('portalScanner', (zxingUrl) => ({
+        open: false, status: '', items: [], typed: '', stream: null, timer: null, controls: null, last: '', lastAt: 0,
+        async start() {
+            this.open = true; this.status = 'Starting camera…'; await this.$nextTick();
+            const v = this.$refs.v;
+            try {
+                const native = 'BarcodeDetector' in window && (await BarcodeDetector.getSupportedFormats()).includes('ean_13');
+                if (native) {
+                    this.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
+                    v.srcObject = this.stream; await v.play();
+                    const det = new BarcodeDetector({ formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'itf', 'code_128'] });
+                    const tick = async () => {
+                        if (!this.open) return;
+                        try { const r = await det.detect(v); if (r.length) this.found(r[0].rawValue); } catch (e) {}
+                        this.timer = setTimeout(tick, 250);
+                    };
+                    tick();
+                } else {
+                    await this.load(zxingUrl);
+                    const reader = new ZXingBrowser.BrowserMultiFormatReader();
+                    this.controls = await reader.decodeFromConstraints({ video: { facingMode: 'environment' } }, v, (res) => { if (res) this.found(res.getText()); });
+                }
+                this.status = 'Point the camera at a barcode.';
+            } catch (e) {
+                this.status = e && e.name === 'NotAllowedError'
+                    ? 'Camera access was blocked. Allow the camera for this site, or type the barcode below.'
+                    : 'The camera isn\'t available here. Type the barcode below.';
+            }
+        },
+        load(url) {
+            return window.ZXingBrowser ? Promise.resolve() : new Promise((ok, fail) => {
+                const s = document.createElement('script'); s.src = url; s.onload = ok; s.onerror = fail; document.head.appendChild(s);
+            });
+        },
+        found(code) {
+            const now = Date.now(), seen = this.lastAt;
+            this.lastAt = now;
+            // A box held in view is read many times a second: count it once, and again only after it has left
+            // the view for 1.5 s (so scanning two identical items still works).
+            if (code === this.last && now - seen < 1500) return;
+            this.last = code; this.status = 'Checking ' + code + '…';
+            this.$wire.scan(code);
+        },
+        submitTyped() { // typed codes always count, and don't disturb the camera's duplicate check
+            const c = this.typed.trim(); if (!c) return;
+            this.typed = ''; this.status = 'Checking ' + c + '…'; this.$wire.scan(c);
+        },
+        result(d) {
+            if (!this.open) return;
+            this.items.unshift({ ok: d.ok, text: d.text }); this.items = this.items.slice(0, 10);
+            this.status = d.ok ? 'Added. Scan the next item.' : 'Not added. Scan another item.';
+            if (navigator.vibrate) navigator.vibrate(d.ok ? 60 : [80, 60, 80]);
+            try {
+                const c = new (window.AudioContext || window.webkitAudioContext)(), o = c.createOscillator();
+                o.frequency.value = d.ok ? 880 : 220; o.connect(c.destination); o.start();
+                setTimeout(() => { o.stop(); c.close(); }, d.ok ? 90 : 250);
+            } catch (e) {}
+        },
+        stop() {
+            this.open = false; clearTimeout(this.timer);
+            if (this.controls) { this.controls.stop(); this.controls = null; }
+            if (this.stream) { this.stream.getTracks().forEach((t) => t.stop()); this.stream = null; }
+        },
+    })));
+    </script>
+    @endpush
 
     <div class="cartbar" style="margin-top:1rem" data-test="cartbar"><span>{{ count($cart) }} item(s) · ${{ number_format((float) $total, 2) }}</span>
         <button type="button" wire:click="$toggle('showCart')">{{ $showCart ? 'Hide cart' : 'View cart' }}</button></div>
