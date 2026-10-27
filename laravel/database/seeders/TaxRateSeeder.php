@@ -40,6 +40,15 @@ class TaxRateSeeder extends Seeder
             );
         }
 
+        // 0.20.17 owner decision: chew switches to 15% of wholesale (replaces the per-unit / $0.19-per-4oz weight rates) from the effective date.
+        // Re-runnable: keyed on the type alone, so a verified or edited date/rate is never overwritten or duplicated. Old rows stay for earlier
+        // periods; excise already accrued on received POs and filed periods are not recomputed. Set KY_CHEW_PCT_EFFECTIVE before seeding to change the default date.
+        if (! TaxRate::where('jurisdiction', 'KY')->where('tax_type', K::CHEW_PCT)->exists()) {
+            TaxRate::create(['jurisdiction' => 'KY', 'tax_type' => K::CHEW_PCT, 'effective_from' => env('KY_CHEW_PCT_EFFECTIVE', '2026-11-01'),
+                'rate' => '0.150000', 'basis' => 'percent', 'increment_oz' => null, 'needs_verification' => true, 'source' => 'Owner decision 2026-10-27',
+                'notes' => 'VERIFY EFFECTIVE DATE. Chewing tobacco taxed at 15% of wholesale (distributor actual selling price) from this date; replaces the per-unit weight rates (incl. $0.19 per 4 oz over 16 oz) for periods on/after it. Earlier periods keep the old rates.']);
+        }
+
         // TEST demo products only: fill the new tax fields so reports have data. Never touches real SKUs.
         Product::where('sku', 'TST-SNF-001')->whereNull('net_weight_oz')->update(['smokeless_type' => 'snuff', 'net_weight_oz' => '1.2', 'units_per_case' => 5]);
         Product::where('sku', 'TST-CIG-001')->whereNull('sticks_per_unit')->update(['sticks_per_unit' => 200]);

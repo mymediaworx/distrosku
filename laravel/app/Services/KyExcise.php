@@ -29,6 +29,9 @@ class KyExcise
 
     public const CHEW_OVER_16 = 'chew_over16_per_4oz';
 
+    /** 0.20.17: chew switches from weight units to a % of the distributor's actual selling price from this rate's effective date. */
+    public const CHEW_PCT = 'chew_percent';
+
     public const OTP_PCT = 'otp_percent';
 
     public const PREMIUM_CIGAR_PCT = 'premium_cigar_percent';
@@ -51,6 +54,22 @@ class KyExcise
         }
 
         return BigDecimal::of((string) $row->rate);
+    }
+
+    /** True when chew is taxed as a % of price on $date (a chew_percent rate row is effective). Before that date the per-unit weight rates still apply. */
+    public function chewIsPercent(CarbonInterface|string|null $date = null): bool
+    {
+        $date = Carbon::parse($date ?? today())->toDateString();
+
+        return TaxRate::where('jurisdiction', 'KY')->where('tax_type', self::CHEW_PCT)
+            ->whereDate('effective_from', '<=', $date)
+            ->where(fn ($q) => $q->whereNull('effective_to')->orWhereDate('effective_to', '>=', $date))->exists();
+    }
+
+    /** Chewing tobacco tax as a % of price (e.g. 15% of the wholesale amount). */
+    public function chewPercentTax(mixed $baseAmount, CarbonInterface|string|null $date = null): string
+    {
+        return Money::s(Money::of($baseAmount)->multipliedBy($this->rate(self::CHEW_PCT, $date)));
     }
 
     /** Chewing tobacco unit bucket for one consumer unit of the given net weight. */
@@ -103,8 +122,11 @@ class KyExcise
     }
 
     /** Excise owed by a KY distributor on snuff/chew quantity. */
-    public function smokelessTax(Product $p, mixed $qty, CarbonInterface|string|null $date = null): string
+    public function smokelessTax(Product $p, mixed $qty, CarbonInterface|string|null $date = null, mixed $baseAmount = null): string
     {
+        if (($p->smokeless_type ?? 'snuff') !== 'snuff' && $baseAmount !== null && $this->chewIsPercent($date)) {
+            return $this->chewPercentTax($baseAmount, $date); // % of wholesale from the switch date; weight not needed
+        }
         return Money::s($this->smokelessUnitTax($p, $date)->multipliedBy(self::consumerUnits($p, $qty)));
     }
 

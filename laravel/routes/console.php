@@ -26,6 +26,7 @@ if (is_file(base_path('.env')) || app()->configurationIsCached() || app()->runni
     Schedule::command('costs:apply')->dailyAt('00:05')->withoutOverlapping();
     Schedule::command('pos:expire-holds')->dailyAt('00:15')->withoutOverlapping(); // 0.19.3
     Schedule::command('marketing:reconcile')->dailyAt('02:45')->withoutOverlapping(); // 0.19.2: nightly, NEW (unlinked) customers only
+    Schedule::command('warehouse:cycle-plan')->dailyAt('05:30')->withoutOverlapping(); // 0.20.17 daily/weekly cycle count tasks
     Schedule::command('po:inbound-digest')->dailyAt('06:30')->withoutOverlapping(); // 0.20.1 receiving-team morning digest
     Schedule::command('marketing:invoice-events')->dailyAt('07:00')->withoutOverlapping(); // 0.19 (no-op when BrandWorx Marketing is off)
 
@@ -137,3 +138,9 @@ Artisan::command('erp:rules-export {--out=}', function () {
     $json = json_encode(app(\App\Dba\RulesApplier::class)->export(), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     $this->option('out') ? file_put_contents($this->option('out'), $json) : $this->line($json);
 })->purpose('Export license types, eligibility, compliance rules and tax rates as a distrosku-rules/1 rule set');
+
+Artisan::command('warehouse:cycle-plan {--force : generate for today even if already run}', function () {
+    $p = app(\App\Warehouse\CycleCountPlanner::class);
+    $n = $this->option('force') ? $p->generateAll() : $p->ensureCurrent();
+    $this->info("Cycle count plan: {$n} task(s) created.");
+})->purpose('Generate the daily/weekly cycle count tasks (0.20.17)');
