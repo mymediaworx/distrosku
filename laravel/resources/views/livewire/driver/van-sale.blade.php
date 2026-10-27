@@ -3,7 +3,7 @@
         <label>Van / truck</label>
         <select wire:model.live="vanId" data-test="van">@forelse($vans as $v)<option value="{{ $v->id }}">{{ $v->name }}</option>@empty<option value="">No van warehouse set up</option>@endforelse</select>
         <label>Customer</label>
-        <select wire:model.live="customerId" data-test="customer"><option value="">Choose…</option>@foreach($customers as $c)<option value="{{ $c->id }}">{{ $c->name }} ({{ $c->terms }})</option>@endforeach</select>
+        <select wire:model.live="customerId" data-test="customer"><option value="">Choose…</option>@foreach($customers as $c)<option value="{{ $c->id }}">{{ $c->code }} — {{ $c->name }} ({{ $c->terms }})</option>@endforeach</select>
         @if($customerId)<label>Fulfillment</label>
             <select wire:model.live="fulfillment" data-test="fulfillment"><option value="pickup">Counter pickup</option><option value="delivery">Delivery</option></select>
             @if($fulfillment === 'delivery')<label>Ship-to</label>

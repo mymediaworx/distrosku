@@ -24,7 +24,7 @@ class CustomersImport extends ImportType
     public function fields(): array
     {
         return [
-            'code' => ['label' => 'Customer number', 'required' => true, 'example' => 'C1001'],
+            'code' => ['label' => 'Account Number', 'required' => true, 'example' => 'C1001'],
             'name' => ['label' => 'Customer Name', 'required' => true, 'example' => 'Corner Market'],
             'dba' => ['label' => 'DBA', 'example' => 'Corner Mkt'],
             'type' => ['label' => 'Type (C-store, Liquor store, Smoke shop, Retailer, Restaurant, Food truck, Wholesale distributor, Other)', 'example' => 'retailer'],
@@ -41,7 +41,7 @@ class CustomersImport extends ImportType
     public function evaluate(array $v, ImportBatch $b): RowResult
     {
         $e = [];
-        static::required($v, ['code' => 'Customer number'], $e);
+        static::required($v, ['code' => 'Account Number'], $e);
         $code = static::s($v, 'code');
         $c = $code ? Customer::where('code', $code)->first() : null;
         if (! $c && static::s($v, 'name') === null) {

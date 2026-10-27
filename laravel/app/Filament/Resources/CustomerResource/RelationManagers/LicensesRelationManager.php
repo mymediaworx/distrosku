@@ -48,7 +48,9 @@ class LicensesRelationManager extends RelationManager
     public static function licenseFields(bool $withCustomer = false): array
     {
         return array_values(array_filter([
-            $withCustomer ? Forms\Components\Select::make('customer_id')->relationship('customer', 'name')->searchable()->required() : null,
+            $withCustomer ? Forms\Components\Select::make('customer_id')->label('Customer')->searchable()->required()
+                ->getSearchResultsUsing(fn (string $search) => \App\Models\Customer::optionsForSelect($search))
+                ->getOptionLabelUsing(fn ($value) => ($c = \App\Models\Customer::find($value))?->labelWithAccount()) : null,
             Forms\Components\Select::make('type')->label('License type')
                 ->options(fn (?Model $record) => LicenseType::options($record?->type))->required()->searchable()
                 ->live()->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {

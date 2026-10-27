@@ -51,7 +51,7 @@ class CustomerResource extends Resource
             ->schema([
                 // 0.20.13: Customer → relation tabs → Terms & pricing → …
                 Forms\Components\Section::make('Customer')->schema([
-                    Forms\Components\TextInput::make('code')->required(),
+                    Forms\Components\TextInput::make('code')->label('Account Number')->required()->maxLength(30)->unique(ignoreRecord: true),
                     Forms\Components\TextInput::make('name')->label('Customer Name')->required(),
                     Forms\Components\TextInput::make('dba')->label('DBA')->maxLength(190)->nullable()
                         ->helperText('Doing business as / trading name. Shown under the customer name on invoices and receipts when set.'),
@@ -145,8 +145,8 @@ class CustomerResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('code')
-                    ->searchable(),
+                Tables\Columns\TextColumn::make('code')->label('Account Number')
+                    ->searchable()->sortable(),
                 Tables\Columns\TextColumn::make('name')->label('Customer Name')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('dba')->label('DBA')

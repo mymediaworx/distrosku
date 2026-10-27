@@ -71,7 +71,9 @@ class CustomerPriceOverrideResource extends Resource
             Forms\Components\Hidden::make('product_ids')
                 ->default([])
                 ->dehydrated(fn ($livewire) => (bool) ($livewire->productLookupMulti ?? false)),
-            Forms\Components\Select::make('customer_id')->label('Customer')->relationship('customer', 'name')->searchable()->nullable()
+            Forms\Components\Select::make('customer_id')->label('Customer')->searchable()->nullable()
+                ->getSearchResultsUsing(fn (string $search) => \App\Models\Customer::optionsForSelect($search))
+                ->getOptionLabelUsing(fn ($value) => ($c = \App\Models\Customer::find($value))?->labelWithAccount())
                 ->helperText('Blank = all customers. A customer-specific price beats an all-customers one.'),
             Forms\Components\Placeholder::make('base_price_display')
                 ->label('Current list price')

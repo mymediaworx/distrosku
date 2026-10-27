@@ -41,7 +41,7 @@ case "$PHASE" in
   17.2) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
   17.3) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
   18) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
-  19|19.1|19.2|19.3|19.4|19.5|19.6|20.0|20.1|20.2|20.3|20.4|20.5|20.6|20.7|20.8|20.9|20.10|20.11|20.12|20.13) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
+  19|19.1|19.2|19.3|19.4|19.5|19.6|20.0|20.1|20.2|20.3|20.4|20.5|20.6|20.7|20.8|20.9|20.10|20.11|20.12|20.13|20.14) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
   18.2) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
   18.1) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
   *) echo "No seeder list for phase $PHASE"; exit 1 ;;
@@ -823,6 +823,22 @@ if [ "$PHASE" = "12" ]; then
   done
   ! grep -rqiE "Http::|curl_|guzzle" $L/app/Warehouse/ShippingService.php $L/app/Compliance || { echo "CHECK FAILED: no live carrier / state API calls"; exit 1; }
   echo "Phase 12 files OK"
+fi
+if [ "$PHASE" = "20.14" ]; then
+  L=stage-up/laravel
+  grep -q "'version' => '0.20.14'" $L/config/erp.php || { echo "CHECK FAILED: erp version is not 0.20.14"; exit 1; }
+  grep -q "Account Number" $L/app/Filament/Resources/CustomerResource.php || { echo "CHECK FAILED: Account Number label missing on CustomerResource"; exit 1; }
+  grep -q "labelWithAccount" $L/app/Models/Customer.php || { echo "CHECK FAILED: Customer::labelWithAccount missing"; exit 1; }
+  grep -q "optionsForSelect" $L/app/Models/Customer.php || { echo "CHECK FAILED: Customer::optionsForSelect missing"; exit 1; }
+  grep -q "orderBy('code')" $L/app/Livewire/CounterPos.php || { echo "CHECK FAILED: CounterPos customers not ordered by Account Number"; exit 1; }
+  grep -q '\$c->code' $L/resources/views/livewire/counter-pos.blade.php || { echo "CHECK FAILED: CounterPos option missing Account Number"; exit 1; }
+  grep -q "orderBy('code')" $L/app/Livewire/Driver/VanSale.php || { echo "CHECK FAILED: VanSale customers not ordered by Account Number"; exit 1; }
+  grep -q '\$c->code' $L/resources/views/livewire/driver/van-sale.blade.php || { echo "CHECK FAILED: VanSale option missing Account Number"; exit 1; }
+  grep -q "Account Number" $L/app/Filament/Pages/MarketingSettingsPage.php || { echo "CHECK FAILED: MarketingSettingsPage Account Number note missing"; exit 1; }
+  test -f $L/tests/Feature/Phase2014AccountNumberLabelTest.php || { echo "CHECK FAILED: Phase2014 test missing"; exit 1; }
+  # 0.20.13 pieces still present
+  test -f $L/database/migrations/2026_11_23_000001_phase2013_license_site_id_and_customer_dba.php || { echo "CHECK FAILED: phase2013 migration missing"; exit 1; }
+  echo "Phase 20.14 checks OK"
 fi
 if [ "$PHASE" = "20.13" ]; then
   L=stage-up/laravel

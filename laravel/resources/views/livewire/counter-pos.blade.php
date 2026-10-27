@@ -44,7 +44,7 @@
             <div class="card details" data-test="order-details">
                 <div class="dgrid">
                     <div class="dcust"><label for="pos-customer">Customer</label>
-                        <select id="pos-customer" wire:model.live="customerId">@foreach($customers as $c)<option value="{{ $c->id }}">{{ $c->name }}</option>@endforeach</select>
+                        <select id="pos-customer" wire:model.live="customerId">@foreach($customers as $c)<option value="{{ $c->id }}">{{ $c->code }} — {{ $c->name }}</option>@endforeach</select>
                         @if(! is_null($this->customerBalance))<small data-test="customer-balance">Account balance: {{ number_format((float) $this->customerBalance, 2) }}{{ (float) $this->customerBalance < 0 ? ' (credit)' : '' }}</small>@endif</div>
                     <div><label for="pos-fulfillment">Fulfillment</label>
                         <select id="pos-fulfillment" wire:model.live="fulfillment" data-test="fulfillment"><option value="pickup">Counter pickup</option><option value="delivery">Delivery</option></select></div>

@@ -56,7 +56,9 @@ class SalesOrderResource extends Resource
                     ->content(fn ($record) => new HtmlString(view('filament.partials.order-signatures', ['so' => $record->load('signatures.user')])->render()))]),
             Forms\Components\Section::make()->columns(['default' => 1, 'md' => 3])->schema([
                 Forms\Components\TextInput::make('number')->disabled()->dehydrated(false)->placeholder('Assigned on save'),
-                Forms\Components\Select::make('customer_id')->relationship('customer', 'name')->searchable()->required()->live()
+                Forms\Components\Select::make('customer_id')->label('Customer')->searchable()->required()->live()
+                    ->getSearchResultsUsing(fn (string $search) => \App\Models\Customer::optionsForSelect($search))
+                    ->getOptionLabelUsing(fn ($value) => ($c = \App\Models\Customer::find($value))?->labelWithAccount())
                     ->afterStateUpdated(function (Set $set, Get $get, $state) { // 0.19.6: ship-to only matters for delivery / ship
                         $set('ship_to_id', $state && $get('fulfillment') !== 'pickup' ? \App\Models\Customer::find($state)?->resolveShipToId() : null);
                     }),

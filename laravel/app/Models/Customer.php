@@ -62,6 +62,23 @@ class Customer extends Model
         ];
     }
 
+    /** 0.20.14: Account Number + name for pickers and reports. */
+    public function labelWithAccount(): string
+    {
+        return trim(($this->code ? $this->code.' — ' : '').($this->name ?? ''));
+    }
+
+    public static function optionsForSelect(?string $search = null, int $limit = 50): array
+    {
+        $q = static::query()->orderBy('code')->orderBy('name');
+        if (filled($search)) {
+            $s = '%'.str_replace(['%', '_'], ['\%', '\_'], $search).'%';
+            $q->where(fn ($w) => $w->where('code', 'like', $s)->orWhere('name', 'like', $s)->orWhere('dba', 'like', $s));
+        }
+
+        return $q->limit($limit)->get(['id', 'code', 'name'])->mapWithKeys(fn (self $c) => [$c->id => $c->labelWithAccount()])->all();
+    }
+
     public function customerGroup()
     {
         return $this->belongsTo(CustomerGroup::class);

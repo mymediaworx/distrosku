@@ -23,7 +23,7 @@ class ShipTosImport extends ImportType
     public function fields(): array
     {
         return [
-            'customer_code' => ['label' => 'Customer number', 'required' => true, 'example' => 'C1001'],
+            'customer_code' => ['label' => 'Account Number', 'required' => true, 'example' => 'C1001'],
             'name' => ['label' => 'Ship-to name', 'required' => true, 'example' => 'Main store'],
             'address' => ['label' => 'Address'], 'city' => ['label' => 'City'], 'county' => ['label' => 'County'],
             'state' => ['label' => 'State (2 letters)', 'required' => true, 'example' => 'KY'], 'zip' => ['label' => 'ZIP'], 'phone' => ['label' => 'Phone'],
@@ -35,7 +35,7 @@ class ShipTosImport extends ImportType
     public function evaluate(array $v, ImportBatch $b): RowResult
     {
         $e = [];
-        static::required($v, ['customer_code' => 'Customer number', 'name' => 'Ship-to name'], $e);
+        static::required($v, ['customer_code' => 'Account Number', 'name' => 'Ship-to name'], $e);
         $c = ($cc = static::s($v, 'customer_code')) ? Customer::where('code', $cc)->first() : null;
         if ($cc && ! $c) {
             $e[] = "Customer \"{$cc}\" does not exist (import customers first).";

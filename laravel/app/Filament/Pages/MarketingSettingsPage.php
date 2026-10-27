@@ -71,7 +71,7 @@ class MarketingSettingsPage extends Page implements HasForms
             Forms\Components\Section::make('Contact custom fields')->columns(3)->collapsed()
                 ->description('Field key (e.g. contact.vega_account_number) or field ID in BrandWorx Marketing. Looked up at sync time. Blank = default key; "-" = do not send. Only text fields can be filled.')
                 ->schema([
-                    Forms\Components\TextInput::make('cf.account')->label('Vega Account Number (customer code)')->maxLength(120),
+                    Forms\Components\TextInput::make('cf.account')->label('Vega Account Number (Account Number field)')->maxLength(120),
                     Forms\Components\TextInput::make('cf.state_tax')->label('State Tax ID')->maxLength(120),
                     Forms\Components\TextInput::make('cf.resale')->label('Resale certificate (number)')->maxLength(120),
                 ]),

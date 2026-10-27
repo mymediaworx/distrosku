@@ -603,7 +603,7 @@ class CounterPos extends Component
     public function render()
     {
         return view('livewire.counter-pos', [
-            'customers' => Customer::where('active', true)->orderBy('name')->get(['id', 'name']),
+            'customers' => Customer::where('active', true)->orderBy('code')->orderBy('name')->get(['id', 'code', 'name']),
             'shipTos' => ShipTo::where('customer_id', $this->customerId)->orderByDesc('is_default')->orderBy('name')->get(),
             'addShipToUrl' => $this->customerId ? \App\Filament\Resources\CustomerResource::getUrl('edit', ['record' => $this->customerId]) : null,
             'warehouses' => Warehouse::where('active', true)->get(),

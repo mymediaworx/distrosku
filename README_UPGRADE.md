@@ -1,7 +1,16 @@
-# Vega ERP — Phase 20.13 UPGRADE (existing install at vegatest1.distrosku.com)
+# Vega ERP — Phase 20.14 UPGRADE (existing install at vegatest1.distrosku.com)
 
 For a site already installed from `vega-erp-phase1.zip` and upgraded through phase 3 (a phase-2 site can also take this zip: seeders are cumulative). TEST data only. No secrets in this package.
 This zip contains **no `laravel/.env` and no `laravel/storage/`**, so extracting it over the live site keeps both.
+
+## What's new in 0.20.14 (includes everything through 0.20.13)
+
+**Customers: "Code" relabelled "Account Number" everywhere. No migrations, no .env changes.**
+
+- **Account Number label:** the customer `code` column is unchanged (still unique), but every user-facing label now says **Account Number** — customer create/edit/list, CSV import/export templates, ship-to / opening-balance / price-list imports, and BrandWorx Marketing's Vega Account Number mapping note.
+- **POS and van pickers:** Counter POS and Van sale customer dropdowns show `Account Number — Name` (and terms on van). Admin customer pickers (sales orders, ship-tos, price rules, promotions, special prices, license form, receivables filter) search by account number, name or DBA and show the same label.
+- **No data change in this upgrade.** A separate one-time loader (not in this zip) renames Jamison `J-{n}` codes to the real account numbers from the owner's listing. Run that only after reviewing the match report.
+- **No new PHP extensions, `.env` settings or cron changes.**
 
 ## What's new in 0.20.13 (includes everything through 0.20.12)
 
@@ -222,7 +231,7 @@ This zip contains **no `laravel/.env` and no `laravel/storage/`**, so extracting
 ## What's new in 0.19.2 (includes everything through 0.19.1)
 - **BrandWorx Marketing sync is ONE-WAY: ERP -> Marketing.** The 0.19.1 inbound pull, Preview/Sync-now page, Leads list and `/hooks/marketing` webhook are removed (the migration drops `marketing_leads` and the old inbound settings; re-runnable).
 - **Consent:** the ERP opt-in switches drive email/SMS consent. Opt-in off -> DND on for that channel. Opt-in on clears DND only on contacts the ERP itself created; DND set in Marketing on pre-existing contacts is never wiped.
-- **Contact custom fields:** Vega Account Number = customer code, State Tax ID (new customer field), Resale certificate (newest `resale` license number). Mapped by field key or ID in Marketing settings, looked up via the API at sync time. Only text fields are written; empty ERP values are never sent.
+- **Contact custom fields:** Vega Account Number = customer Account Number (`code`), State Tax ID (new customer field), Resale certificate (newest `resale` license number). Mapped by field key or ID in Marketing settings, looked up via the API at sync time. Only text fields are written; empty ERP values are never sent.
 - **Nightly (02:45):** only customers not yet linked to a contact are sent. Edits still sync right away through the queue.
 - **Push all customers** button (Marketing settings, admin): queues every active customer, 20 per 10 seconds.
 

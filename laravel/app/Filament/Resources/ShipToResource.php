@@ -35,7 +35,9 @@ class ShipToResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Select::make('customer_id')->relationship('customer', 'name')->searchable()->required(),
+                Forms\Components\Select::make('customer_id')->label('Customer')->searchable()->required()
+                    ->getSearchResultsUsing(fn (string $search) => \App\Models\Customer::optionsForSelect($search))
+                    ->getOptionLabelUsing(fn ($value) => ($c = \App\Models\Customer::find($value))?->labelWithAccount()),
                 ...static::addressFields(),
             ]);
     }
