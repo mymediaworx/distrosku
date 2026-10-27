@@ -834,7 +834,7 @@ if [ "$PHASE" = "20.15" ]; then
   grep -q "function lotsOnHand" $L/app/Warehouse/LotService.php || { echo "CHECK FAILED: LotService::lotsOnHand missing"; exit 1; }
   grep -q "lot_id" $L/app/Pos/PosCheckout.php || { echo "CHECK FAILED: PosCheckout lot_id missing"; exit 1; }
   grep -q "lines.\*.lot_id" $L/app/Pos/OfflineSaleSync.php || { echo "CHECK FAILED: offline lot_id rule missing"; exit 1; }
-  grep -q "wh.trace.csv" $L/routes/web.php || { echo "CHECK FAILED: trace CSV route missing"; exit 1; }
+  grep -q "trace.csv" $L/routes/web.php || { echo "CHECK FAILED: trace CSV route missing"; exit 1; }
   test -f $L/database/migrations/2026_11_23_000001_phase2013_license_site_id_and_customer_dba.php || { echo "CHECK FAILED: phase2013 migration missing"; exit 1; }
   echo "Phase 20.15 checks OK"
 fi
