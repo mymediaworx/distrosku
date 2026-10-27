@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\DB;
 
 /**
  * Overdue reminders. A run creates a batch of DRAFT notices (subject + body + statement PDF) for review.
- * Nothing is emailed by the ERP: there is no send path here by design.
+ * Creating notices never sends anything by itself; DunningMailer (0.20.18) is the optional, off-by-default email step.
  */
 class DunningService
 {
@@ -166,13 +166,19 @@ class DunningService
     /** One PDF with a statement per notice in the batch (last 90 days of AR activity). */
     public function statementsPdf(DunningBatch $batch): string
     {
+        return $this->noticesPdf($batch->notices()->where('status', '!=', 'dismissed')->with('customer')->get(), $batch->as_of->toDateString());
+    }
+
+    /** Statement PDF (one page group per notice) for any set of notices: one customer's email attachment, or the print list. */
+    public function noticesPdf(iterable $notices, string $asOf): string
+    {
         $reports = [];
-        $from = CarbonImmutable::parse($batch->as_of)->subDays(90)->toDateString();
-        foreach ($batch->notices()->where('status', '!=', 'dismissed')->with('customer')->get() as $n) {
-            $reports[] = ['notice' => $n, 'r' => $this->reports->statement($n->customer_id, $from, $batch->as_of->toDateString())];
+        $from = CarbonImmutable::parse($asOf)->subDays(90)->toDateString();
+        foreach ($notices as $n) {
+            $reports[] = ['notice' => $n, 'r' => $this->reports->statement($n->customer_id, $from, $asOf)];
         }
 
-        return Pdf::loadView('reports.dunning-statements', ['batch' => $batch, 'items' => $reports, 'company' => Company::current()->name ?: config('erp.company')])
+        return Pdf::loadView('reports.dunning-statements', ['asOf' => $asOf, 'items' => $reports, 'company' => Company::current()->name ?: config('erp.company')])
             ->setPaper('letter')->output();
     }
 }

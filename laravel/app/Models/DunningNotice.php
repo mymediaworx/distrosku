@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-/** A draft overdue reminder. The ERP never sends it; staff review and send from their own mailbox. */
+/** An overdue reminder. A draft staff can print / download; with auto-email on (0.20.18) the daily job emails it (see email_* columns). */
 class DunningNotice extends Model
 {
     protected $guarded = ['id'];
@@ -13,7 +13,7 @@ class DunningNotice extends Model
 
     protected function casts(): array
     {
-        return ['invoices' => 'array', 'overdue_amount' => 'decimal:4', 'balance' => 'decimal:4'];
+        return ['emailed_at' => 'datetime', 'printed_at' => 'datetime', 'invoices' => 'array', 'overdue_amount' => 'decimal:4', 'balance' => 'decimal:4'];
     }
 
     public function batch()

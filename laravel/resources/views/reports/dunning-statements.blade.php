@@ -8,7 +8,7 @@ table{border-collapse:collapse;width:100%;margin-top:8px}td,th{border:1px solid 
 <div class="page">
 <h1>{{ $company }} · Statement</h1>
 <h2>{{ $it['notice']->customer->code }} {{ $it['notice']->customer->name }}</h2>
-<p>{{ $it['r']['period'] }} · as of {{ $batch->as_of->toDateString() }}</p>
+<p>{{ $it['r']['period'] }} · as of {{ $asOf }}</p>
 <div class="box"><strong>{{ $it['notice']->subject }}</strong><br>Past due: ${{ number_format((float) $it['notice']->overdue_amount, 2) }} · Account balance: ${{ number_format((float) $it['notice']->balance, 2) }}</div>
 <table><thead><tr>@foreach($it['r']['columns'] as $c)<th>{{ $c }}</th>@endforeach</tr></thead>
 <tbody>@foreach($it['r']['rows'] as $row)<tr>@foreach($row as $c)<td>{{ $c }}</td>@endforeach</tr>@endforeach</tbody>

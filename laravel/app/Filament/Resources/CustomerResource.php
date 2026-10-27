@@ -112,6 +112,8 @@ class CustomerResource extends Resource
                         ->formatStateUsing(fn ($state) => DeliveryDays::parse($state))->dehydrateStateUsing(fn ($state) => DeliveryDays::toCsv($state))->columnSpanFull(),
                     Forms\Components\Toggle::make('email_opt_in')->label('Email opt-in (marketing / notices)')
                         ->helperText('Drives email consent in BrandWorx Marketing. Off sets Email to DND there.'),
+                    Forms\Components\Toggle::make('dunning_email_optout')->label('Do not auto-email dunning notices')
+                        ->helperText('On = this customer\'s overdue notices are never emailed; they go to the Dunning print list instead.'),
                     Forms\Components\Toggle::make('sms_opt_in')->label('SMS opt-in')
                         ->helperText('Only with recorded consent (A2P 10DLC). Drives SMS consent in BrandWorx Marketing. Off sets SMS to DND there.'),
                 ])->columns(['default' => 1, 'md' => 2])->collapsible(),

@@ -80,6 +80,11 @@ class Settings extends Page implements HasForms
             $vals[$field] = $c->{$col};
         }
         $vals['logo_path'] = $c->logo_path;
+        if (static::canSeeSecrets()) { // 0.20.18: Email tab. The password is write-only: never filled back into the form.
+            $m = \App\Mailing\MailConfig::stored();
+            $vals += ['mail_host' => $m['mail_host'], 'mail_port' => $m['mail_port'], 'mail_encryption' => $m['mail_encryption'] ?: 'tls', 'mail_username' => $m['mail_username'],
+                'mail_from_address' => $m['mail_from_address'], 'mail_from_name' => $m['mail_from_name'], 'dunning_auto_email' => \App\Accounting\DunningMailer::enabled()];
+        }
         $vals['portal_enabled'] = PortalSettings::enabled();
         $vals['portal_disabled_message'] = Setting::get('portal_disabled_message');
         $this->form->fill($vals);
@@ -124,6 +129,22 @@ class Settings extends Page implements HasForms
                             Forms\Components\TextInput::make('authnet_transaction_key')->label('Transaction Key')->password()->revealable(false)->helperText($set('authnet_transaction_key')),
                             Forms\Components\TextInput::make('authnet_client_key')->label('Public Client Key (Accept.js)'),
                         ])->columns(3),
+                ]) : null,
+                $secrets ? Forms\Components\Tabs\Tab::make('Email')->icon('heroicon-o-envelope')->schema([
+                    Forms\Components\Section::make('Outgoing email (SMTP)')->description('Used for dunning notices and any other email the ERP sends. Saved here, these values win over the server\'s .env MAIL_* settings; leave the host blank to use .env. The password is stored encrypted and is never shown again.')->schema([
+                        Forms\Components\TextInput::make('mail_host')->label('SMTP host')->maxLength(190)->placeholder('mail.example.com'),
+                        Forms\Components\TextInput::make('mail_port')->label('Port')->numeric()->minValue(1)->maxValue(65535)->helperText('SSL: 465. TLS: 587.'),
+                        Forms\Components\Select::make('mail_encryption')->label('Encryption')->options(\App\Mailing\MailConfig::ENCRYPTIONS)->native(false)->selectablePlaceholder(false),
+                        Forms\Components\TextInput::make('mail_username')->label('Username')->maxLength(190)->autocomplete('off'),
+                        Forms\Components\TextInput::make('mail_password')->label(fn () => \App\Mailing\MailConfig::passwordIsSet() ? 'Replace password' : 'Password')->password()->revealable(false)->autocomplete('new-password')
+                            ->helperText(fn () => \App\Mailing\MailConfig::passwordIsSet() ? 'A password is set. Leave blank to keep it.' : 'No password saved.'),
+                        Forms\Components\TextInput::make('mail_from_address')->label('From address')->email()->maxLength(190),
+                        Forms\Components\TextInput::make('mail_from_name')->label('From name')->maxLength(190)->helperText('Shown as the sender, e.g. your company name.'),
+                    ])->columns(3),
+                    Forms\Components\Section::make('Dunning email')->description('Each morning at 07:00 the ERP emails overdue customers their notice with the statement PDF attached. Needs the normal scheduler cron. Customers with no email, or opted out, go to the print list on the Dunning page.')->schema([
+                        Forms\Components\Toggle::make('dunning_auto_email')->label('Auto-email dunning')
+                            ->helperText('Off by default. Turning it on only sends notices created from then on. Use "Send test email" first.'),
+                    ]),
                 ]) : null,
                 Forms\Components\Tabs\Tab::make('B2B Customer Portal')->icon('heroicon-o-globe-alt')->schema([
                     Forms\Components\Section::make('B2B Customer Portal')->description("Portal address: {$portalUrl}. {$contacts} contact(s) have portal access (set per customer contact; no emails are sent, a one-time password link is issued by an admin).")->schema([
@@ -191,7 +212,17 @@ class Settings extends Page implements HasForms
 
     protected function getHeaderActions(): array
     {
-        return [Action::make('token')->label(fn () => Company::current()->public_token ? 'Regenerate quick-tools link' : 'Generate quick-tools link')->icon('heroicon-o-link')
+        return [Action::make('test_email')->label('Send test email')->icon('heroicon-o-paper-airplane')->color('gray')
+            ->visible(fn () => static::canSeeSecrets())
+            ->modalDescription('Sends one message using the email settings as last saved (save first if you just changed them).')
+            ->form([Forms\Components\TextInput::make('to')->label('Send to')->email()->required()->maxLength(190)])
+            ->action(function (array $data) {
+                abort_unless(static::canSeeSecrets(), 403);
+                [$ok, $msg] = \App\Mailing\MailConfig::sendTest((string) $data['to']);
+                $n = Notification::make()->title($ok ? 'Test email sent' : 'Test email failed')->body($msg);
+                $ok ? $n->success()->send() : $n->danger()->persistent()->send();
+            }),
+            Action::make('token')->label(fn () => Company::current()->public_token ? 'Regenerate quick-tools link' : 'Generate quick-tools link')->icon('heroicon-o-link')
             ->requiresConfirmation()->modalDescription('Regenerating disables the old link immediately.')
             ->action(function () {
                 Company::current()->rotateToken();
@@ -201,8 +232,25 @@ class Settings extends Page implements HasForms
 
     public function save(): void
     {
-        $d = $this->form->getState();
+        try {
+            $d = $this->form->getState();
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            $this->data['mail_password'] = null; // never echo the typed password back
+            throw $e;
+        }
         $changed = null;
+        $mailKeys = array_merge(\App\Mailing\MailConfig::KEYS, ['dunning_auto_email']);
+        if (static::canSeeSecrets() && array_key_exists('mail_host', $d)) { // 0.20.18 Email tab (owner / Brandworx admin only)
+            \App\Mailing\MailConfig::save($d);
+            if (array_key_exists('dunning_auto_email', $d)) {
+                $before = \App\Accounting\DunningMailer::enabled();
+                \App\Accounting\DunningMailer::setEnabled((bool) $d['dunning_auto_email']);
+                if ($before !== (bool) $d['dunning_auto_email']) {
+                    \App\Audit\Audit::action('dunning_auto_email', null, 'Auto-email dunning turned '.($d['dunning_auto_email'] ? 'ON' : 'OFF'));
+                }
+            }
+        }
+        $d = array_diff_key($d, array_flip($mailKeys)); // handled above (or not allowed for this user): never through the generic loop
         if (array_key_exists('lot_track_departments', $d)) { // 0.20.15 (#36): lists, not scalar settings
             \App\Warehouse\LotTracking::save($d['lot_track_departments'] ?? [], $d['lot_track_tax_classes'] ?? []);
             $changed = ! empty($d['lot_track_apply_existing']) ? \App\Warehouse\LotTracking::applyToExisting() : null;

@@ -46,6 +46,8 @@ class ContactsRelationManager extends RelationManager
                 ->options(fn () => ShipTo::where('customer_id', $this->getOwnerRecord()->id)->get()->mapWithKeys(fn ($s) => [$s->id => "{$s->name} ({$s->state})"]))
                 ->placeholder('All ship-tos'),
             Forms\Components\Toggle::make('active')->default(true),
+            Forms\Components\Toggle::make('is_billing_contact')->label('Billing / AR contact')->default(false)
+                ->helperText('Overdue (dunning) emails go to billing contacts that have an email; if none, to the customer email, then the first contact with an email.'),
             Forms\Components\Toggle::make('is_portal_contact')->label('Portal contact')->default(false)
                 ->helperText('Portal access requires an email address.')
                 ->disabled(fn (Forms\Get $get) => blank($get('email')))
@@ -77,6 +79,7 @@ class ContactsRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('email')->searchable()->placeholder('—'),
                 Tables\Columns\TextColumn::make('shipTo.name')->label('Ship-to')->placeholder('All'),
                 Tables\Columns\IconColumn::make('is_portal_contact')->label('Portal')->boolean(),
+                Tables\Columns\IconColumn::make('is_billing_contact')->label('Billing')->boolean(),
                 Tables\Columns\IconColumn::make('active')->boolean(),
                 Tables\Columns\TextColumn::make('password')->label('Password set')->formatStateUsing(fn ($state) => $state ? 'yes' : 'no')->placeholder('no'),
                 Tables\Columns\TextColumn::make('last_login_at')->dateTime()->placeholder('never'),

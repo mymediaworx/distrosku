@@ -52,7 +52,7 @@ class Customer extends Model
         return [
             'active' => 'boolean',
             'msa_promo_acceptance' => 'boolean',
-            'email_opt_in' => 'boolean', 'sms_opt_in' => 'boolean', 'ghl_synced_at' => 'datetime',
+            'dunning_email_optout' => 'boolean', 'email_opt_in' => 'boolean', 'sms_opt_in' => 'boolean', 'ghl_synced_at' => 'datetime',
             'ghl_tags' => 'array', 'ghl_dnd' => 'boolean', 'ghl_opportunity_value' => 'decimal:2', 'ghl_contact_updated_at' => 'datetime',
             'contact_fields_updated_at' => 'datetime', 'accept_marketing_contact_updates' => 'boolean', 'ghl_created_by_erp' => 'boolean',
             'credit_limit' => 'decimal:2',

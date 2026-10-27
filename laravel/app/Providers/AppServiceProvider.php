@@ -40,6 +40,7 @@ class AppServiceProvider extends ServiceProvider
         // A remembered 'all' is not in these options, so Filament drops it and falls back to the default.
         \Filament\Tables\Table::configureUsing(fn (\Filament\Tables\Table $t) => $t->striped()
             ->paginationPageOptions(self::TABLE_PAGE_OPTIONS)->defaultPaginationPageOption(25));
+        \App\Mailing\MailConfig::apply(); // 0.20.18: SMTP saved in Company Settings > Email wins over .env MAIL_*
         \App\Marketing\MarketingEvents::register(); // 0.19 BrandWorx Marketing hooks (no-ops when off)
         // dompdf resolves base_path('public') unless told otherwise; on SiteGround the web root is ../public_html
         // and laravel/public does not exist -> "Cannot resolve public path" -> every PDF 500s. Point it at the real web root.

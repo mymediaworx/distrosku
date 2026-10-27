@@ -28,6 +28,7 @@ if (is_file(base_path('.env')) || app()->configurationIsCached() || app()->runni
     Schedule::command('marketing:reconcile')->dailyAt('02:45')->withoutOverlapping(); // 0.19.2: nightly, NEW (unlinked) customers only
     Schedule::command('warehouse:cycle-plan')->dailyAt('05:30')->withoutOverlapping(); // 0.20.17 daily/weekly cycle count tasks
     Schedule::command('po:inbound-digest')->dailyAt('06:30')->withoutOverlapping(); // 0.20.1 receiving-team morning digest
+    Schedule::command('dunning:send')->dailyAt('07:00')->withoutOverlapping(); // 0.20.18 auto-email dunning (no-op while the setting is off)
     Schedule::command('marketing:invoice-events')->dailyAt('07:00')->withoutOverlapping(); // 0.19 (no-op when BrandWorx Marketing is off)
 
     // 0.20.8: suspended by the instance manager = pause every scheduled job and alert (queue included). Backups keep running.
@@ -144,3 +145,16 @@ Artisan::command('warehouse:cycle-plan {--force : generate for today even if alr
     $n = $this->option('force') ? $p->generateAll() : $p->ensureCurrent();
     $this->info("Cycle count plan: {$n} task(s) created.");
 })->purpose('Generate the daily/weekly cycle count tasks (0.20.17)');
+
+// 0.20.18: automatic dunning email. Does nothing unless Company Settings > Email > Auto-email dunning is ON and a real mail server is set up.
+Artisan::command('dunning:send {--as-of= : date (default today)}', function () {
+    $r = app(\App\Accounting\DunningMailer::class)->runDaily($this->option('as-of') ?: null);
+    if ($r['skipped']) {
+        $this->line($r['skipped']);
+
+        return 0;
+    }
+    $this->info("Dunning email: {$r['created']} new notice(s); {$r['sent']} sent, {$r['failed']} failed (retry next run), {$r['print']} on the print list, {$r['duplicate']} duplicate stage(s) skipped, {$r['not_due']} no longer due.");
+
+    return 0;
+})->purpose('0.20.18: make today\'s dunning notices and email them (statement PDF attached)');

@@ -1,7 +1,25 @@
-# Vega ERP — Phase 20.17 UPGRADE (existing install at vegatest1.distrosku.com)
+# Vega ERP — Phase 20.18 UPGRADE (existing install at vegatest1.distrosku.com)
 
 For a site already installed from `vega-erp-phase1.zip` and upgraded through phase 3 (a phase-2 site can also take this zip: seeders are cumulative). TEST data only. No secrets in this package.
 This zip contains **no `laravel/.env` and no `laravel/storage/`**, so extracting it over the live site keeps both.
+
+## What's new in 0.20.18 (includes everything through 0.20.17)
+
+**Automatic dunning email + editable email settings (#47). One additive, re-runnable migration. A cron is required (already used by this site); `.env` mail keys are optional if you save them in the app. No secrets are in this package.**
+
+- **Auto-email dunning:** a scheduled job (`dunning:send`, daily **07:00**) makes the day's dunning notices (same stages, days-late rules and 14-day no-repeat rule as before) and **emails each one** through Laravel mail with the customer's **statement PDF attached**. Run it by hand with `php artisan dunning:send`, or use **Email pending notices now** on the Dunning page.
+  - **Off by default.** Turn it on in *Company Settings → Email → Auto-email dunning*. Only notices created after it is switched on are ever emailed (existing drafts are left alone).
+  - **Who gets it:** the customer's *active* contacts that have an email, preferring those marked **Billing / AR contact** (new flag on the contact); if none is marked, the customer's email; if that is blank, the first contact with an email.
+  - **No duplicates:** a customer is emailed once per dunning stage (90-day quiet period per stage); a repeat is marked "Stage already sent" and skipped.
+  - **Print list:** customers with no email address, and customers with **Do not auto-email dunning notices** ticked (new customer opt-out), are not emailed; they appear on the Dunning page print list (filter *Print list*, count in the intro, **Print list PDF** button which marks them printed).
+  - **Failures** are recorded on the notice (error text, no credentials) and **retried on every run** (up to 5 attempts; then they join the print list).
+  - **Logging:** every attempt writes a customer History entry (who/when/to/stage/result; "System (scheduled dunning email)" for the job) and the Dunning list shows Email status / Emailed columns.
+  - The "Email is not configured" notice stays, and nothing is sent, while the server mailer is log/array/local.
+- **Company Settings → Email tab (owner / Brandworx admin only):** SMTP host, port, encryption (**SSL/SMTPS** for port 465, **TLS** (STARTTLS) for 587, or none), username, password, from address, from name, the Auto-email toggle, and **Send test email** (to an address you type; shown in the page header). **The password is stored encrypted and is never displayed back**: the field shows "A password is set" and a blank save keeps it; type a new one to replace it. Saved values win over `.env` `MAIL_*`; leave the host blank to fall back to `.env`. Applies to dunning and every other email the ERP sends. Changes are in the audit log (`mail_settings`) **without** the password.
+- **`.env` (only if you do not save the settings in the app):** `MAIL_MAILER` (smtp), `MAIL_SCHEME` (smtps for port 465, else blank), `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_FROM_ADDRESS`, `MAIL_FROM_NAME`. Add them to the server's `.env` yourself; this package contains no values (`.env.example` has blank placeholders). Blank `.env` values fall back to safe defaults.
+- **Requires the normal Laravel scheduler cron (`schedule:run`, already used by this site).**
+- **Migration** (re-runnable): `2026_11_28_000001_phase2018_dunning_email` adds `customers.dunning_email_optout`, `customer_contacts.is_billing_contact` and the email tracking columns on `dunning_notices`.
+- **No new PHP extensions.**
 
 ## What's new in 0.20.17 (includes everything through 0.20.16)
 
@@ -12,7 +30,7 @@ This zip contains **no `laravel/.env` and no `laravel/storage/`**, so extracting
 - **Purchasing:** *Vendor bills*, *Vendor payments* and *AP aging* moved into the Purchasing group.
 - **Vendor item numbers** are tied to a product (they always were a required product link; there are no unlinked rows to migrate). Product pages now show a **Vendor item numbers** tab; the vendor-side picker uses the standard product search.
 - **One product picker everywhere:** sales orders, purchase orders, customer special prices, and the Products and Departments lists use the same search (name / SKU / barcode / vendor item number, scan field, browse by department or vendor, thumbnails, add several at once).
-- **Dunning:** it never sends email, so it does **not** need SMTP. Notices are drafts: download as an unsent `.eml`, print the statement batch PDF, or print a single notice (**Print / PDF**). The page shows an "Email is not configured" notice when the mail transport is log/array/local. No mail credentials are set by this release.
+- **Dunning:** *(0.20.17 behaviour; superseded in 0.20.18, which can email notices, see above)* it never sent email, so it did not need SMTP. Notices are drafts: download as an unsent `.eml`, print the statement batch PDF, or print a single notice (**Print / PDF**). The page shows an "Email is not configured" notice when the mail transport is log/array/local. No mail credentials are set by this release.
 - **Counter Pickup Board TV view:** a *Full screen (TV)* button opens a navigation-free page in a new window (auto-refreshes every 30 s, read-only; optional warehouse filter).
 - **Cycle count plan (Warehouse hub):** a daily or weekly plan picks products to count, ranked by past discrepancies, high-risk categories (tax classes / departments you set), ABC class by 90-day sales value, and days since last counted (A 30 d, B 90 d, C 180 d, high-risk 14 d). The hub shows **Today's cycle counts** with take / skip / **Count** (one blind cycle count through the existing count screen; submit, approve and post are unchanged). Plan settings are in Company Settings → Warehouse. Tasks are created when the hub is opened or by the scheduled `warehouse:cycle-plan` command (05:30; `--force` to run now). **Requires the normal Laravel scheduler cron (`schedule:run`, already used by this site).**
 - **KY chew tobacco tax = 15% of wholesale** (replaces the per-unit weight rates incl. $0.19 per 4 oz). Seeded as a `chew_percent` tax rate (re-runnable; never overwrites an edited row) with effective date **2026-11-01, flagged "needs verification"** (set `KY_CHEW_PCT_EFFECTIVE` before seeding, or edit the rate in Tax rates). PO receipts on/after that date accrue 15% of receipt qty x unit cost; earlier dates and already-accrued journals keep the old rates. Posted invoices are unaffected (sales invoices carry no excise). The 73A422 report shows a **C%** line. The XML chew StateDesc codes are unchanged pending confirmation of the new MyTaxes codes.
@@ -490,7 +508,7 @@ then send the log to BrandWorx. If the upgrade file did not delete itself, delet
 - **Financial statements** (CSV/PDF, compare with prior period or same period last year): `/admin/accounting/trial-balance`, `/profit-loss`, `/balance-sheet`, `/cash-flow`.
 - **Period close** (`/admin/accounting/periods`): closed months refuse every posting; admin reopen requires a reason; audit log on the page.
 - **Dunning** (`/admin/accounting/dunning`): levels (default 1 / 30 / 60 days past due; due = invoice date + Net N terms), *Run dunning* makes a batch of **draft** notices and a
-  statement-batch PDF. **Nothing is emailed** — download a notice as an unsent .eml draft and send it from your own mailbox.
+  statement-batch PDF. Notices are drafts you can download as an unsent .eml, **or** (0.20.18, off by default) emailed automatically at 07:00 with the statement PDF attached, see *What's new in 0.20.18*.
 - **Manual journal entry** (Accounting > Journals > *Manual entry*), admin only, balanced, open period only.
 
 ## What's new (phase 7) - MSA MULTICAT weekly file (.TOB)

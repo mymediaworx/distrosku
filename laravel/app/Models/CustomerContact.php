@@ -19,7 +19,7 @@ class CustomerContact extends Authenticatable
     {
         return [
             'active' => 'boolean',
-            'is_portal_contact' => 'boolean',
+            'is_portal_contact' => 'boolean', 'is_billing_contact' => 'boolean',
             'password' => 'hashed',
             'setup_token_expires_at' => 'datetime',
             'last_login_at' => 'datetime',
