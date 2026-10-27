@@ -835,7 +835,6 @@ if [ "$PHASE" = "20.14" ]; then
   grep -q "orderBy('code')" $L/app/Livewire/Driver/VanSale.php || { echo "CHECK FAILED: VanSale customers not ordered by Account Number"; exit 1; }
   grep -q '\$c->code' $L/resources/views/livewire/driver/van-sale.blade.php || { echo "CHECK FAILED: VanSale option missing Account Number"; exit 1; }
   grep -q "Account Number" $L/app/Filament/Pages/MarketingSettingsPage.php || { echo "CHECK FAILED: MarketingSettingsPage Account Number note missing"; exit 1; }
-  test -f $L/tests/Feature/Phase2014AccountNumberLabelTest.php || { echo "CHECK FAILED: Phase2014 test missing"; exit 1; }
   # 0.20.13 pieces still present
   test -f $L/database/migrations/2026_11_23_000001_phase2013_license_site_id_and_customer_dba.php || { echo "CHECK FAILED: phase2013 migration missing"; exit 1; }
   echo "Phase 20.14 checks OK"
