@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'version' => '0.20.16',
+    'version' => '0.20.17',
     // 0.20.16: 0.20.15 + test suite brought in line with 0.20.13 behaviour (no app code changes).
     // 0.20.15: lot traceability (#36) — GS1 receiving, COA per lot, tracking by product type, lot on sale lines, Needs review, Trace.
     // 0.20.14: customer Code → Account Number label (column unchanged). Includes 0.20.13: KY Site ID, DBA, Customer Contacts / portal flag, mid-form tabs, beginning balance 2dp, special-price lookup.

@@ -106,6 +106,10 @@ class CycleCountPlanner
     public function generate(Warehouse $wh, ?CarbonImmutable $date = null, ?int $limit = null): Collection
     {
         $date ??= CarbonImmutable::today();
+        $existing = CycleCountTask::where('warehouse_id', $wh->id)->whereDate('task_date', $date->toDateString())->get();
+        if ($existing->isNotEmpty()) {
+            return $existing; // already planned for this date: re-running never adds more
+        }
         $limit ??= self::size() * (self::frequency() === 'weekly' ? 5 : 1);
         $ranked = $this->rank($wh, $date)->take($limit);
         $made = collect();

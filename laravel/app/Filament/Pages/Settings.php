@@ -68,6 +68,9 @@ class Settings extends Page implements HasForms
             'count_auto_approve_value' => Setting::get('count_auto_approve_value', 25), 'count_auto_approve_pct' => Setting::get('count_auto_approve_pct', 2),
             'pact_interstate_enabled' => (bool) Setting::get('pact_interstate_enabled'), 'msa_directory_strict' => (bool) Setting::get('msa_directory_strict'), 'coa_expiry_warn_days' => Setting::get('coa_expiry_warn_days', 30),
             'pos_hold_days' => Setting::get('pos_hold_days', 7),
+            'cycle_plan_enabled' => \App\Warehouse\CycleCountPlanner::enabled(), 'cycle_plan_frequency' => \App\Warehouse\CycleCountPlanner::frequency(),
+            'cycle_plan_weekday' => (string) \App\Warehouse\CycleCountPlanner::weekday(), 'cycle_plan_size' => \App\Warehouse\CycleCountPlanner::size(),
+            'cycle_plan_high_risk_classes' => implode(', ', \App\Warehouse\CycleCountPlanner::highRiskClasses()), 'cycle_plan_high_risk_departments' => (string) Setting::get('cycle_plan_high_risk_departments'),
             'lot_track_departments' => \App\Warehouse\LotTracking::departments(), 'lot_track_tax_classes' => \App\Warehouse\LotTracking::taxClasses(), 'lot_track_apply_existing' => false];
         foreach (array_keys(KyTobaccoXml::filerSettingKeys()) as $k) {
             $vals[$k] = Setting::get($k);
@@ -145,6 +148,14 @@ class Settings extends Page implements HasForms
                         Forms\Components\TextInput::make('pos_hold_days')->label('POS: held sales expire after (days)')->integer()->minValue(1)->maxValue(90)
                             ->helperText('Held (parked) POS sales are removed after this many days; each removal is logged.'),
                         Forms\Components\TextInput::make('count_auto_approve_pct')->label('Count: auto-approve variance up to % of expected per line')->numeric()->minValue(0)->maxValue(100),
+                    ])->columns(2),
+                    Forms\Components\Section::make('Cycle count plan')->description('Builds the day\'s (or week\'s) cycle count tasks for the Warehouse hub. Counts post through the normal count approval; nothing here changes stock by itself.')->schema([
+                        Forms\Components\Toggle::make('cycle_plan_enabled')->label('Generate cycle count tasks'),
+                        Forms\Components\Select::make('cycle_plan_frequency')->label('Frequency')->options(['daily' => 'Daily', 'weekly' => 'Weekly'])->native(false)->required(),
+                        Forms\Components\Select::make('cycle_plan_weekday')->label('Weekly run day')->options([1 => 'Monday', 2 => 'Tuesday', 3 => 'Wednesday', 4 => 'Thursday', 5 => 'Friday', 6 => 'Saturday', 7 => 'Sunday'])->native(false),
+                        Forms\Components\TextInput::make('cycle_plan_size')->label('Items per day (x5 when weekly)')->integer()->minValue(1)->maxValue(500),
+                        Forms\Components\TextInput::make('cycle_plan_high_risk_classes')->label('High-risk tax classes (comma list)')->helperText('Counted at least every 14 days. Default: cigarette_stamped, snuff_chew, vapor.'),
+                        Forms\Components\TextInput::make('cycle_plan_high_risk_departments')->label('High-risk departments (comma list of names)'),
                     ])->columns(2),
                     Forms\Components\Section::make('Lot tracking by product type')->description('New products in these departments or tax classes are lot-tracked automatically (a product can still be switched off). Receiving also has a "Track lots for this item" box.')
                         ->schema([

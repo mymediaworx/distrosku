@@ -87,6 +87,12 @@ class LicensesRelationManager extends RelationManager
                 ? Forms\Components\Select::make('ship_to_id')->label('Ship-to (blank = all)')->relationship('shipTo', 'name')->searchable()
                 : Forms\Components\Select::make('ship_to_id')->label('Ship-to (blank = all)')
                     ->options(fn (RelationManager $livewire) => $livewire->getOwnerRecord()->shipTos()->pluck('name', 'id'))->searchable(),
+            Forms\Components\Textarea::make('research_note')->label('Research note')->rows(2)->columnSpanFull()
+                ->helperText('Where you verified this license (KY ABC lookup, phone call, etc.).'),
+            Forms\Components\FileUpload::make('documents')->label('License documents (PDF / images)')->multiple()
+                ->disk('local')->directory('license-documents')->visibility('private')
+                ->acceptedFileTypes(['application/pdf', 'image/jpeg', 'image/png'])->maxSize(10240)
+                ->downloadable()->openable()->reorderable()->columnSpanFull(),
             Forms\Components\Placeholder::make('proof_hint')->hiddenLabel()
                 ->content('Enter a Site ID and/or License #. For Kentucky, either counts as a valid license.'),
         ]));
@@ -108,6 +114,7 @@ class LicensesRelationManager extends RelationManager
                     ->copyMessage('Site ID copied'),
                 Tables\Columns\TextColumn::make('number')->label('License #')->searchable()->placeholder('—'),
                 Tables\Columns\TextColumn::make('state')->visibleFrom('sm'),
+                Tables\Columns\TextColumn::make('documents')->label('Docs')->state(fn ($record) => count($record->documents ?? []) ?: null)->placeholder('—')->badge()->visibleFrom('md'),
                 Tables\Columns\TextColumn::make('shipTo.name')->label('Ship-to')->placeholder('All')->visibleFrom('md'),
                 Tables\Columns\TextColumn::make('expires_at')->label('Expires')->date()->sortable()
                     ->color(fn ($record) => $record->expires_at && $record->expires_at->isPast() ? 'danger'

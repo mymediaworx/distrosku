@@ -18,6 +18,7 @@ class CustomerLicense extends Model
     {
         return [
             'expires_at' => 'date',
+            'documents' => 'array',
         ];
     }
 
