@@ -186,6 +186,12 @@ class Product extends Model
     /** PACT covered defaults on for cigarette / RYO / smokeless / vapor unless set explicitly. */
     protected static function booted(): void
     {
+        // 0.20.15 (#36): new products in a lot-tracked department / tax class inherit tracking (can be switched off per product after).
+        static::creating(function (Product $p) {
+            if (! $p->track_lots && \App\Warehouse\LotTracking::appliesTo($p)) {
+                $p->track_lots = true;
+            }
+        });
         static::saving(function (Product $p) {
             $cls = $p->tax_class instanceof \BackedEnum ? $p->tax_class->value : $p->tax_class;
             $explicit = $p->exists ? $p->isDirty('pact_covered') : array_key_exists('pact_covered', $p->getAttributes());

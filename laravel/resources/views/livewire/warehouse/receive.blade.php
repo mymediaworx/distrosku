@@ -4,6 +4,9 @@
         @if($session && $session->status === 'open')
             <div class="row"><label>Lot <input wire:model="lot" placeholder="lot # (lot-tracked items)" data-test="lot"></label>
                 <label>Expires <input type="date" wire:model="expires" data-test="expires"></label>
+                <label><input type="checkbox" wire:model="trackLots" data-test="track-lots"> Track lots for this item</label>
+                @if($coas->isNotEmpty())<label>COA <select wire:model="coaId" data-test="coa"><option value="">none</option>@foreach($coas as $c)<option value="{{ $c->id }}">{{ $c->product->sku }} · {{ $c->lab ?? 'COA' }} {{ $c->batch_lot }} {{ $c->tested_on?->toDateString() }}</option>@endforeach</select></label>@endif
+                <span class="pill">GS1 scans fill lot + expiry</span>
                 @php($pct = \App\Services\PurchaseOrderService::allowancePct($po))@if((float) $pct > 0)<span class="pill">Over-receipt allowance {{ (float) $pct }}%</span>@endif</div>
             @include('livewire.warehouse.scanbox', ['action' => 'add'])
         @else

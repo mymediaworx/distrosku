@@ -38,6 +38,9 @@ class CoasRelationManager extends RelationManager
                 ->storeFileNamesIn('original_name')->downloadable(false)->columnSpanFull(),
             Forms\Components\TextInput::make('lab')->maxLength(190),
             Forms\Components\TextInput::make('batch_lot')->label('Batch / lot')->maxLength(100),
+            Forms\Components\Select::make('lot_id')->label('Linked lot (0.20.15)')->searchable()->nullable()
+                ->options(fn () => \App\Models\Lot::where('product_id', $this->getOwnerRecord()->id)->orderByDesc('id')->limit(300)->pluck('lot_number', 'id')->all())
+                ->helperText('Links this COA to a received lot, so the lot no longer shows "COA missing".'),
             Forms\Components\DatePicker::make('tested_on')->label('Test date'),
             Forms\Components\DatePicker::make('expires_on')->label('Expires')->afterOrEqual('tested_on'),
             Forms\Components\TextInput::make('thc_total_mg')->label('Total THC on COA (mg/container)')->numeric()->minValue(0),
@@ -51,6 +54,7 @@ class CoasRelationManager extends RelationManager
             ->columns([
                 Tables\Columns\TextColumn::make('lab'),
                 Tables\Columns\TextColumn::make('batch_lot')->label('Batch / lot')->searchable(),
+                Tables\Columns\TextColumn::make('lot.lot_number')->label('Lot')->placeholder('not linked'),
                 Tables\Columns\TextColumn::make('tested_on')->label('Tested')->date(),
                 Tables\Columns\TextColumn::make('expires_on')->label('Expires')->date(),
                 Tables\Columns\TextColumn::make('status')->label('Status')->badge()

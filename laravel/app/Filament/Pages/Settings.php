@@ -46,7 +46,8 @@ class Settings extends Page implements HasForms
             'reorder_cover_days' => Setting::get('reorder_cover_days', 14),
             'count_auto_approve_value' => Setting::get('count_auto_approve_value', 25), 'count_auto_approve_pct' => Setting::get('count_auto_approve_pct', 2),
             'pact_interstate_enabled' => (bool) Setting::get('pact_interstate_enabled'), 'msa_directory_strict' => (bool) Setting::get('msa_directory_strict'), 'coa_expiry_warn_days' => Setting::get('coa_expiry_warn_days', 30),
-            'pos_hold_days' => Setting::get('pos_hold_days', 7)];
+            'pos_hold_days' => Setting::get('pos_hold_days', 7),
+            'lot_track_departments' => \App\Warehouse\LotTracking::departments(), 'lot_track_tax_classes' => \App\Warehouse\LotTracking::taxClasses(), 'lot_track_apply_existing' => false];
         foreach (array_keys(KyTobaccoXml::filerSettingKeys()) as $k) {
             $vals[$k] = Setting::get($k);
         }
@@ -87,6 +88,13 @@ class Settings extends Page implements HasForms
                     ->helperText('Held (parked) POS sales are removed after this many days; each removal is logged.'),
                 Forms\Components\TextInput::make('count_auto_approve_pct')->label('Count: auto-approve variance up to % of expected per line')->numeric()->minValue(0)->maxValue(100),
             ])->columns(2),
+            Forms\Components\Section::make('Lot tracking by product type')->description('New products in these departments or tax classes are lot-tracked automatically (a product can still be switched off). Receiving also has a "Track lots for this item" box.')
+                ->schema([
+                    Forms\Components\CheckboxList::make('lot_track_departments')->label('Departments')->options(fn () => \App\Models\Department::orderBy('name')->pluck('name', 'id')->all())->columns(3),
+                    Forms\Components\CheckboxList::make('lot_track_tax_classes')->label('Tax classes')
+                        ->options(collect(\App\Enums\TaxClass::cases())->mapWithKeys(fn ($c) => [$c->value => method_exists($c, 'label') ? $c->label() : $c->value])->all())->columns(3),
+                    Forms\Components\Toggle::make('lot_track_apply_existing')->label('Also switch tracking on for existing products in these types (never switches it off)'),
+                ])->collapsible(),
             Forms\Components\Section::make('PACT Act and MSA directories')->schema([
                 Forms\Components\Toggle::make('pact_interstate_enabled')->label('Allow out-of-state PACT shipments (needs current ATF + state PACT registrations)')
                     ->helperText('Off = PACT items cannot ship outside the home state (previous behaviour).'),
@@ -100,13 +108,21 @@ class Settings extends Page implements HasForms
     public function save(): void
     {
         $d = $this->form->getState();
+        $changed = null;
+        if (array_key_exists('lot_track_departments', $d)) { // 0.20.15 (#36): lists, not scalar settings
+            \App\Warehouse\LotTracking::save($d['lot_track_departments'] ?? [], $d['lot_track_tax_classes'] ?? []);
+            $changed = ! empty($d['lot_track_apply_existing']) ? \App\Warehouse\LotTracking::applyToExisting() : null;
+            $d['lot_track_apply_existing'] = false;
+        }
+        $lists = array_intersect_key($d, array_flip(['lot_track_departments', 'lot_track_tax_classes', 'lot_track_apply_existing']));
+        $d = array_diff_key($d, $lists);
         foreach ($d as $k => $v) {
             if (in_array($k, self::SECRETS, true) && ($v === null || $v === '')) {
                 continue; // write-only: blank keeps the stored secret
             }
             Setting::put($k, $v === null ? null : trim((string) $v));
         }
-        $this->form->fill(array_merge($d, array_fill_keys(self::SECRETS, null)));
-        Notification::make()->success()->title('Settings saved (encrypted)')->send();
+        $this->form->fill(array_merge($d, $lists, array_fill_keys(self::SECRETS, null)));
+        Notification::make()->success()->title('Settings saved (encrypted)')->body($changed !== null ? "Lot tracking switched on for {$changed} existing product(s)." : null)->send();
     }
 }

@@ -87,7 +87,8 @@ final class OfflineSaleSync
                 'tender' => $sale['tender'], 'signature' => $sale['signature'] ?? null,
                 'order_date' => ($row->sold_at ?? now())->timezone(config('app.timezone'))->toDateString(),
                 'credit_override_reason' => $creditReason,
-                'lines' => array_map(fn ($l) => ['product_id' => (int) $l['product_id'], 'qty' => $l['qty'], 'price' => $l['price']], $sale['lines']),
+                'lines' => array_map(fn ($l) => ['product_id' => (int) $l['product_id'], 'qty' => $l['qty'], 'price' => $l['price'],
+                    'lot_id' => ! empty($l['lot_id']) ? (int) $l['lot_id'] : null], $sale['lines']),
             ], $creditOverrideBy);
         } catch (ComplianceException $e) {
             return $this->review($row, ['Compliance check failed on the server: '.$this->complianceText($e)]);
@@ -134,6 +135,7 @@ final class OfflineSaleSync
             'lines.*.product_id' => 'required|integer|exists:products,id',
             'lines.*.qty' => 'required|numeric|gt:0|max:1000000',
             'lines.*.price' => 'required|numeric|min:0|max:1000000',
+            'lines.*.lot_id' => 'nullable|integer|exists:lots,id', // 0.20.15 (#36)
             'fulfillment' => 'nullable|in:pickup,delivery',
             'ship_to_id' => 'nullable|integer',
             'sold_at' => 'nullable|date',

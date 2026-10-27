@@ -1,7 +1,19 @@
-# Vega ERP — Phase 20.14 UPGRADE (existing install at vegatest1.distrosku.com)
+# Vega ERP — Phase 20.15 UPGRADE (existing install at vegatest1.distrosku.com)
 
 For a site already installed from `vega-erp-phase1.zip` and upgraded through phase 3 (a phase-2 site can also take this zip: seeders are cumulative). TEST data only. No secrets in this package.
 This zip contains **no `laravel/.env` and no `laravel/storage/`**, so extracting it over the live site keeps both.
+
+## What's new in 0.20.15 (includes everything through 0.20.14)
+
+**Lot traceability (#36). One migration; stock quantities and GL postings work exactly as before.**
+
+- **Receiving:** GS1 barcodes (e.g. `(01)…(17)YYMMDD(10)LOT` or raw scanner output) fill lot and expiry automatically; typed values win. A **Track lots for this item** box turns lot tracking on for an item the first time it is received, and a **COA** picker links an existing certificate to the received lot.
+- **COAs per lot:** COAs can be linked to a lot (Products → COAs → Lot). The free-text `batch_lot` stays. Hemp/cannabinoid lots with no COA show **COA missing** on Lots (filter: "Hemp lots with COA missing").
+- **Tracking by product type:** Settings → *Lot tracking by product type* picks departments and tax classes. New products in those inherit lot tracking (can be switched off per product). "Apply to existing products" only turns tracking on.
+- **Lots on sales:** POS, van and offline sales accept an optional lot per line. If exactly one lot is on hand it is assigned automatically; otherwise the line goes to **Lots: needs review** (the sale is never blocked). Choose the lot there, or resolve with a note.
+- **Trace:** Lots → Trace searches by lot number, SKU/UPC, or order/PO number; shows received, sold-to, on hand and COAs; lets admins put a lot on hold; exports CSV; logs customer contacts (who, when, how).
+- **Migration** `2026_11_24_000001_phase2015_traceability` (re-runnable). Run the upgrade page as usual.
+- **No new PHP extensions, `.env` settings or cron changes.**
 
 ## What's new in 0.20.14 (includes everything through 0.20.13)
 

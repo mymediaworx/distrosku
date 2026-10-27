@@ -21,6 +21,12 @@ class Receive extends Component
 
     public string $expires = '';
 
+    /** 0.20.15 (#36): switch lot tracking on for the scanned item from this receipt on. */
+    public bool $trackLots = false;
+
+    /** 0.20.15 (#36): COA to link to the lot being received. */
+    public ?int $coaId = null;
+
     public function mount(PurchaseOrder $po): void
     {
         $this->authorizeScan();
@@ -38,9 +44,13 @@ class Receive extends Component
     {
         $this->authorizeScan();
         $this->attempt(function () {
-            $r = app(WarehouseService::class)->scanReceive($this->session(), $this->scan, $this->qty, $this->lot ?: null, $this->expires ?: null);
+            $r = app(WarehouseService::class)->scanReceive($this->session(), $this->scan, $this->qty, $this->lot ?: null, $this->expires ?: null, $this->trackLots, $this->coaId ?: null);
+            if ($r['lot'] && $r['lot'] !== $this->lot) { // GS1 scan filled them
+                $this->lot = $r['lot'];
+                $this->expires = (string) ($r['expires'] ?? $this->expires);
+            }
 
-            return "+{$r['qty']} {$r['product']->sku}".($r['product']->track_lots ? " lot {$this->lot}" : '')." · {$r['remaining']} left"
+            return "+{$r['qty']} {$r['product']->sku}".($r['product']->track_lots ? " lot {$r['lot']}".($r['expires'] ? " exp {$r['expires']}" : '') : '')." · {$r['remaining']} left"
                 .($r['over'] ? " · OVER-RECEIPT {$r['over']} (within allowance, logged)" : '');
         });
     }
@@ -70,6 +80,8 @@ class Receive extends Component
     {
         $s = $this->session();
 
-        return view('livewire.warehouse.receive', ['rows' => $s ? app(WarehouseService::class)->receivingStatus($s) : [], 'session' => $s]);
+        $coas = \App\Models\ProductCoa::with('product')->whereIn('product_id', $this->po->lines()->pluck('product_id'))->whereNull('lot_id')->latest('id')->limit(100)->get();
+
+        return view('livewire.warehouse.receive', ['rows' => $s ? app(WarehouseService::class)->receivingStatus($s) : [], 'session' => $s, 'coas' => $coas]);
     }
 }

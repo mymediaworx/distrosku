@@ -1,7 +1,8 @@
 <?php
 
 return [
-    'version' => '0.20.14',
+    'version' => '0.20.15',
+    // 0.20.15: lot traceability (#36) — GS1 receiving, COA per lot, tracking by product type, lot on sale lines, Needs review, Trace.
     // 0.20.14: customer Code → Account Number label (column unchanged). Includes 0.20.13: KY Site ID, DBA, Customer Contacts / portal flag, mid-form tabs, beginning balance 2dp, special-price lookup.
     // 0.20.12: admin tables offer 10/25/50/100 per page (no 'All'); big-table selects search instead of preloading.
     // 0.20.11 (#26): an offline sale goes to Needs review when a line is priced below cost, or more than this % below the

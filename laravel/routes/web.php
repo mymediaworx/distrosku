@@ -33,6 +33,7 @@ Route::middleware(['auth', BlockWhenSuspended::class])->prefix('warehouse')->nam
     Route::get('/print/label/{package}', [\App\Http\Controllers\WarehousePrintController::class, 'label'])->name('print.label');
     Route::get('/print/bin-labels', [\App\Http\Controllers\WarehousePrintController::class, 'binLabels'])->name('print.bins');
     Route::get('/recall.csv', [\App\Http\Controllers\WarehousePrintController::class, 'recall'])->name('recall.csv');
+    Route::get('/trace.csv', [\App\Http\Controllers\WarehousePrintController::class, 'trace'])->name('trace.csv'); // 0.20.15 (#36)
     Route::get('/print/pick/{so}', [\App\Http\Controllers\WarehousePrintController::class, 'pick'])->name('print.pick');
     Route::get('/print/pack/{so}', [\App\Http\Controllers\WarehousePrintController::class, 'pack'])->name('print.pack');
 });

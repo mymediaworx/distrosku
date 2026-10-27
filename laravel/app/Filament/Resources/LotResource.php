@@ -5,7 +5,6 @@ namespace App\Filament\Resources;
 use App\Filament\Concerns\RoleGated;
 use App\Filament\Resources\LotResource\Pages;
 use App\Models\Lot;
-use App\Models\LotMovement;
 use App\Warehouse\LotService;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
@@ -71,6 +70,8 @@ class LotResource extends Resource
                     ->color(fn (Lot $r) => ! $r->expires_on ? 'gray' : ($r->expires_on->isPast() ? 'danger' : ($r->expires_on->lte(now()->addDays($days)) ? 'warning' : 'success'))),
                 Tables\Columns\TextColumn::make('on_hand')->label('On hand')->state(fn (Lot $r) => (float) $r->stocks->sum('qty'))->numeric(2),
                 Tables\Columns\IconColumn::make('on_hold')->boolean()->label('Hold'),
+                Tables\Columns\TextColumn::make('coa')->label('COA')->badge()->state(fn (Lot $r) => $r->product?->hasCannabinoid() ? ($r->coaMissing() ? 'COA missing' : 'COA on file') : '')
+                    ->color(fn (string $state) => $state === 'COA missing' ? 'danger' : 'success'),
                 Tables\Columns\TextColumn::make('created_at')->label('First received')->date()->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
@@ -78,16 +79,18 @@ class LotResource extends Resource
                 Tables\Filters\Filter::make('expiring')->label("Expiring within {$days} days / expired")
                     ->query(fn (Builder $query) => $query->whereNotNull('expires_on')->whereDate('expires_on', '<=', now()->addDays($days))),
                 Tables\Filters\TernaryFilter::make('on_hold'),
+                Tables\Filters\Filter::make('coa_missing')->label('Hemp lots with COA missing')
+                    ->query(fn (Builder $query) => $query->whereHas('product', fn ($p) => $p->where(fn ($w) => $w->whereIn('product_subtype', ['hemp', 'cbd'])->orWhere('hemp_cannabinoid', true)->orWhereNotNull('hemp_type')))
+                        ->whereNotExists(fn ($c) => $c->from('product_coas')->whereColumn('product_coas.product_id', 'lots.product_id')
+                            ->where(fn ($w) => $w->whereColumn('product_coas.lot_id', 'lots.id')->orWhereColumn('product_coas.batch_lot', 'lots.lot_number')))),
             ])
             ->actions([
-                Tables\Actions\Action::make('recall')->label('Recall look-up')->icon('heroicon-o-magnifying-glass')
-                    ->url(fn (Lot $r) => Pages\RecallLookup::getUrl(['lot' => $r->lot_number, 'product' => $r->product_id])),
+                Tables\Actions\Action::make('trace')->label('Trace')->icon('heroicon-o-magnifying-glass')
+                    ->url(fn (Lot $r) => Pages\Trace::getUrl(['q' => $r->lot_number])),
                 Tables\Actions\Action::make('hold')->label(fn (Lot $r) => $r->on_hold ? 'Release' : 'Hold')->icon('heroicon-o-hand-raised')
                     ->visible(fn () => auth()->user()?->isAdmin())->requiresConfirmation()
                     ->action(function (Lot $r) {
-                        $r->update(['on_hold' => ! $r->on_hold]);
-                        LotMovement::create(['lot_id' => $r->id, 'warehouse_id' => $r->stocks()->value('warehouse_id') ?? 1, 'qty' => 0, 'type' => 'adjust',
-                            'user_id' => auth()->id(), 'note' => $r->on_hold ? 'Placed on hold' : 'Released from hold']);
+                        app(LotService::class)->setHold($r, ! $r->on_hold);
                         Notification::make()->success()->title($r->on_hold ? "Lot {$r->lot_number} on hold" : "Lot {$r->lot_number} released")->send();
                     }),
             ]);
@@ -98,6 +101,7 @@ class LotResource extends Resource
         return [
             'index' => Pages\ListLots::route('/'),
             'recall' => Pages\RecallLookup::route('/recall'),
+            'trace' => Pages\Trace::route('/trace'),
         ];
     }
 }
