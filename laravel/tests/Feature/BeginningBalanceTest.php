@@ -79,7 +79,7 @@ class BeginningBalanceTest extends TestCase
             }
         }
         $this->c->update(['beginning_balance' => 999]);
-        $this->assertSame('0.0000', $this->c->fresh()->beginning_balance);
+        $this->assertSame('0.00', $this->c->fresh()->beginning_balance);
         $this->assertArrayNotHasKey('beginning_balance', $this->c->fresh()->toArray());
         $this->assertSame('0.0000', $this->bal('1100'));
     }
@@ -116,7 +116,7 @@ class BeginningBalanceTest extends TestCase
         Livewire::test(EditCustomer::class, ['record' => $this->c->id])
             ->assertFormFieldIsHidden('beginning_balance')
             ->fillForm(['beginning_balance' => 5000])->call('save');
-        $this->assertSame('0.0000', $this->c->fresh()->beginning_balance);
+        $this->assertSame('0.00', $this->c->fresh()->beginning_balance);
         Livewire::test(ListCustomers::class)->assertTableColumnHidden('beginning_balance')->assertDontSee('Pay beginning bal.');
 
         $this->actingAs(User::factory()->create(['role' => 'owner']));
@@ -125,7 +125,7 @@ class BeginningBalanceTest extends TestCase
             ->fillForm(['beginning_balance' => '250.75', 'beginning_balance_date' => '2026-09-30', 'beginning_balance_note' => 'From QuickBooks'])
             ->call('save')->assertHasNoFormErrors();
         $c = $this->c->fresh();
-        $this->assertSame('250.7500', $c->beginning_balance);
+        $this->assertSame('250.75', $c->beginning_balance);
         $this->assertSame('2026-09-30', $c->beginning_balance_date->toDateString());
         $this->assertSame('250.7500', $this->bal('1100'));
         $this->assertSame('From QuickBooks', CustomerBalanceAudit::first()->note);

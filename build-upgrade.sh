@@ -41,7 +41,7 @@ case "$PHASE" in
   17.2) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
   17.3) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
   18) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
-  19|19.1|19.2|19.3|19.4|19.5|19.6|20.0|20.1|20.2|20.3|20.4|20.5|20.6|20.7|20.8|20.9|20.10|20.11|20.12|20.13|20.14|20.15) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
+  19|19.1|19.2|19.3|19.4|19.5|19.6|20.0|20.1|20.2|20.3|20.4|20.5|20.6|20.7|20.8|20.9|20.10|20.11|20.12|20.13|20.14|20.15|20.16) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
   18.2) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
   18.1) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
   *) echo "No seeder list for phase $PHASE"; exit 1 ;;
@@ -824,9 +824,9 @@ if [ "$PHASE" = "12" ]; then
   ! grep -rqiE "Http::|curl_|guzzle" $L/app/Warehouse/ShippingService.php $L/app/Compliance || { echo "CHECK FAILED: no live carrier / state API calls"; exit 1; }
   echo "Phase 12 files OK"
 fi
-if [ "$PHASE" = "20.15" ]; then
+if [ "$PHASE" = "20.15" ] || [ "$PHASE" = "20.16" ]; then
   L=stage-up/laravel
-  grep -q "'version' => '0.20.15'" $L/config/erp.php || { echo "CHECK FAILED: erp version is not 0.20.15"; exit 1; }
+  grep -q "'version' => '0.$PHASE'" $L/config/erp.php || { echo "CHECK FAILED: erp version is not 0.$PHASE"; exit 1; }
   test -f $L/database/migrations/2026_11_24_000001_phase2015_traceability.php || { echo "CHECK FAILED: phase2015 migration missing"; exit 1; }
   for f in app/Warehouse/Gs1.php app/Warehouse/LotTracking.php app/Models/LotReviewItem.php app/Models/LotContact.php app/Filament/Resources/LotResource/Pages/Trace.php app/Filament/Resources/LotReviewItemResource.php resources/views/filament/pages/lot-trace.blade.php; do
     test -f $L/$f || { echo "CHECK FAILED: $f missing"; exit 1; }
@@ -836,7 +836,7 @@ if [ "$PHASE" = "20.15" ]; then
   grep -q "lines.\*.lot_id" $L/app/Pos/OfflineSaleSync.php || { echo "CHECK FAILED: offline lot_id rule missing"; exit 1; }
   grep -q "trace.csv" $L/routes/web.php || { echo "CHECK FAILED: trace CSV route missing"; exit 1; }
   test -f $L/database/migrations/2026_11_23_000001_phase2013_license_site_id_and_customer_dba.php || { echo "CHECK FAILED: phase2013 migration missing"; exit 1; }
-  echo "Phase 20.15 checks OK"
+  echo "Phase $PHASE checks OK"
 fi
 if [ "$PHASE" = "20.14" ]; then
   L=stage-up/laravel

@@ -94,7 +94,7 @@ class Phase195ShipToPickTest extends TestCase
         $c = $this->customer('Portal Mart', 3, true);
         $def = $c->shipTos()->orderByDesc('id')->first();
         $def->update(['is_default' => true]);
-        $k = CustomerContact::create(['customer_id' => $c->id, 'name' => 'Pat', 'email' => 'pat@example.test']);
+        $k = CustomerContact::create(['customer_id' => $c->id, 'name' => 'Pat', 'email' => 'pat@example.test', 'is_portal_contact' => true]);
         $k->setPasswordFromLink('Secret12345');
         Auth::guard('portal')->login($k->fresh());
         Livewire::test(Catalog::class)->assertSet('shipToId', $def->id);

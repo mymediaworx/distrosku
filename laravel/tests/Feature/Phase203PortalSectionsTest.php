@@ -37,7 +37,7 @@ class Phase203PortalSectionsTest extends TestCase
     private function contact(string $code = 'CTEST-KY'): CustomerContact
     {
         $c = Customer::where('code', $code)->first();
-        $k = CustomerContact::create(['customer_id' => $c->id, 'name' => 'Pat Buyer', 'email' => strtolower($code).'@example.test']);
+        $k = CustomerContact::create(['customer_id' => $c->id, 'name' => 'Pat Buyer', 'email' => strtolower($code).'@example.test', 'is_portal_contact' => true]);
         $k->setPasswordFromLink('Secret12345');
         Auth::guard('portal')->login($k->fresh());
 

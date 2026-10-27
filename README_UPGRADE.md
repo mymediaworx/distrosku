@@ -1,7 +1,14 @@
-# Vega ERP — Phase 20.15 UPGRADE (existing install at vegatest1.distrosku.com)
+# Vega ERP — Phase 20.16 UPGRADE (existing install at vegatest1.distrosku.com)
 
 For a site already installed from `vega-erp-phase1.zip` and upgraded through phase 3 (a phase-2 site can also take this zip: seeders are cumulative). TEST data only. No secrets in this package.
 This zip contains **no `laravel/.env` and no `laravel/storage/`**, so extracting it over the live site keeps both.
+
+## What's new in 0.20.16 (includes everything through 0.20.15)
+
+**Maintenance release. No migrations, no app behaviour change, no `.env` or cron changes.**
+
+- Brings the automated tests in line with the customer changes approved in 0.20.13/0.20.14: beginning balance stored to 2 decimals, license numbers unique per state, and portal login only for contacts marked **Portal contact**. The full suite passes on SQLite and MariaDB.
+- Install exactly like 0.20.15 (a site already on 0.20.15 just gets the new version number).
 
 ## What's new in 0.20.15 (includes everything through 0.20.14)
 
