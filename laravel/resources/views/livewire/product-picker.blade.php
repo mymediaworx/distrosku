@@ -19,7 +19,7 @@
         {{-- Search (name / SKU / barcode / vendor item #) --}}
         <div class="relative">
             <input type="search" wire:model.live.debounce.250ms="search" autocomplete="off"
-                   placeholder="Search name, SKU, barcode, vendor item #" class="{{ $input }}" data-test="picker-search">
+                   placeholder="Search name, SKU, barcode, vendor item # (any words, any order)" class="{{ $input }}" data-test="picker-search">
             @if($this->results)
                 <ul class="absolute z-30 mt-1 max-h-80 w-full overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-900" data-test="picker-results">
                     @foreach($this->results as $r)
@@ -32,7 +32,7 @@
                                 {!! $thumb($r) !!}
                                 <span class="min-w-0 flex-1">
                                     <span class="block truncate"><strong>{{ $r['sku'] }}</strong> {{ $r['name'] }}</span>
-                                    <span class="block text-xs text-gray-500">@if($r['dept']){{ $r['dept'] }} · @endif list ${{ $r['price'] }}@if($showCost) · cost ${{ $r['cost'] }}@endif</span>
+                                    <span class="block text-xs text-gray-500">@if($r['dept']){{ $r['dept'] }} · @endif ${{ $r['price'] }} / {{ $r['unit'] }}@if($showCost) · cost ${{ $r['cost'] }}@endif</span>
                                 </span>
                             @if($open)</a>@else</button>@endif
                         </li>
@@ -115,7 +115,7 @@
                                 <span class="min-w-0">
                                     <span class="block font-semibold">{{ $t['sku'] }}</span>
                                     <span class="block text-gray-700 dark:text-gray-200">{{ $t['name'] }}</span>
-                                    <span class="mt-1 block text-xs text-gray-500">@if($t['dept']){{ $t['dept'] }} · @endif list ${{ $t['price'] }}@if($on) · selected @endif</span>
+                                    <span class="mt-1 block text-xs text-gray-500">@if($t['dept']){{ $t['dept'] }} · @endif ${{ $t['price'] }} / {{ $t['unit'] }}@if($on) · selected @endif</span>
                                 </span>
                             @if($open)</a>@else</button>@endif
                         @empty

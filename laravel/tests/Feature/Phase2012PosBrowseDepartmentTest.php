@@ -71,7 +71,9 @@ class Phase2012PosBrowseDepartmentTest extends TestCase
         $lw = $this->pos()->call('browseDept', $this->dept->id)->call('loadMore');
         $lw->set('browseFilter', 'Item 01');
         $this->assertSame(CounterPos::BROWSE_PAGE, $lw->get('browseLimit'));
-        $this->assertSame(100, $lw->instance()->browseTotal); // Big Item 0100..0199
+        // smart search (0.20.19): every word matches anywhere in the name, so "01" hits any item number containing 01
+        $expected = collect(range(1, self::N))->filter(fn ($i) => str_contains(sprintf('%04d', $i), '01'))->count();
+        $this->assertSame($expected, $lw->instance()->browseTotal);
         $this->assertTrue(collect($lw->instance()->browseTiles)->every(fn ($t) => str_starts_with($t['sku'], 'BIG-')));
 
         $lw->set('browseFilter', $other->name);

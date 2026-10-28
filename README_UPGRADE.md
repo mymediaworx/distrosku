@@ -1,7 +1,19 @@
-# Vega ERP — Phase 20.18 UPGRADE (existing install at vegatest1.distrosku.com)
+# Vega ERP — Phase 20.19 UPGRADE (existing install at vegatest1.distrosku.com)
 
 For a site already installed from `vega-erp-phase1.zip` and upgraded through phase 3 (a phase-2 site can also take this zip: seeders are cumulative). TEST data only. No secrets in this package.
 This zip contains **no `laravel/.env` and no `laravel/storage/`**, so extracting it over the live site keeps both.
+
+## What's new in 0.20.19 (includes everything through 0.20.18)
+
+**Smart product search. No migration, no schema or index change, no new PHP extensions, no `.env` change. No secrets are in this package.**
+
+- **Every word, any order:** typing `white owl platinum` finds *White Owl Mini 3/1.29 Platinum*. The text is split on spaces and **every** word must match somewhere in the product's name, brand, SKU / item code (J-####), UPC and other barcodes, vendor item numbers or department. Upper/lower case and punctuation (`& . / - ' ,`) are ignored, so `black n mild` finds *Black & Mild*.
+- **Abbreviations** are listed in `laravel/config/product_search.php` (`synonyms`). Shipped: `bm`, `b&m`, `black n mild` → black & mild; `ss` → swisher sweets; `dm` → dutch masters; `wo` → white owl; `bw` → backwoods; `ft` → filter tip; plus common flavor and unit short forms. To add one, add a line `'key' => 'full words'` (or a list of alternatives) to that file and run `php artisan config:clear`; keys are case and punctuation insensitive.
+- **Ranking:** exact SKU / UPC / barcode / vendor item number first, then names that start with what you typed, then names containing more of your words, then active in-stock items.
+- **Results show** thumbnail, price and pack / case unit (for example `$1.29 / Pack · CS ×12`) so look-alike items can be told apart (the picker shows up to 20 results).
+- **Barcode scan unchanged:** a scanned UPC / SKU / barcode still resolves first; the name search is only the fallback.
+- **Same search elsewhere:** the Products list search box, the Filament global search (products show "SKU name" and price) and the Counter POS browse filter.
+- **Behaviour change:** words now match anywhere in a name (so `01` also finds items numbered 0001 or 0101), not only as one exact phrase.
 
 ## What's new in 0.20.18 (includes everything through 0.20.17)
 

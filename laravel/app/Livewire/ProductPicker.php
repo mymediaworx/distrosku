@@ -207,7 +207,7 @@ class ProductPicker extends Component
             return [];
         }
 
-        return ProductSearch::query($term)->with('department')->limit(12)->get()
+        return ProductSearch::query($term)->with('department', 'units')->limit(20)->get()
             ->map(fn (Product $p) => $this->card($p))->all();
     }
 
@@ -227,7 +227,7 @@ class ProductPicker extends Component
         }
 
         return ProductSearch::browseQuery($this->browseDepartment, $this->browseVendor, $this->browseFilter)
-            ->with('department')->limit(max(self::BROWSE_PAGE, $this->browseLimit))->get()
+            ->with('department', 'units')->limit(max(self::BROWSE_PAGE, $this->browseLimit))->get()
             ->map(fn (Product $p) => $this->card($p))->all();
     }
 
@@ -257,12 +257,12 @@ class ProductPicker extends Component
             return [];
         }
 
-        return Product::whereIn('id', $ids)->get()
+        return Product::with('units')->whereIn('id', $ids)->get()
             ->sortBy(fn (Product $p) => array_search($p->id, $ids, true))
             ->map(fn (Product $p) => $this->card($p))->values()->all();
     }
 
-    /** @return array{id:int,sku:string,name:string,price:string,cost:string,dept:?string,image:?string,url:string} */
+    /** @return array{id:int,sku:string,name:string,price:string,cost:string,dept:?string,unit:string,image:?string,url:string} */
     private function card(Product $p): array
     {
         return [
@@ -272,6 +272,7 @@ class ProductPicker extends Component
             'price' => number_format((float) $p->price, 2),
             'cost' => number_format((float) $p->cost, 2),
             'dept' => $p->department?->name,
+            'unit' => ProductSearch::unitLabel($p),
             'image' => $p->imageUrl(),
             'url' => $this->productUrl($p),
         ];

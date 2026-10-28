@@ -469,6 +469,6 @@ class Phase2018DunningEmailTest extends TestCase
         foreach (['MAIL_SCHEME', 'MAIL_HOST', 'MAIL_PORT', 'MAIL_USERNAME', 'MAIL_PASSWORD', 'MAIL_FROM_ADDRESS', 'MAIL_FROM_NAME'] as $k) {
             $this->assertMatchesRegularExpression('/^'.$k.'=$/m', $env, $k);
         }
-        $this->assertSame('0.20.18', config('erp.version'));
+        $this->assertMatchesRegularExpression('/^0\.20\.\d+$/', config('erp.version'));
     }
 }

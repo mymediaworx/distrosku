@@ -28,7 +28,7 @@ final class SaleScan
             return ['product' => $hit['product'], 'qty' => self::whole($hit['factor']), 'unit' => $hit['unit']];
         }
 
-        $byName = Product::where('active', true)->notArchived()->where('name', 'like', '%'.$term.'%')->orderBy('name')->first();
+        $byName = \App\Support\ProductSearch::query($term)->first(); // 0.20.19: every word matches, any order, best match first
 
         return $byName ? ['product' => $byName, 'qty' => '1', 'unit' => null] : null;
     }

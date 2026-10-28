@@ -30,6 +30,36 @@ class ProductResource extends Resource
 
     protected static ?int $navigationSort = 1;
 
+    /** 0.20.19: products turn up in the top-bar global search (name / SKU / brand / UPC / barcodes / vendor item #). */
+    protected static ?string $recordTitleAttribute = 'name';
+
+    protected static int $globalSearchResultsLimit = 15;
+
+    public static function getGlobalSearchEloquentQuery(): \Illuminate\Database\Eloquent\Builder
+    {
+        return parent::getGlobalSearchEloquentQuery()->where('products.active', true)->notArchived();
+    }
+
+    protected static function applyGlobalSearchAttributeConstraints(\Illuminate\Database\Eloquent\Builder $query, string $search): void
+    {
+        \App\Support\ProductSearch::matching($query, $search); // every word matches, any order, punctuation ignored
+    }
+
+    public static function modifyGlobalSearchQuery(\Illuminate\Database\Eloquent\Builder $query, string $search): void
+    {
+        \App\Support\ProductSearch::rank($query, $search);
+    }
+
+    public static function getGlobalSearchResultTitle(Model $record): string
+    {
+        return trim($record->sku.' '.$record->name);
+    }
+
+    public static function getGlobalSearchResultDetails(Model $record): array
+    {
+        return ['Price' => '$'.number_format((float) $record->price, 2).' / '.($record->base_unit_name ?: 'Each')];
+    }
+
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
     public static function form(Form $form): Form

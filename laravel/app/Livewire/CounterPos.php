@@ -276,7 +276,7 @@ class CounterPos extends Component
             ->when($this->browseDepartment, fn ($q) => $q->where('department_id', $this->browseDepartment))
             ->when($this->browseCategory, fn ($q) => $q->where('category', $this->browseCategory))
             ->when($this->browseBrand, fn ($q) => $q->where('brand', $this->browseBrand))
-            ->when($f !== '', fn ($q) => $q->where(fn ($w) => $w->where('name', 'like', "%{$f}%")->orWhere('sku', 'like', "%{$f}%")->orWhere('upc', $f)->orWhere('brand', 'like', "%{$f}%")));
+            ->when($f !== '', fn ($q) => \App\Support\ProductSearch::matching($q, $f)); // 0.20.19: every word matches, any order
     }
 
     /** Products matching the current department / category / brand / filter (all pages). */
