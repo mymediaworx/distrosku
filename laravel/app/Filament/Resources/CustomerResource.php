@@ -74,7 +74,7 @@ class CustomerResource extends Resource
                         ->options(fn (?Customer $record) => Terms::options($record?->terms))
                         ->default('Net 15')->required()->native(false)->searchable(),
                     Forms\Components\TextInput::make('state_tax_id')->label('State tax ID')->maxLength(40)
-                        ->helperText('Sent to BrandWorx Marketing (State Tax ID custom field).'),
+                        ->helperText('Sent to Marketing (State Tax ID custom field).'),
                     Forms\Components\TextInput::make('fein')->label('Federal EIN')->maxLength(20)->placeholder('12-3456789')
                         ->rule('nullable')->regex('/^\s*\d{2}-?\d{7}\s*$/')
                         ->validationMessages(['regex' => 'Federal EIN should be 9 digits, like 12-3456789.'])
@@ -111,11 +111,11 @@ class CustomerResource extends Resource
                     Forms\Components\CheckboxList::make('delivery_days')->options(DeliveryDays::DAYS)->columns(['default' => 2, 'sm' => 4, 'lg' => 7])->gridDirection('row')
                         ->formatStateUsing(fn ($state) => DeliveryDays::parse($state))->dehydrateStateUsing(fn ($state) => DeliveryDays::toCsv($state))->columnSpanFull(),
                     Forms\Components\Toggle::make('email_opt_in')->label('Email opt-in (marketing / notices)')
-                        ->helperText('Drives email consent in BrandWorx Marketing. Off sets Email to DND there.'),
+                        ->helperText('Drives email consent in Marketing. Off sets Email to DND there.'),
                     Forms\Components\Toggle::make('dunning_email_optout')->label('Do not auto-email dunning notices')
                         ->helperText('On = this customer\'s overdue notices are never emailed; they go to the Dunning print list instead.'),
                     Forms\Components\Toggle::make('sms_opt_in')->label('SMS opt-in')
-                        ->helperText('Only with recorded consent (A2P 10DLC). Drives SMS consent in BrandWorx Marketing. Off sets SMS to DND there.'),
+                        ->helperText('Only with recorded consent (A2P 10DLC). Drives SMS consent in Marketing. Off sets SMS to DND there.'),
                 ])->columns(['default' => 1, 'md' => 2])->collapsible(),
                 Forms\Components\Section::make('Balance & aging')
                     ->visible(fn (?Customer $record) => (bool) $record?->exists)

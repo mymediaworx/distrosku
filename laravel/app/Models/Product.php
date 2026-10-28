@@ -41,6 +41,7 @@ class Product extends Model
             'ky_tax_paid_by_supplier' => 'boolean',
             'archived_at' => 'datetime',
             'hemp_cannabinoid' => 'boolean',
+            'taxes' => 'array',
         ];
     }
 

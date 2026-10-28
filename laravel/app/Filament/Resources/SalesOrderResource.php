@@ -58,9 +58,7 @@ class SalesOrderResource extends Resource
                     ->content(fn ($record) => new HtmlString(view('filament.partials.order-signatures', ['so' => $record->load('signatures.user')])->render()))]),
             Forms\Components\Section::make()->columns(['default' => 1, 'md' => 3])->schema([
                 Forms\Components\TextInput::make('number')->disabled()->dehydrated(false)->placeholder('Assigned on save'),
-                Forms\Components\Select::make('customer_id')->label('Customer')->searchable()->required()->live()
-                    ->getSearchResultsUsing(fn (string $search) => \App\Models\Customer::optionsForSelect($search))
-                    ->getOptionLabelUsing(fn ($value) => ($c = \App\Models\Customer::find($value))?->labelWithAccount())
+                \App\Filament\Forms\Components\CustomerPickerField::make('customer_id')->label('Customer')->required()->live()
                     ->afterStateUpdated(function (Set $set, Get $get, $state) { // 0.19.6: ship-to only matters for delivery / ship
                         $set('ship_to_id', $state && $get('fulfillment') !== 'pickup' ? \App\Models\Customer::find($state)?->resolveShipToId() : null);
                     }),
@@ -98,7 +96,8 @@ class SalesOrderResource extends Resource
                     return ['product_id' => $p->id, 'qty' => 1, 'unit_price' => self::displayPrice($q->price), 'quoted' => $q->price];
                 }),
             ])->visible(fn (?SalesOrder $record) => ! $record || $record->status === S::Draft)->columnSpanFull()->key('add_products'),
-            Forms\Components\Repeater::make('lines')->relationship()->columns(['default' => 2, 'md' => 5])
+            // 0.20.20: wide lines. Small screens: product on its own full row, qty / price / total under it. Large: one row, product gets half the width.
+            Forms\Components\Repeater::make('lines')->relationship()->columns(['default' => 3, 'lg' => 12])
                 ->disabled(fn (?SalesOrder $record) => $record && $record->status !== S::Draft)
                 ->schema([
                     Forms\Components\Hidden::make('quoted')->dehydrated(false)
@@ -112,15 +111,15 @@ class SalesOrderResource extends Resource
                         ->getSearchResultsUsing(fn (string $search) => ProductSearch::options($search)) // 0.20.17: same matching as the picker (name/SKU/barcode/vendor item #)
                         ->getOptionLabelUsing(fn ($value) => ($p = Product::find($value)) ? "{$p->sku} {$p->name}" : null)
                         ->live()->afterStateUpdated(fn (Get $get, Set $set) => self::fillQuote($get, $set))
-                        ->columnSpan(['default' => 2, 'md' => 2]),
-                    Forms\Components\TextInput::make('qty')->numeric()->default(1)->required()->minValue(0.0001)
+                        ->columnSpan(['default' => 3, 'lg' => 6])->extraAttributes(['data-test' => 'line-product']),
+                    Forms\Components\TextInput::make('qty')->numeric()->default(1)->required()->minValue(0.0001)->columnSpan(['default' => 1, 'lg' => 2])
                         ->formatStateUsing(fn ($state) => self::displayQty($state)) // 4.0000 -> 4 (stored precision unchanged)
                         ->live(onBlur: true)->afterStateUpdated(fn (Get $get, Set $set) => self::fillQuote($get, $set, true)),
-                    Forms\Components\TextInput::make('unit_price')->numeric()->required()->prefix('$')
+                    Forms\Components\TextInput::make('unit_price')->numeric()->required()->prefix('$')->columnSpan(['default' => 1, 'lg' => 2])
                         ->formatStateUsing(fn ($state) => self::displayPrice($state)) // 0.9900 -> 0.99, 0.6550 -> 0.655
                         ->live(onBlur: true)
                         ->helperText(fn (Get $get, ?SalesOrderLine $record) => self::sourceHint($get, $record)),
-                    Forms\Components\Placeholder::make('line_total_display')->label('Line total')
+                    Forms\Components\Placeholder::make('line_total_display')->label('Line total')->columnSpan(['default' => 1, 'lg' => 2])
                         ->content(fn (Get $get) => '$'.number_format((float) self::lineTotal($get('qty'), $get('unit_price')), 2)),
                 ])->defaultItems(1)->columnSpanFull(),
             // UI audit #5: the amount is visible before Deliver / invoice / collect.
@@ -241,6 +240,8 @@ class SalesOrderResource extends Resource
                     Tables\Actions\Action::make('packingList')->label('Packing list')->icon('heroicon-o-printer')
                         ->visible(fn (SalesOrder $r) => PickList::where('sales_order_id', $r->id)->whereIn('status', ['picked', 'packed'])->exists())
                         ->url(fn (SalesOrder $r) => route('wh.print.pack', $r))->openUrlInNewTab(),
+                    Tables\Actions\Action::make('invoiceView')->label('View invoice')->icon('heroicon-o-eye')
+                        ->visible(fn (SalesOrder $r) => $r->status === S::Invoiced)->url(fn (SalesOrder $r) => route('docs.invoice.view', $r))->openUrlInNewTab(),
                     Tables\Actions\Action::make('invoicePdf')->label('Invoice PDF')->icon('heroicon-o-document-arrow-down')
                         ->visible(fn (SalesOrder $r) => $r->status === S::Invoiced)->url(fn (SalesOrder $r) => route('docs.invoice', $r)),
                     OrderActions::pay(Tables\Actions\Action::class),

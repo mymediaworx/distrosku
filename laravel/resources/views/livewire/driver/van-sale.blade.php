@@ -2,8 +2,7 @@
     <div class="card">
         <label>Van / truck</label>
         <select wire:model.live="vanId" data-test="van">@forelse($vans as $v)<option value="{{ $v->id }}">{{ $v->name }}</option>@empty<option value="">No van warehouse set up</option>@endforelse</select>
-        <label>Customer</label>
-        <select wire:model.live="customerId" data-test="customer"><option value="">Choose…</option>@foreach($customers as $c)<option value="{{ $c->id }}">{{ $c->code }} — {{ $c->name }} ({{ $c->terms }})</option>@endforeach</select>
+        <livewire:customer-picker wire:model.live="customerId" label="Customer" wire:key="van-customer-picker" />
         @if($customerId)<label>Fulfillment</label>
             <select wire:model.live="fulfillment" data-test="fulfillment"><option value="pickup">Counter pickup</option><option value="delivery">Delivery</option></select>
             @if($fulfillment === 'delivery')<label>Ship-to</label>

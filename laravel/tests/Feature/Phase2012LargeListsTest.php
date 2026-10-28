@@ -38,7 +38,7 @@ class Phase2012LargeListsTest extends TestCase
     {
         $base = (array) DB::table($table)->orderBy('id')->first();
         unset($base['id']);
-        foreach (array_chunk(range(1, $n), 500) as $chunk) {
+        foreach (array_chunk(range(1, $n), 100) as $chunk) {
             DB::table($table)->insert(array_map(fn ($i) => array_merge($base, $vary($i)), $chunk));
         }
     }

@@ -68,15 +68,10 @@ class Customer extends Model
         return trim(($this->code ? $this->code.' — ' : '').($this->name ?? ''));
     }
 
+    /** 0.20.20: tokenized search (account number, name, DBA, phone, city; every word, any order). */
     public static function optionsForSelect(?string $search = null, int $limit = 50): array
     {
-        $q = static::query()->orderBy('code')->orderBy('name');
-        if (filled($search)) {
-            $s = '%'.str_replace(['%', '_'], ['\%', '\_'], $search).'%';
-            $q->where(fn ($w) => $w->where('code', 'like', $s)->orWhere('name', 'like', $s)->orWhere('dba', 'like', $s));
-        }
-
-        return $q->limit($limit)->get(['id', 'code', 'name'])->mapWithKeys(fn (self $c) => [$c->id => $c->labelWithAccount()])->all();
+        return \App\Support\CustomerSearch::options($search, $limit);
     }
 
     public function customerGroup()

@@ -12,7 +12,7 @@ class SalesOrderLine extends Model
 
     protected $guarded = ['id'];
 
-    protected $attributes = ['unit_cost' => '0', 'line_total' => '0'];
+    protected $attributes = ['unit_cost' => '0', 'line_total' => '0', 'tax_per_unit' => '0', 'tax_total' => '0'];
 
     /** Set by PricingEngine when a manual override needs logging after save. */
     public ?array $pendingOverrideLog = null;
@@ -27,6 +27,9 @@ class SalesOrderLine extends Model
             'list_price' => 'decimal:4',
             'quoted_price' => 'decimal:4',
             'price_overridden' => 'boolean',
+            'tax_per_unit' => 'decimal:4',
+            'tax_total' => 'decimal:4',
+            'tax_detail' => 'array',
         ];
     }
 

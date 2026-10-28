@@ -7,14 +7,14 @@ use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
 
-/** 0.19: thin client for the BrandWorx Marketing (HighLevel) API v2. The token is only ever sent as a header. */
+/** 0.19: thin client for the Marketing (HighLevel) API v2. The token is only ever sent as a header. */
 class GhlClient
 {
     private function http(): PendingRequest
     {
         $t = MarketingSettings::token();
         if (! $t) {
-            throw new RuntimeException('BrandWorx Marketing token is not set.');
+            throw new RuntimeException('Marketing token is not set.');
         }
 
         return Http::baseUrl(MarketingSettings::API)->withToken($t)->acceptJson()->timeout(20)
@@ -23,7 +23,7 @@ class GhlClient
 
     private function loc(): string
     {
-        return (string) MarketingSettings::locationId() ?: throw new RuntimeException('BrandWorx Marketing Location ID is not set.');
+        return (string) MarketingSettings::locationId() ?: throw new RuntimeException('Marketing Location ID is not set.');
     }
 
     /**
@@ -87,7 +87,7 @@ class GhlClient
         return $this->http()->delete("/contacts/{$contactId}/tags", ['tags' => array_values($tags)]);
     }
 
-    /** Inbound webhook (a workflow trigger URL set in BrandWorx Marketing). No auth header goes to it. */
+    /** Inbound webhook (a workflow trigger URL set in Marketing). No auth header goes to it. */
     public function webhook(string $url, array $payload): Response
     {
         return Http::timeout(20)->acceptJson()->post($url, $payload);

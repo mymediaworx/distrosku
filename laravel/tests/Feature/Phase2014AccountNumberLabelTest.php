@@ -73,9 +73,10 @@ class Phase2014AccountNumberLabelTest extends TestCase
     public function test_pos_and_van_pickers_show_account_number(): void
     {
         $c = Customer::factory()->create(['code' => 'A-991', 'name' => 'Acct Pick Test', 'active' => true, 'terms' => 'Net 15']);
-        Livewire::test(CounterPos::class)->assertSeeHtml('A-991 — Acct Pick Test');
+        // POS and van sale use the searchable picker: the account number is searchable and shown in the result
+        Livewire::test(\App\Livewire\CustomerPicker::class)->set('search', 'A-991')->assertSeeHtml('A-991')->assertSee('Acct Pick Test');
 
         Warehouse::firstOrCreate(['code' => 'VAN1'], ['name' => 'Van 1', 'active' => true, 'is_van' => true]);
-        Livewire::test(VanSale::class)->assertSeeHtml('A-991 — Acct Pick Test');
+        Livewire::test(VanSale::class)->assertSeeHtml('customer-picker');
     }
 }

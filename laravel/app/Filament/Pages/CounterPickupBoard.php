@@ -34,9 +34,7 @@ class CounterPickupBoard extends Page
 
     public string $search = '';
 
-    public bool $tv = false;
-
-    protected $queryString = ['warehouseId' => ['as' => 'wh', 'except' => null], 'tv' => ['except' => false]];
+    protected $queryString = ['warehouseId' => ['as' => 'wh', 'except' => null]];
 
     public static function canAccess(): bool
     {
@@ -48,11 +46,6 @@ class CounterPickupBoard extends Page
     public function getMaxContentWidth(): MaxWidth|string|null
     {
         return MaxWidth::Full;
-    }
-
-    public function toggleTv(): void
-    {
-        $this->tv = ! $this->tv;
     }
 
     public function warehouses(): array

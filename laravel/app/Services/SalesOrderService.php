@@ -35,11 +35,16 @@ class SalesOrderService
             if (Money::of($l->unit_cost)->isZero()) {
                 $l->unit_cost = $l->product->cost;
             }
+            if ($so->status !== S::Invoiced) { // 0.20.20: taxes follow the product until the invoice is posted, then they are frozen
+                \App\Services\InvoiceTax::applyToLine($l);
+            }
             $l->save();
         }
         $sub = Money::add(...($so->lines->pluck('line_total')->all() ?: [0]));
+        $tax = Money::add(...($so->lines->pluck('tax_total')->all() ?: [0]));
         $so->subtotal = $sub;
-        $so->total = $sub;
+        $so->tax_total = $tax;
+        $so->total = Money::add($sub, $tax); // line_total stays qty x price; the invoice adds the taxes on top
         $so->save();
 
         return $so;

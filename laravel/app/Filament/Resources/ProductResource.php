@@ -83,6 +83,15 @@ class ProductResource extends Resource
                     ->helperText('Resized to max 400 px on save.'),
                 Forms\Components\TextInput::make('brand'),
                 Forms\Components\TextInput::make('manufacturer'),
+                // 0.20.20 (#11): every tax listed here is added on top of the price and shown on the invoice, per unit and in the line total.
+                Forms\Components\Repeater::make('taxes')->label('Taxes charged on top of the price (shown on invoices)')
+                    ->helperText('Leave empty if none. Per unit = a dollar amount for each unit sold; Percent = % of the unit price. The invoice line total is (price + tax) x quantity.')
+                    ->schema([
+                        Forms\Components\TextInput::make('name')->required()->maxLength(60)->placeholder('KY excise'),
+                        Forms\Components\Select::make('basis')->options([\App\Services\InvoiceTax::PER_UNIT => 'Per unit ($)', \App\Services\InvoiceTax::PERCENT => 'Percent of price (%)'])
+                            ->default(\App\Services\InvoiceTax::PER_UNIT)->required()->native(false),
+                        Forms\Components\TextInput::make('amount')->numeric()->required()->minValue(0)->maxValue(100000),
+                    ])->columns(3)->addActionLabel('Add a tax')->defaultItems(0)->columnSpanFull(),
                 Forms\Components\Fieldset::make('KY EDI (XML returns)')->schema([
                     Forms\Components\TextInput::make('manufacturer_fein')->label('Manufacturer FEIN')->regex('/^\d{2}-?\d{7}$/')->maxLength(10)
                         ->dehydrateStateUsing(fn ($state) => $state ? preg_replace('/\D/', '', $state) : null),
@@ -263,6 +272,14 @@ class ProductResource extends Resource
                     ->url(fn (Product $r) => route('catalog.labels', ['ids' => $r->id]), shouldOpenInNewTab: true)
                     ->visible(fn () => auth()->user()?->canModule('catalog', 'view')),
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('duplicate')->label('Duplicate')->icon('heroicon-o-document-duplicate')
+                    ->visible(fn () => static::canCreate())->requiresConfirmation()
+                    ->modalDescription('Makes a copy with a new SKU and no UPC, then opens it so you can edit it. Stock is not copied.')
+                    ->action(function (Product $r) {
+                        $copy = app(\App\Catalog\CatalogService::class)->duplicate($r);
+
+                        return redirect(static::getUrl('edit', ['record' => $copy]));
+                    }),
                 Tables\Actions\Action::make('archive')->label('Archive')->icon('heroicon-o-archive-box')->color('warning')->requiresConfirmation()
                     ->visible(fn (Product $r) => ! $r->isArchived() && static::canArchive())
                     ->action(fn (Product $r) => $r->archive(auth()->user())),

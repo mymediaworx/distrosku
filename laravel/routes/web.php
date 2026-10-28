@@ -71,6 +71,7 @@ Route::middleware(['auth', BlockWhenSuspended::class])->get('/board/pickup', \Ap
 
 // Staff: invoice / statement PDFs
 Route::middleware(['auth', BlockWhenSuspended::class])->group(function () {
+    Route::get('/admin-docs/invoice/{so}/view', [PortalDocumentsController::class, 'adminInvoiceView'])->name('docs.invoice.view');
     Route::get('/admin-docs/invoice/{so}.pdf', [PortalDocumentsController::class, 'adminInvoice'])->name('docs.invoice');
     Route::get('/admin-docs/delivery-proof/{so}.pdf', [\App\Http\Controllers\DeliveryDocsController::class, 'proof'])->name('docs.delivery-proof');
     Route::get('/admin-docs/imports/template/{type}.{format}', [\App\Http\Controllers\ImportDownloadsController::class, 'template'])->name('imports.template');

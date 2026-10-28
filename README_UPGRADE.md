@@ -1,7 +1,20 @@
-# Vega ERP — Phase 20.19 UPGRADE (existing install at vegatest1.distrosku.com)
+# Vega ERP — Phase 20.20 UPGRADE (existing install at vegatest1.distrosku.com)
 
 For a site already installed from `vega-erp-phase1.zip` and upgraded through phase 3 (a phase-2 site can also take this zip: seeders are cumulative). TEST data only. No secrets in this package.
 This zip contains **no `laravel/.env` and no `laravel/storage/`**, so extracting it over the live site keeps both.
+
+## What's new in 0.20.20 (includes everything through 0.20.19)
+
+**Michael's 2026-10-28 walkthrough, first batch. One additive, re-runnable migration (`2026_11_29_000001_phase2020_taxes_quick_counts`: product taxes, tax columns on order lines/orders, a quick-counts table). No new PHP extensions, no `.env` change. No secrets are in this package.**
+
+- **Customer search, no default customer (#1):** every place a customer is chosen (sales order, POS, van sale, ship-tos, promotions, price rules, customer price overrides, management report filter) is now a search box instead of a dropdown. Type any of account number, name, DBA, phone or city; every word must match, any order, punctuation ignored (same idea as product search). A new order starts with **no customer** and one must be picked. POS starts blank and will not check out until a customer is picked; the **Walk-in (CASH)** button is one tap for cash sales.
+- **TV mode removed (#5):** the large-type board is gone. **Open TV** (the full-screen pop-out) stays on the Counter pickup board.
+- **Sales order lines (#8):** the product gets half of the line row so full names are visible; quantity, price and total share the rest. Stacks on narrow screens.
+- **Marketing (#10):** "BrandWorx Marketing" is now just **Marketing** in the menu and on the customer page.
+- **Taxes on invoices (#11):** add taxes on a product (Products > edit > *Taxes charged on top of the price*: a name plus either dollars per unit or a percent of the price). Invoices (on screen via *View invoice*, and the PDF) show **Unit cost, Tax / unit and Line total = (cost + tax) x quantity**, then the subtotal, **every tax by name**, total tax and the total. POS and van-sale totals include the same taxes. Tax collected posts to account 2200 *Sales Tax Payable* (not revenue). **No tax is added to any product until you set one; KY excise is not added automatically** (existing prices are assumed to include it). Credit memos and returns on taxed lines are not tax-adjusted yet.
+- **Duplicate a product (#12):** *Duplicate* on the Products list and on the product page. Copies the product with the next SKU in its department, a blank UPC, no extra barcodes and no stock, names it "... (copy)", and opens it for editing.
+- **Negative inventory (#9, part):** *Company Settings > Warehouse > Allow negative inventory sales*. **Off by default (nothing changes).** When on, a sale (counter, order, van) may take stock below zero; adjustments and transfers still may not.
+- **Quick counts (#9, part):** a **Count** tab on the Quick Tools page (no login). Pick an item and a location, enter the count and your name. It only records the count; a manager reviews it under *Warehouse > Quick counts* and **Apply** (posts an adjustment) or **Dismiss**.
 
 ## What's new in 0.20.19 (includes everything through 0.20.18)
 

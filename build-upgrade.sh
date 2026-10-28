@@ -41,7 +41,7 @@ case "$PHASE" in
   17.2) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
   17.3) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
   18) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
-  19|19.1|19.2|19.3|19.4|19.5|19.6|20.0|20.1|20.2|20.3|20.4|20.5|20.6|20.7|20.8|20.9|20.10|20.11|20.12|20.13|20.14|20.15|20.16|20.17|20.18|20.19) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
+  19|19.1|19.2|19.3|19.4|19.5|19.6|20.0|20.1|20.2|20.3|20.4|20.5|20.6|20.7|20.8|20.9|20.10|20.11|20.12|20.13|20.14|20.15|20.16|20.17|20.18|20.19|20.20) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
   18.2) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
   18.1) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
   *) echo "No seeder list for phase $PHASE"; exit 1 ;;
@@ -823,6 +823,17 @@ if [ "$PHASE" = "12" ]; then
   done
   ! grep -rqiE "Http::|curl_|guzzle" $L/app/Warehouse/ShippingService.php $L/app/Compliance || { echo "CHECK FAILED: no live carrier / state API calls"; exit 1; }
   echo "Phase 12 files OK"
+fi
+if [ "$PHASE" = "20.20" ]; then
+  L=stage-up/laravel
+  grep -q "'version' => '0.20.20'" $L/config/erp.php || { echo "CHECK FAILED: erp version is not 0.20.20"; exit 1; }
+  for f in database/migrations/2026_11_29_000001_phase2020_taxes_quick_counts.php app/Support/CustomerSearch.php app/Livewire/CustomerPicker.php app/Filament/Forms/Components/CustomerPickerField.php app/Services/InvoiceTax.php app/Inventory/NegativeStock.php app/Inventory/QuickCountService.php app/Filament/Resources/QuickCountResource.php; do
+    test -f $L/$f || { echo "CHECK FAILED: $f missing"; exit 1; }
+  done
+  ! grep -rq "toggleTv" $L/app/Filament/Pages/CounterPickupBoard.php || { echo "CHECK FAILED: TV mode is back"; exit 1; }
+  ! grep -q "BrandWorx Marketing" $L/app/Filament/Pages/MarketingSettingsPage.php || { echo "CHECK FAILED: old Marketing label"; exit 1; }
+  grep -q "Tax / unit" $L/resources/views/docs/invoice.blade.php || { echo "CHECK FAILED: invoice tax columns missing"; exit 1; }
+  echo "Phase 20.20 checks OK"
 fi
 if [ "$PHASE" = "20.19" ]; then
   L=stage-up/laravel

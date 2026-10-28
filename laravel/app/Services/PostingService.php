@@ -30,6 +30,9 @@ class PostingService
 
     public const KY_EXCISE_PAYABLE = '2100';
 
+    /** 0.20.20: taxes added to an invoice (product taxes). */
+    public const SALES_TAX_PAYABLE = '2200';
+
     /** Goods received, vendor bill not yet entered (cleared by the bill: 3-way match). */
     public const GRNI = '2050';
 
@@ -174,7 +177,8 @@ class PostingService
 
         return $this->post(now()->toDateString(), "Invoice {$so->number}", [
             [self::AR, $so->total, 0],
-            [self::SALES, 0, $so->total],
+            [self::SALES, 0, Money::s(Money::of($so->total)->minus(Money::of($so->tax_total ?? 0)))],
+            [self::SALES_TAX_PAYABLE, 0, $so->tax_total ?? 0, 'Taxes on invoice'], // 0.20.20: taxes shown on the invoice are owed, not revenue
             [self::COGS, $cost, 0],
             [self::INVENTORY, 0, $cost],
         ], $so);

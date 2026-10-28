@@ -30,6 +30,7 @@ class Phase207PosReceiptTest extends TestCase
     {
         $this->actingAs($this->cashier);
         $lw = Livewire::test(CounterPos::class)
+            ->set('customerId', \App\Models\Customer::where('code', 'CASH')->value('id'))
             ->set('scan', 'TST-GEN-001')->call('add')
             ->call('inc', 0)                         // 2 × 25.00
             ->set('tender', 'cash')->set('tendered', $tendered)

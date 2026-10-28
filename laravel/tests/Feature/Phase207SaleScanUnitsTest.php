@@ -58,6 +58,7 @@ class Phase207SaleScanUnitsTest extends TestCase
         $this->actingAs(User::factory()->create(['role' => 'sales']));
 
         $lw = Livewire::test(CounterPos::class)
+            ->set('customerId', \App\Models\Customer::where('code', 'CASH')->value('id'))
             ->set('scan', '20000000000107')->call('add')
             ->assertSet('cart.0.qty', '10')
             ->assertSet('message', 'Added 1 CTN (10 Each) × TEST Lighter Display 50ct.')

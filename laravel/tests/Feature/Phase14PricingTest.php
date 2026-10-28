@@ -121,7 +121,7 @@ class Phase14PricingTest extends TestCase
     {
         $this->actingAs(User::factory()->create(['role' => 'sales']));
         PriceRule::create(['product_id' => $this->p->id, 'price' => '9', 'min_qty' => 2]);
-        $lw = Livewire::test(CounterPos::class)->set('scan', 'TST-GEN-001')->call('add');
+        $lw = Livewire::test(CounterPos::class)->set('customerId', \App\Models\Customer::where('code', 'CASH')->value('id'))->set('scan', 'TST-GEN-001')->call('add');
         $this->assertSame('10.0000', $lw->get('cart')[0]['price']);
         $lw->set('cart.0.qty', '2');
         $this->assertSame(['9.0000', 'qty_break'], [$lw->get('cart')[0]['price'], $lw->get('cart')[0]['source']]);

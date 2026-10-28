@@ -54,9 +54,7 @@ class CustomerPriceOverrideResource extends Resource
             ProductPickerField::make('product_id')->label('Product')->columnSpanFull()
                 ->visible(fn ($livewire) => ! ($livewire instanceof Pages\CreateCustomerPriceOverride))
                 ->required(fn ($livewire) => ! ($livewire instanceof Pages\CreateCustomerPriceOverride)),
-            Forms\Components\Select::make('customer_id')->label('Customer')->searchable()->nullable()
-                ->getSearchResultsUsing(fn (string $search) => \App\Models\Customer::optionsForSelect($search))
-                ->getOptionLabelUsing(fn ($value) => ($c = \App\Models\Customer::find($value))?->labelWithAccount())
+            \App\Filament\Forms\Components\CustomerPickerField::make('customer_id')->label('Customer')->nullable()
                 ->helperText('Blank = all customers. A customer-specific price beats an all-customers one.'),
             Forms\Components\Placeholder::make('base_price_display')
                 ->label('Current list price')

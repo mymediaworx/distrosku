@@ -98,8 +98,7 @@ class CounterPos extends Component
 
     public function mount(): void
     {
-        $cash = Customer::where('code', 'CASH')->first() ?? Customer::first();
-        $this->customerId = $cash?->id;
+        $this->customerId = null; // 0.20.20: no default customer; pick one (or tap Walk-in) for every sale
         $this->shipToId = null;
         $this->warehouseId = Warehouse::where('code', 'MAIN')->value('id') ?? Warehouse::value('id');
         // 0.14.1: an in-progress sale survives the idle lock / employee switch (kept in this terminal's session).
@@ -392,8 +391,7 @@ class CounterPos extends Component
         $this->notes = '';
         $this->recallNotes = [];
         $this->resetSignature();
-        $cash = Customer::where('code', 'CASH')->first() ?? Customer::first();
-        $this->customerId = $cash?->id;
+        $this->customerId = null; // 0.20.20: the next sale starts with no customer
         $this->shipToId = null;
         $this->fulfillment = 'pickup';
     }
@@ -531,7 +529,8 @@ class CounterPos extends Component
 
     public function getTotalProperty(): string
     {
-        return Money::add(...(array_map(fn ($l) => Money::mul($l['qty'] ?: 0, $l['price'] ?: 0), $this->cart) ?: [0]));
+        // 0.20.20: product taxes are part of what the customer pays (and of the invoice total)
+        return Money::add(\App\Services\InvoiceTax::cartTax($this->cart), ...array_map(fn ($l) => Money::mul($l['qty'] ?: 0, $l['price'] ?: 0), $this->cart));
     }
 
     public function getBlockedProperty(): bool
@@ -542,6 +541,11 @@ class CounterPos extends Component
     public function checkout(SalesOrderService $svc): void
     {
         $this->reset('message', 'error');
+        if (! $this->customerId || ! Customer::whereKey($this->customerId)->exists()) { // 0.20.20: never sell to a guessed customer
+            $this->error = 'Pick a customer first (search above, or tap Walk-in).';
+
+            return;
+        }
         $this->recheck();
         if ($this->cart && $this->blocked) {
             \App\Audit\Audit::durable('pos_sale_blocked', null, 'POS checkout blocked by compliance', ['channel' => 'pos', 'customer_id' => $this->customerId,
@@ -603,7 +607,6 @@ class CounterPos extends Component
     public function render()
     {
         return view('livewire.counter-pos', [
-            'customers' => Customer::where('active', true)->orderBy('code')->orderBy('name')->get(['id', 'code', 'name']),
             'shipTos' => ShipTo::where('customer_id', $this->customerId)->orderByDesc('is_default')->orderBy('name')->get(),
             'addShipToUrl' => $this->customerId ? \App\Filament\Resources\CustomerResource::getUrl('edit', ['record' => $this->customerId]) : null,
             'warehouses' => Warehouse::where('active', true)->get(),

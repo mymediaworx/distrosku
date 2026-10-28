@@ -67,7 +67,7 @@ class Settings extends Page implements HasForms
             'reorder_cover_days' => Setting::get('reorder_cover_days', 14),
             'count_auto_approve_value' => Setting::get('count_auto_approve_value', 25), 'count_auto_approve_pct' => Setting::get('count_auto_approve_pct', 2),
             'pact_interstate_enabled' => (bool) Setting::get('pact_interstate_enabled'), 'msa_directory_strict' => (bool) Setting::get('msa_directory_strict'), 'coa_expiry_warn_days' => Setting::get('coa_expiry_warn_days', 30),
-            'pos_hold_days' => Setting::get('pos_hold_days', 7),
+            'pos_hold_days' => Setting::get('pos_hold_days', 7), 'allow_negative_inventory_sales' => \App\Inventory\NegativeStock::allowed(),
             'cycle_plan_enabled' => \App\Warehouse\CycleCountPlanner::enabled(), 'cycle_plan_frequency' => \App\Warehouse\CycleCountPlanner::frequency(),
             'cycle_plan_weekday' => (string) \App\Warehouse\CycleCountPlanner::weekday(), 'cycle_plan_size' => \App\Warehouse\CycleCountPlanner::size(),
             'cycle_plan_high_risk_classes' => implode(', ', \App\Warehouse\CycleCountPlanner::highRiskClasses()), 'cycle_plan_high_risk_departments' => (string) Setting::get('cycle_plan_high_risk_departments'),
@@ -170,6 +170,10 @@ class Settings extends Page implements HasForms
                             ->helperText('Held (parked) POS sales are removed after this many days; each removal is logged.'),
                         Forms\Components\TextInput::make('count_auto_approve_pct')->label('Count: auto-approve variance up to % of expected per line')->numeric()->minValue(0)->maxValue(100),
                     ])->columns(2),
+                    Forms\Components\Section::make('Selling stock you do not have yet')->schema([
+                        Forms\Components\Toggle::make('allow_negative_inventory_sales')->label('Allow negative inventory sales')
+                            ->helperText('OFF (default) = a sale is refused when there is not enough stock. ON = orders, POS and van sales can go through and on-hand drops below zero until the next receipt or count. Every change is logged.'),
+                    ]),
                     Forms\Components\Section::make('Cycle count plan')->description('Builds the day\'s (or week\'s) cycle count tasks for the Warehouse hub. Counts post through the normal count approval; nothing here changes stock by itself.')->schema([
                         Forms\Components\Toggle::make('cycle_plan_enabled')->label('Generate cycle count tasks'),
                         Forms\Components\Select::make('cycle_plan_frequency')->label('Frequency')->options(['daily' => 'Daily', 'weekly' => 'Weekly'])->native(false)->required(),
@@ -264,6 +268,14 @@ class Settings extends Page implements HasForms
             $company['logo_path'] = app(ImageService::class)->normalizeStored($d['logo_path'] ?? null, 'branding');
             Company::current()->update($company);
             $d = array_diff_key($d, self::COMPANY_FIELDS, ['logo_path' => 1]);
+        }
+        if (array_key_exists('allow_negative_inventory_sales', $d)) { // 0.20.20: logged setting, stored via NegativeStock (not the generic loop)
+            $before = \App\Inventory\NegativeStock::allowed();
+            \App\Inventory\NegativeStock::set((bool) $d['allow_negative_inventory_sales']);
+            if ($before !== (bool) $d['allow_negative_inventory_sales']) {
+                \App\Audit\Audit::action('negative_inventory_sales', null, 'Allow negative inventory sales turned '.($d['allow_negative_inventory_sales'] ? 'ON' : 'OFF'));
+            }
+            unset($d['allow_negative_inventory_sales']);
         }
         $lists = array_intersect_key($d, array_flip(['lot_track_departments', 'lot_track_tax_classes', 'lot_track_apply_existing']));
         $d = array_diff_key($d, $lists);

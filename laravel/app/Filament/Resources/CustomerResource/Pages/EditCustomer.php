@@ -22,7 +22,7 @@ class EditCustomer extends EditRecord
         return [
             Actions\Action::make('statement')->label('Statement PDF')->icon('heroicon-o-document-arrow-down')
                 ->url(fn () => route('docs.statement', $this->record)),
-            Actions\Action::make('mkt')->label('Open in BrandWorx Marketing')->icon('heroicon-o-arrow-top-right-on-square')
+            Actions\Action::make('mkt')->label('Open in Marketing')->icon('heroicon-o-arrow-top-right-on-square')
                 ->visible(fn () => MarketingSettings::enabled() && $this->record->ghl_contact_id && auth()->user()?->canModule('marketing', 'manage'))
                 ->url(fn () => MarketingSettings::contactUrl($this->record->ghl_contact_id), shouldOpenInNewTab: true),
             Actions\DeleteAction::make()->visible(fn () => CustomerResource::canDeleteAny()),

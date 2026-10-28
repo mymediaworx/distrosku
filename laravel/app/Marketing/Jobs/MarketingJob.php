@@ -16,7 +16,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Throwable;
 
-/** 0.19: one queued BrandWorx Marketing task (contact upsert, order event, notification). Retried with backoff. */
+/** 0.19: one queued Marketing task (contact upsert, order event, notification). Retried with backoff. */
 class MarketingJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
@@ -37,7 +37,7 @@ class MarketingJob implements ShouldQueue
             return;
         }
         if (! MarketingSettings::enabled()) {
-            $log->finish('skipped', null, null, 'BrandWorx Marketing is off.');
+            $log->finish('skipped', null, null, 'Marketing is off.');
 
             return;
         }

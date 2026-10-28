@@ -280,7 +280,7 @@ class Phase15DeliveryTest extends TestCase
         $this->assertSame('pickup', $so->signatures()->value('context'));
 
         $sales = User::where('role', 'sales')->first();
-        $pos = Livewire::actingAs($sales)->test(CounterPos::class)->set('scan', 'TST-PIP-001')->call('add')
+        $pos = Livewire::actingAs($sales)->test(CounterPos::class)->set('customerId', \App\Models\Customer::where('code', 'CASH')->value('id'))->set('scan', 'TST-PIP-001')->call('add')
             ->assertSee('I warrant that I am 21 years of age or older.')->call('checkout');
         $this->assertNotNull($pos->get('error'));
         $this->assertSame(0, SalesOrder::where('channel', 'pos')->count());
@@ -288,7 +288,7 @@ class Phase15DeliveryTest extends TestCase
         $this->assertSame(1, SalesOrder::where('channel', 'pos')->count());
         $this->assertSame('counter', SalesOrder::where('channel', 'pos')->first()->signatures()->value('context'));
         // non-regulated counter sale: no pad
-        Livewire::actingAs($sales)->test(CounterPos::class)->set('scan', 'TST-GEN-001')->call('add')->assertDontSee('21 years of age')->call('checkout')->assertSet('error', null);
+        Livewire::actingAs($sales)->test(CounterPos::class)->set('customerId', \App\Models\Customer::where('code', 'CASH')->value('id'))->set('scan', 'TST-GEN-001')->call('add')->assertDontSee('21 years of age')->call('checkout')->assertSet('error', null);
     }
 
     public function test_modules_launcher_shows_role_tiles_and_sets_landing_page(): void

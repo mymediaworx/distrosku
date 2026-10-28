@@ -31,6 +31,7 @@ class CounterPosTest extends TestCase
     {
         $this->actingAs(User::factory()->create(['role' => 'sales']));
         Livewire::test(CounterPos::class)
+            ->set('customerId', \App\Models\Customer::where('code', 'CASH')->value('id'))
             ->set('scan', 'TST-GEN-001')->call('add')
             ->set('scan', 'TST-CIG-001')->call('add')
             ->call('checkout')

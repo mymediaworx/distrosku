@@ -18,7 +18,7 @@ class SalesOrder extends Model
 
     protected $guarded = ['id'];
 
-    protected $attributes = ['amount_paid' => '0', 'amount_credited' => '0', 'subtotal' => '0', 'total' => '0', 'status' => 'draft'];
+    protected $attributes = ['amount_paid' => '0', 'amount_credited' => '0', 'subtotal' => '0', 'tax_total' => '0', 'total' => '0', 'status' => 'draft'];
 
     protected static function booted(): void
     {
@@ -115,6 +115,7 @@ class SalesOrder extends Model
             'invoiced_at' => 'datetime',
             'board_stage_at' => 'datetime',
             'subtotal' => 'decimal:4',
+            'tax_total' => 'decimal:4',
             'total' => 'decimal:4',
             'amount_paid' => 'decimal:4',
             'amount_credited' => 'decimal:4',

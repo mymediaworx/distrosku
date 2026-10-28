@@ -1,7 +1,8 @@
 <?php
 
 return [
-    'version' => '0.20.19',
+    'version' => '0.20.20',
+    // 0.20.20: customer search picker (no default customer), TV mode removed, wider order lines, Marketing label, taxes on invoices, product Duplicate, negative-inventory setting, Quick Tools counts.
     // 0.20.19: smart product search (every word, any order, punctuation ignored, abbreviations from config/product_search.php, ranked results with price + pack unit; also Products table and global search).
     // 0.20.16: 0.20.15 + test suite brought in line with 0.20.13 behaviour (no app code changes).
     // 0.20.15: lot traceability (#36) — GS1 receiving, COA per lot, tracking by product type, lot on sale lines, Needs review, Trace.
@@ -99,6 +100,7 @@ return [
         'warehouse_scan' => ['view' => ['warehouse'], 'manage' => ['warehouse']],
         'bins' => ['view' => ['warehouse'], 'manage' => ['warehouse']],
         'lots' => ['view' => ['warehouse', 'sales'], 'manage' => []],          // lots, expiry alerts, recall look-up; hold = admin
+        'quick_counts' => ['view' => ['warehouse'], 'manage' => []],         // 0.20.20: counts typed on the Quick Tools page; applying = admin
         'counts' => ['view' => ['warehouse'], 'manage' => ['warehouse']],      // create/scan/submit; approve + post = admin
         'reorder' => ['view' => ['warehouse'], 'manage' => []],              // suggestions; creating draft POs = admin
         'pact' => ['view' => [], 'manage' => []],                            // PACT registrations + monthly reports (admin)

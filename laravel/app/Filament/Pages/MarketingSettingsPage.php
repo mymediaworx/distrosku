@@ -17,7 +17,7 @@ use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 
-/** 0.19: BrandWorx Marketing add-on setup (owner/admin). The token is write-only: never shown back, only "ends …abcd". */
+/** 0.19: Marketing add-on setup (owner/admin). The token is write-only: never shown back, only "ends …abcd". */
 class MarketingSettingsPage extends Page implements HasForms
 {
     use InteractsWithForms;
@@ -26,9 +26,9 @@ class MarketingSettingsPage extends Page implements HasForms
 
     protected static ?string $navigationIcon = 'heroicon-o-megaphone';
 
-    protected static ?string $navigationLabel = 'BrandWorx Marketing';
+    protected static ?string $navigationLabel = 'Marketing';
 
-    protected static ?string $title = 'BrandWorx Marketing';
+    protected static ?string $title = 'Marketing';
 
     protected static ?string $slug = 'brandworx-marketing';
 
@@ -59,17 +59,17 @@ class MarketingSettingsPage extends Page implements HasForms
             Forms\Components\Section::make('Connection')->columns(2)->schema([
                 Forms\Components\TextInput::make('token')->label('Private Integration Token')->password()->autocomplete('off')
                     ->placeholder(MarketingSettings::maskedToken())->helperText('Stored encrypted. Leave blank to keep the current token. Never shown again.'),
-                Forms\Components\TextInput::make('location_id')->label('Location ID')->maxLength(64)->helperText('Sub-account ID (Settings > Business Profile in BrandWorx Marketing). Required by the API.'),
-                Forms\Components\TextInput::make('app_url')->label('App URL (for "Open in BrandWorx Marketing" links)')->url()->default(MarketingSettings::DEFAULT_APP_URL),
+                Forms\Components\TextInput::make('location_id')->label('Location ID')->maxLength(64)->helperText('Sub-account ID (Settings > Business Profile in Marketing). Required by the API.'),
+                Forms\Components\TextInput::make('app_url')->label('App URL (for "Open in Marketing" links)')->url()->default(MarketingSettings::DEFAULT_APP_URL),
                 Forms\Components\TextInput::make('webhook_url')->label('Inbound webhook URL (optional)')->url()->maxLength(500)
                     ->helperText('A workflow "Inbound Webhook" trigger URL: order events are also POSTed here.'),
                 Forms\Components\Toggle::make('enabled')->label('Module on (sync customers and order events)')
                     ->helperText('Stays off and hidden until a token and Location ID are saved.'),
                 Forms\Components\Toggle::make('notify')->label('Send transactional email / SMS')
-                    ->helperText('OFF by default. Also needs each template on and the customer opted in. Needs A2P 10DLC (SMS) and a sending domain (email) in BrandWorx Marketing.'),
+                    ->helperText('OFF by default. Also needs each template on and the customer opted in. Needs A2P 10DLC (SMS) and a sending domain (email) in Marketing.'),
             ]),
             Forms\Components\Section::make('Contact custom fields')->columns(3)->collapsed()
-                ->description('Field key (e.g. contact.vega_account_number) or field ID in BrandWorx Marketing. Looked up at sync time. Blank = default key; "-" = do not send. Only text fields can be filled.')
+                ->description('Field key (e.g. contact.vega_account_number) or field ID in Marketing. Looked up at sync time. Blank = default key; "-" = do not send. Only text fields can be filled.')
                 ->schema([
                     Forms\Components\TextInput::make('cf.account')->label('Vega Account Number (Account Number field)')->maxLength(120),
                     Forms\Components\TextInput::make('cf.state_tax')->label('State Tax ID')->maxLength(120),
@@ -94,7 +94,7 @@ class MarketingSettingsPage extends Page implements HasForms
         $d = $this->form->getState();
         if (filled($d['token'] ?? null)) {
             Setting::put('mkt_token', trim($d['token']));
-            Audit::action('marketing_token_set', null, 'BrandWorx Marketing token saved'); // value never logged
+            Audit::action('marketing_token_set', null, 'Marketing token saved'); // value never logged
         }
         Setting::put('mkt_location_id', trim((string) ($d['location_id'] ?? '')) ?: null);
         Setting::put('mkt_app_url', rtrim((string) ($d['app_url'] ?? ''), '/') ?: MarketingSettings::DEFAULT_APP_URL);
@@ -111,7 +111,7 @@ class MarketingSettingsPage extends Page implements HasForms
                 TransactionalTemplate::whereKey($t['id'])->first()?->update(['subject' => $t['subject'] ?? null, 'body' => $t['body'], 'enabled' => (bool) ($t['enabled'] ?? false)]);
             }
         }
-        Audit::action('marketing_settings', null, 'BrandWorx Marketing settings saved', ['enabled' => $on, 'notify' => $on && ! empty($d['notify'])]);
+        Audit::action('marketing_settings', null, 'Marketing settings saved', ['enabled' => $on, 'notify' => $on && ! empty($d['notify'])]);
         $this->data['token'] = null;
         Notification::make()->success()->title(! empty($d['enabled']) && ! $on ? 'Saved, but the module stays off until a token and Location ID are set' : 'Saved')->send();
     }
@@ -124,17 +124,17 @@ class MarketingSettingsPage extends Page implements HasForms
                     try {
                         $r = app(GhlClient::class)->test();
                         $lines = collect($r)->map(fn ($v, $k) => ($v['ok'] ? '✓ ' : '✗ ')."{$k} ({$v['status']}) {$v['note']}")->implode("\n");
-                        Audit::action('marketing_test', null, 'BrandWorx Marketing connection test', collect($r)->map(fn ($v) => $v['status'])->all());
+                        Audit::action('marketing_test', null, 'Marketing connection test', collect($r)->map(fn ($v) => $v['status'])->all());
                         Notification::make()->title($r['location']['ok'] ? 'Connected' : 'Not connected')->body(nl2br(e($lines)))->{$r['location']['ok'] ? 'success' : 'danger'}()->persistent()->send();
                     } catch (\Throwable $e) {
                         Notification::make()->danger()->title('Test failed')->body($e->getMessage())->send();
                     }
                 }),
             Action::make('pushAll')->label('Push all customers')->icon('heroicon-o-arrow-up-tray')->visible(fn () => MarketingSettings::enabled())
-                ->requiresConfirmation()->modalDescription('Queues every active customer for BrandWorx Marketing, '.MarketingSync::BULK_PER_10S.' every 10 seconds to stay under the API rate limit. Sync is one-way: nothing is read back.')
+                ->requiresConfirmation()->modalDescription('Queues every active customer for Marketing, '.MarketingSync::BULK_PER_10S.' every 10 seconds to stay under the API rate limit. Sync is one-way: nothing is read back.')
                 ->action(function () {
                     $n = MarketingSync::queueMany(Customer::where('active', true));
-                    Audit::action('marketing_push_all', null, "Queued {$n} customer(s) for BrandWorx Marketing", ['count' => $n]);
+                    Audit::action('marketing_push_all', null, "Queued {$n} customer(s) for Marketing", ['count' => $n]);
                     $mins = (int) ceil($n / MarketingSync::BULK_PER_10S * 10 / 60);
                     Notification::make()->success()->title("Queued {$n} customer(s)")->body("Spread over about {$mins} minute(s). See the sync log.")->send();
                 }),
