@@ -38,6 +38,13 @@ class SalesOrder extends Model
             if (blank($m->fulfillment)) {
                 $m->fulfillment = self::PICKUP;
             }
+            // 0.21: switching an order to a walk-in / cash customer is refused while it has regulated lines.
+            if ($m->exists && $m->isDirty('customer_id') && \App\Compliance\WalkInRule::isWalkInId($m->customer_id)) {
+                $bad = $m->lines()->with('product')->get()->first(fn ($l) => $l->product?->isRegulated());
+                if ($bad) {
+                    throw ValidationException::withMessages(['customer_id' => \App\Compliance\WalkInRule::message($bad->product)]);
+                }
+            }
             if ($m->needsShipTo() && blank($m->ship_to_id)) {
                 throw ValidationException::withMessages(['ship_to_id' => 'Choose a ship-to for a delivery (or switch the sale to Counter pickup).']);
             }

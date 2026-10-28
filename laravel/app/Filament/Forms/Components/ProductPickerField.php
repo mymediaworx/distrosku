@@ -25,6 +25,21 @@ class ProductPickerField extends Field
 
     protected bool|Closure $showCost = false;
 
+    protected bool|Closure $restrictRegulated = false;
+
+    /** 0.21: hide regulated products (walk-in / cash customer). Re-evaluated each render. */
+    public function hideRegulatedWhen(bool|Closure $condition = true): static
+    {
+        $this->restrictRegulated = $condition;
+
+        return $this;
+    }
+
+    public function getRestrictRegulated(): bool
+    {
+        return (bool) $this->evaluate($this->restrictRegulated);
+    }
+
     public function multiple(bool|Closure $condition = true): static
     {
         $this->isMultiple = $condition;
@@ -62,7 +77,7 @@ class ProductPickerField extends Field
      * line per product. $makeLine receives (Product $p, Get $get) and returns the line's field values.
      * Existing blank lines (no product yet) are replaced, so the first add does not leave an empty row.
      */
-    public static function addLinesAction(string $repeaterPath, Closure $makeLine, string $name = 'addProducts', bool $showCost = false): Action
+    public static function addLinesAction(string $repeaterPath, Closure $makeLine, string $name = 'addProducts', bool $showCost = false, ?Closure $walkIn = null): Action
     {
         return Action::make($name)
             ->label('Add products (search / scan / browse)')
@@ -71,11 +86,20 @@ class ProductPickerField extends Field
             ->modalHeading('Add products')
             ->modalWidth('4xl')
             ->modalSubmitActionLabel('Add to lines')
-            ->form([
-                static::make('product_ids')->label('Products')->multiple()->showCost($showCost)->hiddenLabel(),
+            ->form(fn (Get $get) => [
+                // 0.21: $walkIn(Get) => true hides regulated products (walk-in / cash customer).
+                static::make('product_ids')->label('Products')->multiple()->showCost($showCost)->hiddenLabel()
+                    ->hideRegulatedWhen($walkIn ? (bool) $walkIn($get) : false),
             ])
-            ->action(function (array $data, Get $get, Set $set) use ($repeaterPath, $makeLine) {
+            ->action(function (array $data, Get $get, Set $set) use ($repeaterPath, $makeLine, $walkIn) {
                 $ids = array_values(array_unique(array_map('intval', $data['product_ids'] ?? [])));
+                if ($ids !== [] && $walkIn && $walkIn($get)) { // server-side: never add a regulated line for a walk-in customer
+                    $bad = Product::whereIn('id', $ids)->regulated()->get();
+                    if ($bad->isNotEmpty()) {
+                        $ids = array_values(array_diff($ids, $bad->pluck('id')->all()));
+                        \Filament\Notifications\Notification::make()->danger()->title('Not added: '.\App\Compliance\WalkInRule::message($bad->first()))->send();
+                    }
+                }
                 if ($ids === []) {
                     return;
                 }

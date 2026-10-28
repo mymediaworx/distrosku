@@ -1,7 +1,8 @@
 <?php
 
 return [
-    'version' => '0.20.20',
+    'version' => '0.20.21',
+    // 0.20.21: walk-in / cash customers (CASH or flagged "Walk-in / cash") cannot buy regulated products (tobacco, vapor, CBD/hemp, kratom): POS, van, sales orders, portal, picker.
     // 0.20.20: customer search picker (no default customer), TV mode removed, wider order lines, Marketing label, taxes on invoices, product Duplicate, negative-inventory setting, Quick Tools counts.
     // 0.20.19: smart product search (every word, any order, punctuation ignored, abbreviations from config/product_search.php, ranked results with price + pack unit; also Products table and global search).
     // 0.20.16: 0.20.15 + test suite brought in line with 0.20.13 behaviour (no app code changes).

@@ -87,6 +87,22 @@ class Product extends Model
         return $q->whereNull($q->getModel()->qualifyColumn('archived_at'));
     }
 
+    /** 0.21: regulated = tobacco, vapor, hemp/CBD, kratom (every tax class except General and Beverage). Walk-in/cash customers cannot buy these. */
+    public function isRegulated(): bool
+    {
+        return (bool) $this->tax_class?->isRegulated();
+    }
+
+    public function scopeRegulated($q)
+    {
+        return $q->whereIn('tax_class', \App\Enums\TaxClass::regulatedValues());
+    }
+
+    public function scopeNotRegulated($q)
+    {
+        return $q->where(fn ($w) => $w->whereNull('tax_class')->orWhereNotIn('tax_class', \App\Enums\TaxClass::regulatedValues()));
+    }
+
     public function isArchived(): bool
     {
         return $this->archived_at !== null;

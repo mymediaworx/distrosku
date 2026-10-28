@@ -67,6 +67,13 @@ class VanSale extends Component
     public function updatedCustomerId(): void
     {
         $this->shipToId = $this->fulfillment === 'delivery' ? Customer::find($this->customerId)?->resolveShipToId() : null;
+        // 0.21: switching to a walk-in / cash customer drops regulated lines (with a message).
+        $c = Customer::find($this->customerId);
+        $drop = array_values(array_filter($this->cart, fn ($l) => \App\Compliance\WalkInRule::blocks($c, Product::find($l['product_id']))));
+        if ($drop) {
+            $this->cart = array_values(array_filter($this->cart, fn ($l) => ! \App\Compliance\WalkInRule::blocks($c, Product::find($l['product_id']))));
+            $this->err = 'Removed '.count($drop).' regulated item(s): walk-in / cash customers can\'t buy tobacco, vapor, CBD/hemp or kratom ('.implode(', ', array_column($drop, 'sku')).').';
+        }
         $this->reprice();
         $this->resetSignature();
     }
@@ -85,6 +92,13 @@ class VanSale extends Component
             return;
         }
         $p = $hit['product'];
+        // 0.21: walk-in / cash customers cannot buy regulated products: the line is never added.
+        if (\App\Compliance\WalkInRule::blocks(Customer::find($this->customerId), $p)) {
+            $this->err = \App\Compliance\WalkInRule::message($p);
+            $this->scan = '';
+
+            return;
+        }
         $this->ok = \App\Pos\SaleScan::addedMessage($hit);
         foreach ($this->cart as $i => $l) {
             if ($l['product_id'] === $p->id) {

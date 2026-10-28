@@ -53,10 +53,28 @@ class SalesOrderLine extends Model
         return $this->belongsTo(Product::class);
     }
 
+    /** 0.21: walk-in / cash customers cannot have regulated products on an order. */
+    private static function assertWalkInAllowed(self $l): void
+    {
+        $so = $l->sales_order_id ? SalesOrder::with('customer')->find($l->sales_order_id) : null;
+        $p = $l->product_id ? Product::find($l->product_id) : null;
+        if ($so && \App\Compliance\WalkInRule::blocks($so->customer, $p)) {
+            throw \Illuminate\Validation\ValidationException::withMessages(['product_id' => \App\Compliance\WalkInRule::message($p)]);
+        }
+    }
+
     protected static function booted(): void
     {
-        static::creating(fn (self $l) => Product::assertOrderable($l->product_id));
-        static::updating(fn (self $l) => $l->isDirty('product_id') ? Product::assertOrderable($l->product_id) : null);
+        static::creating(function (self $l) {
+            Product::assertOrderable($l->product_id);
+            self::assertWalkInAllowed($l);
+        });
+        static::updating(function (self $l) {
+            if ($l->isDirty('product_id')) {
+                Product::assertOrderable($l->product_id);
+                self::assertWalkInAllowed($l);
+            }
+        });
         static::saving(fn (self $l) => app(PricingEngine::class)->applyToLine($l));
         static::saved(fn (self $l) => PricingEngine::writeLog($l));
     }

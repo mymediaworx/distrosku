@@ -27,11 +27,26 @@ class CounterPosTest extends TestCase
         $this->get('/pos')->assertRedirect('/admin/login');
     }
 
+    /** 0.21: a licensed COD counter customer (CASH and walk-in customers can't buy regulated products). */
+    private function codCustomer(): \App\Models\Customer
+    {
+        $cash = \App\Models\Customer::where('code', 'CASH')->first();
+        $c = \App\Models\Customer::create(array_merge($cash->only(['name', 'type', 'terms', 'credit_limit', 'state']), ['code' => 'CODLIC', 'name' => 'Licensed COD Counter', 'active' => true, 'walk_in' => false]));
+        foreach ($cash->shipTos as $st) {
+            $c->shipTos()->create($st->only(['name', 'address1', 'city', 'state', 'zip']));
+        }
+        foreach ($cash->licenses as $l) {
+            $c->licenses()->create(array_merge($l->only(['type', 'state', 'expires_at']), ['number' => 'COD-'.$l->number]));
+        }
+
+        return $c;
+    }
+
     public function test_pos_sale_completes_and_posts(): void
     {
         $this->actingAs(User::factory()->create(['role' => 'sales']));
         Livewire::test(CounterPos::class)
-            ->set('customerId', \App\Models\Customer::where('code', 'CASH')->value('id'))
+            ->set('customerId', $this->codCustomer()->id) // 0.21: CASH can't buy regulated (TST-CIG-001)
             ->set('scan', 'TST-GEN-001')->call('add')
             ->set('scan', 'TST-CIG-001')->call('add')
             ->call('checkout')

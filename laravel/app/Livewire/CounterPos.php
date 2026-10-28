@@ -185,6 +185,10 @@ class CounterPos extends Component
         $this->shipToId = $this->fulfillment === 'delivery' ? Customer::find($this->customerId)?->resolveShipToId() : null;
         $this->reprice(true);
         $this->recheck();
+        // 0.21: tell the cashier why lines turned red when switching to a walk-in / cash customer
+        if (($c = Customer::find($this->customerId)) && collect($this->cart)->contains(fn ($l) => \App\Compliance\WalkInRule::blocks($c, Product::find($l['product_id'])))) {
+            $this->error = 'Walk-in / cash customers can\'t buy regulated products (tobacco, vapor, CBD/hemp, kratom). Remove the red items, or pick a customer account.';
+        }
     }
 
     public function updatedShipToId(): void
@@ -206,26 +210,38 @@ class CounterPos extends Component
 
             return;
         }
-        $this->addProduct($hit['product'], $hit['qty']);
+        if (! $this->addProduct($hit['product'], $hit['qty'])) {
+            $this->scan = '';
+
+            return;
+        }
         $this->message = \App\Pos\SaleScan::addedMessage($hit);
         $this->scan = '';
     }
 
     /** Shared by scan/search and Browse: same pricing and eligibility checks. */
-    private function addProduct(Product $p, string $qty): void
+    private function addProduct(Product $p, string $qty): bool
     {
+        // 0.21: walk-in / cash customers cannot buy regulated products: the line is never added.
+        if (\App\Compliance\WalkInRule::blocks(Customer::find($this->customerId), $p)) {
+            $this->error = \App\Compliance\WalkInRule::message($p);
+
+            return false;
+        }
         foreach ($this->cart as $i => $line) {
             if ($line['product_id'] === $p->id) {
                 $this->cart[$i]['qty'] = self::q(Money::add($line['qty'], $qty));
                 $this->reprice();
                 $this->recheck();
 
-                return;
+                return true;
             }
         }
         $q = $this->quote($p, $qty);
         $this->cart[] = ['product_id' => $p->id, 'sku' => $p->sku, 'name' => $p->name, 'qty' => self::q($qty), 'price' => $q->price, 'quoted' => $q->price, 'source' => $q->source, 'reasons' => []];
         $this->recheck();
+
+        return true;
     }
 
     // ---- 0.19.3 Browse catalog -------------------------------------------------
@@ -286,6 +302,11 @@ class CounterPos extends Component
 
     public function pick(int $id): void
     {
+        if (($p = Product::find($id)) && \App\Compliance\WalkInRule::blocks(Customer::find($this->customerId), $p)) {
+            $this->error = \App\Compliance\WalkInRule::message($p);
+
+            return;
+        }
         $this->pickProductId = $id;
         $this->pickQty = '1';
         $this->pickFresh = true;
@@ -316,9 +337,11 @@ class CounterPos extends Component
 
             return;
         }
-        $this->addProduct($p, (string) $qty);
+        $added = $this->addProduct($p, (string) $qty);
         $this->pickProductId = null;
-        $this->message = "Added {$qty} × {$p->name}.";
+        if ($added) {
+            $this->message = "Added {$qty} × {$p->name}.";
+        }
     }
 
     private function catalogQuery()
@@ -337,6 +360,7 @@ class CounterPos extends Component
         $c = Customer::find($this->customerId);
 
         return $ps->map(fn (Product $p) => ['id' => $p->id, 'name' => $p->name, 'sku' => $p->sku, 'unit' => $p->unit, 'brand' => $p->brand,
+            'restricted' => \App\Compliance\WalkInRule::blocks($c, $p), // 0.21: disabled tile for walk-in / cash customers
             'price' => app(PricingEngine::class)->quote($p, $c, 1)->price,
             'stock' => isset($stock[$p->id]) ? self::q(Money::of($stock[$p->id]->qty)->minus(Money::of($stock[$p->id]->reserved))) : '0'])->all();
     }

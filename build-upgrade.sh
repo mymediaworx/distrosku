@@ -41,7 +41,7 @@ case "$PHASE" in
   17.2) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
   17.3) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
   18) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
-  19|19.1|19.2|19.3|19.4|19.5|19.6|20.0|20.1|20.2|20.3|20.4|20.5|20.6|20.7|20.8|20.9|20.10|20.11|20.12|20.13|20.14|20.15|20.16|20.17|20.18|20.19|20.20) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
+  19|19.1|19.2|19.3|19.4|19.5|19.6|20.0|20.1|20.2|20.3|20.4|20.5|20.6|20.7|20.8|20.9|20.10|20.11|20.12|20.13|20.14|20.15|20.16|20.17|20.18|20.19|20.20|20.21) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
   18.2) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
   18.1) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
   *) echo "No seeder list for phase $PHASE"; exit 1 ;;
@@ -823,6 +823,17 @@ if [ "$PHASE" = "12" ]; then
   done
   ! grep -rqiE "Http::|curl_|guzzle" $L/app/Warehouse/ShippingService.php $L/app/Compliance || { echo "CHECK FAILED: no live carrier / state API calls"; exit 1; }
   echo "Phase 12 files OK"
+fi
+if [ "$PHASE" = "20.21" ]; then
+  L=stage-up/laravel
+  grep -q "'version' => '0.20.21'" $L/config/erp.php || { echo "CHECK FAILED: erp version is not 0.20.21"; exit 1; }
+  for f in app/Compliance/WalkInRule.php database/migrations/2026_11_30_000001_phase2021_walk_in_customers.php; do
+    test -f $L/$f || { echo "CHECK FAILED: $f missing"; exit 1; }
+  done
+  grep -q "WalkInRule::reason" $L/app/Services/ComplianceChecker.php || { echo "CHECK FAILED: walk-in rule not wired into ComplianceChecker"; exit 1; }
+  grep -q "WalkInRule" $L/app/Models/SalesOrderLine.php || { echo "CHECK FAILED: walk-in rule missing from order lines"; exit 1; }
+  grep -q "erp:regulated-report" $L/routes/console.php || { echo "CHECK FAILED: regulated report command missing"; exit 1; }
+  echo "Phase 20.21 checks OK"
 fi
 if [ "$PHASE" = "20.20" ]; then
   L=stage-up/laravel

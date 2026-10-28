@@ -4,7 +4,9 @@ From Michael's 2026-10-28 walkthrough. 0.20.20 shipped items 1, 5, 8, 10, 11, 12
 
 **Test note for every release:** the box has no PHP `intl` or `sodium` extensions, so the **existing test failures (73 as first counted; 72 in the final 0.20.20 run, an identical set on a clean 0.20.19 checkout) are environment failures, not regressions.** Almost all are Filament table/page views calling `Number::format` / `Number::currency` (needs `intl`); two are `sodium_crypto_sign_keypair()` in the Rules Hub tests (needs `sodium`). Compare a new run against the clean-baseline failure list, not against zero, or run the suite on a host that has both extensions. Run the suite with `php -d memory_limit=-1 vendor/bin/phpunit` (`artisan test` starts a child PHP that ignores `-d`).
 
-## 0.20.21 (small, mostly Warehouse)
+> **Release numbering note:** 0.20.21 shipped the walk-in / cash rule (no regulated products for walk-in customers). The items below under this heading move to the next release (0.20.22).
+
+## 0.20.22 (small, mostly Warehouse; was planned as 0.20.21)
 
 ### 2. Receiving without a PO (Warehouse)
 - New *Receive stock* action under Warehouse that does not need a purchase order: pick vendor (optional), warehouse/bin, products, qty, unit cost, note.

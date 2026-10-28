@@ -77,6 +77,21 @@ class Phase15DeliveryTest extends TestCase
         return app(SalesOrderService::class)->confirm($so);
     }
 
+    /** 0.21: a licensed COD counter customer (CASH and walk-in customers can't buy regulated products). */
+    private function codCustomer(): Customer
+    {
+        $cash = Customer::where('code', 'CASH')->first();
+        $c = Customer::create(array_merge($cash->only(['name', 'type', 'terms', 'credit_limit', 'state']), ['code' => 'CODLIC', 'name' => 'Licensed COD Counter', 'active' => true, 'walk_in' => false]));
+        foreach ($cash->shipTos as $st) {
+            $c->shipTos()->create($st->only(['name', 'address1', 'city', 'state', 'zip']));
+        }
+        foreach ($cash->licenses as $l) {
+            $c->licenses()->create(array_merge($l->only(['type', 'state', 'expires_at']), ['number' => 'COD-'.$l->number]));
+        }
+
+        return $c;
+    }
+
     private function sig(int $acks = 1, string $name = 'Pat Buyer'): array
     {
         return ['image' => self::PNG, 'name' => $name, 'accepted' => array_fill(0, $acks, true)];
@@ -104,7 +119,7 @@ class Phase15DeliveryTest extends TestCase
             $svc->acknowledgments('TEST Corner Market (KY)', '1234.5', true)[1]);
         $so = $this->order('TST-PIP-001');
         $this->assertTrue($svc->isAccountCharge($so)); // Net 15
-        $cash = $this->order('TST-PIP-001', '1', Customer::where('code', 'CASH')->first());
+        $cash = $this->order('TST-PIP-001', '1', $this->codCustomer()); // 0.21: CASH itself can't buy regulated products
         $this->assertFalse($svc->isAccountCharge($cash)); // COD
     }
 
@@ -280,7 +295,7 @@ class Phase15DeliveryTest extends TestCase
         $this->assertSame('pickup', $so->signatures()->value('context'));
 
         $sales = User::where('role', 'sales')->first();
-        $pos = Livewire::actingAs($sales)->test(CounterPos::class)->set('customerId', \App\Models\Customer::where('code', 'CASH')->value('id'))->set('scan', 'TST-PIP-001')->call('add')
+        $pos = Livewire::actingAs($sales)->test(CounterPos::class)->set('customerId', $this->codCustomer()->id)->set('scan', 'TST-PIP-001')->call('add')
             ->assertSee('I warrant that I am 21 years of age or older.')->call('checkout');
         $this->assertNotNull($pos->get('error'));
         $this->assertSame(0, SalesOrder::where('channel', 'pos')->count());

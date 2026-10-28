@@ -30,6 +30,11 @@ class ComplianceChecker
         $class = $product->tax_class?->value;
         $reasons = [];
 
+        // 0.21: walk-in / cash customers can never buy regulated products (no override).
+        if ($r = \App\Compliance\WalkInRule::reason($customer, $product)) {
+            $reasons[] = $r;
+        }
+
         $pactCat = PactCategory::of($product);
         if (($product->pact_covered || ($pactCat && $pactCat !== 'other' && Setting::get('pact_interstate_enabled'))) && $state !== $home) {
             $d = $date->toDateString();

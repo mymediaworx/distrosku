@@ -59,6 +59,14 @@ class SalesOrderResource extends Resource
             Forms\Components\Section::make()->columns(['default' => 1, 'md' => 3])->schema([
                 Forms\Components\TextInput::make('number')->disabled()->dehydrated(false)->placeholder('Assigned on save'),
                 \App\Filament\Forms\Components\CustomerPickerField::make('customer_id')->label('Customer')->required()->live()
+                    ->rule(fn (Get $get) => function ($attr, $value, $fail) use ($get) { // 0.21: no walk-in / cash customer on an order with regulated lines
+                        if (\App\Compliance\WalkInRule::isWalkInId($value)) {
+                            $ids = collect((array) $get('lines'))->pluck('product_id')->filter()->all();
+                            if ($ids && ($bad = Product::whereIn('id', $ids)->regulated()->first())) {
+                                $fail(\App\Compliance\WalkInRule::message($bad));
+                            }
+                        }
+                    })
                     ->afterStateUpdated(function (Set $set, Get $get, $state) { // 0.19.6: ship-to only matters for delivery / ship
                         $set('ship_to_id', $state && $get('fulfillment') !== 'pickup' ? \App\Models\Customer::find($state)?->resolveShipToId() : null);
                     }),
@@ -94,7 +102,7 @@ class SalesOrderResource extends Resource
                     $q = app(PricingEngine::class)->quote($p, Customer::find($get('customer_id')), 1, $get('order_date'));
 
                     return ['product_id' => $p->id, 'qty' => 1, 'unit_price' => self::displayPrice($q->price), 'quoted' => $q->price];
-                }),
+                }, walkIn: fn (Get $get) => \App\Compliance\WalkInRule::isWalkInId($get('customer_id'))),
             ])->visible(fn (?SalesOrder $record) => ! $record || $record->status === S::Draft)->columnSpanFull()->key('add_products'),
             // 0.20.20: wide lines. Small screens: product on its own full row, qty / price / total under it. Large: one row, product gets half the width.
             Forms\Components\Repeater::make('lines')->relationship()->columns(['default' => 3, 'lg' => 12])
@@ -103,12 +111,23 @@ class SalesOrderResource extends Resource
                     Forms\Components\Hidden::make('quoted')->dehydrated(false)
                         ->afterStateHydrated(fn (Set $set, ?SalesOrderLine $record) => $set('quoted', $record?->quoted_price)),
                     Forms\Components\Select::make('product_id')->label('Product')->required()->searchable()
-                        ->rule(fn () => function ($attr, $value, $fail) {
+                        ->rule(fn (Get $get) => function ($attr, $value, $fail) use ($get) {
                             if (($p = Product::find($value)) && $p->isArchived()) {
                                 $fail("Product {$p->sku} is archived and can't be added to new orders.");
                             }
+                            // 0.21: walk-in / cash customers cannot buy regulated products
+                            if (($p ?? null) && \App\Compliance\WalkInRule::blocks(Customer::find($get('../../customer_id')), $p)) {
+                                $fail(\App\Compliance\WalkInRule::message($p));
+                            }
                         })
-                        ->getSearchResultsUsing(fn (string $search) => ProductSearch::options($search)) // 0.20.17: same matching as the picker (name/SKU/barcode/vendor item #)
+                        ->getSearchResultsUsing(function (string $search, Get $get) {
+                            $opts = ProductSearch::options($search);
+                            if ($opts && \App\Compliance\WalkInRule::isWalkInId($get('../../customer_id'))) { // 0.21: hide regulated for walk-in / cash
+                                $opts = array_intersect_key($opts, array_flip(Product::whereIn('id', array_keys($opts))->notRegulated()->pluck('id')->all()));
+                            }
+
+                            return $opts;
+                        }) // 0.20.17: same matching as the picker (name/SKU/barcode/vendor item #)
                         ->getOptionLabelUsing(fn ($value) => ($p = Product::find($value)) ? "{$p->sku} {$p->name}" : null)
                         ->live()->afterStateUpdated(fn (Get $get, Set $set) => self::fillQuote($get, $set))
                         ->columnSpan(['default' => 3, 'lg' => 6])->extraAttributes(['data-test' => 'line-product']),

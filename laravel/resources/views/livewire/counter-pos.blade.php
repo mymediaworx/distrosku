@@ -139,8 +139,8 @@
                 @endif
                 <div class="tiles">
                     @forelse($this->browseTiles as $t)
-                        <button type="button" class="tile" wire:key="t{{ $t['id'] }}" wire:click="pick({{ $t['id'] }})" data-test="tile">
-                            <strong>{{ $t['name'] }}</strong><small>{{ $t['sku'] }} · {{ $t['unit'] }}</small>
+                        <button type="button" class="tile" wire:key="t{{ $t['id'] }}" wire:click="pick({{ $t['id'] }})" data-test="tile" @if(! empty($t['restricted'])) disabled aria-disabled="true" data-restricted="1" title="Regulated: not for walk-in / cash customers" style="opacity:.45;cursor:not-allowed" @endif>
+                            <strong>{{ $t['name'] }}</strong><small>{{ $t['sku'] }} · {{ $t['unit'] }}@if(! empty($t['restricted'])) · <b>Not for walk-in</b>@endif</small>
                             <span class="tp">${{ number_format((float) $t['price'], 2) }}</span><small class="{{ (float) $t['stock'] > 0 ? '' : 'out' }}">Stock: {{ $t['stock'] }}</small>
                         </button>
                     @empty

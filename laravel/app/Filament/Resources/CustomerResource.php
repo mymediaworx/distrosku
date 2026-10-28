@@ -61,6 +61,9 @@ class CustomerResource extends Resource
                     Forms\Components\TextInput::make('email')->email(),
                     Forms\Components\TextInput::make('phone')->tel(),
                     Forms\Components\Toggle::make('active')->required()->default(true)->inline(false),
+                    Forms\Components\Toggle::make('walk_in')->label('Walk-in / cash customer')->inline(false)
+                        ->helperText('Cannot buy regulated products (tobacco, vapor, CBD/hemp, kratom). The CASH customer is always walk-in.')
+                        ->disabled(fn ($record) => $record && strtoupper((string) $record->code) === 'CASH')->dehydrated(),
                 ])->columns(['default' => 1, 'sm' => 2, 'xl' => 3]),
                 // Mid-form relation tabs (edit only; hidden on create until a record exists).
                 Forms\Components\Group::make()

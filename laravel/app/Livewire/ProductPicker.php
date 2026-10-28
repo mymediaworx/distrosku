@@ -46,6 +46,9 @@ class ProductPicker extends Component
 
     public string $name = 'product-picker';
 
+    /** 0.21: true when the order's customer is a walk-in / cash customer: regulated products are hidden and cannot be added. */
+    public bool $restrictRegulated = false;
+
     public string $search = '';
 
     public string $scan = '';
@@ -99,6 +102,11 @@ class ProductPicker extends Component
     public function add(int $id): void
     {
         if ($this->mode === 'open') {
+            return;
+        }
+        if ($this->restrictRegulated && ($p = Product::find($id)) && $p->isRegulated()) {
+            session()->flash('picker-miss-'.$this->getId(), \App\Compliance\WalkInRule::message($p));
+
             return;
         }
         $this->setIds($this->multi ? [...$this->ids(), $id] : [$id]);
@@ -207,7 +215,7 @@ class ProductPicker extends Component
             return [];
         }
 
-        return ProductSearch::query($term)->with('department', 'units')->limit(20)->get()
+        return ProductSearch::query($term)->when($this->restrictRegulated, fn ($q) => $q->notRegulated())->with('department', 'units')->limit(20)->get()
             ->map(fn (Product $p) => $this->card($p))->all();
     }
 
@@ -215,7 +223,7 @@ class ProductPicker extends Component
     public function browseTotal(): int
     {
         return $this->browsing
-            ? ProductSearch::browseQuery($this->browseDepartment, $this->browseVendor, $this->browseFilter)->count()
+            ? ProductSearch::browseQuery($this->browseDepartment, $this->browseVendor, $this->browseFilter)->when($this->restrictRegulated, fn ($q) => $q->notRegulated())->count()
             : 0;
     }
 
@@ -227,6 +235,7 @@ class ProductPicker extends Component
         }
 
         return ProductSearch::browseQuery($this->browseDepartment, $this->browseVendor, $this->browseFilter)
+            ->when($this->restrictRegulated, fn ($q) => $q->notRegulated())
             ->with('department', 'units')->limit(max(self::BROWSE_PAGE, $this->browseLimit))->get()
             ->map(fn (Product $p) => $this->card($p))->all();
     }

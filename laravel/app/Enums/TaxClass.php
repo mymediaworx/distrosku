@@ -37,6 +37,12 @@ enum TaxClass: string
         return ! in_array($this, [self::General, self::Beverage], true);
     }
 
+    /** @return list<string> */
+    public static function regulatedValues(): array
+    {
+        return array_values(array_map(fn (self $c) => $c->value, array_filter(self::cases(), fn (self $c) => $c->isRegulated())));
+    }
+
     public static function options(): array
     {
         $o = [];

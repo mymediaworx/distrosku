@@ -256,6 +256,8 @@ class ProductResource extends Resource
                 Tables\Filters\TernaryFilter::make('archived')->label('Show archived')
                     ->placeholder('Hide archived')->trueLabel('Archived only')->falseLabel('All (incl. archived)')
                     ->queries(true: fn ($q) => $q->whereNotNull('archived_at'), false: fn ($q) => $q, blank: fn ($q) => $q->whereNull('archived_at')),
+                Tables\Filters\TernaryFilter::make('regulated')->label('Regulated (no walk-in sales)')
+                    ->queries(true: fn ($q) => $q->regulated(), false: fn ($q) => $q->notRegulated(), blank: fn ($q) => $q),
                 Tables\Filters\SelectFilter::make('department_id')->label('Department')->relationship('department', 'name'),
                 Tables\Filters\SelectFilter::make('product_subtype')->label('Subtype')->options(\App\Models\Product::SUBTYPES),
                 Tables\Filters\Filter::make('coa_expiring')->label('COA expired / expiring soon')

@@ -1,7 +1,17 @@
-# Vega ERP — Phase 20.20 UPGRADE (existing install at vegatest1.distrosku.com)
+# Vega ERP — Phase 20.21 UPGRADE (existing install at vegatest1.distrosku.com)
 
 For a site already installed from `vega-erp-phase1.zip` and upgraded through phase 3 (a phase-2 site can also take this zip: seeders are cumulative). TEST data only. No secrets in this package.
 This zip contains **no `laravel/.env` and no `laravel/storage/`**, so extracting it over the live site keeps both.
+
+## What's new in 0.20.21 (includes everything through 0.20.20)
+
+**New rule from Michael: walk-in / cash customers cannot buy regulated products (tobacco, vapor, CBD/hemp, kratom). One additive, re-runnable migration (`2026_11_30_000001_phase2021_walk_in_customers`: a `walk_in` flag on customers, switched on for the CASH customer). No new PHP extensions, no `.env` change. No secrets are in this package.**
+
+- **Who is a walk-in customer:** the **CASH** customer (recognised by its code, so it works even before the migration) and any customer with the new **Walk-in / cash customer** switch on (Customers > edit). The switch is locked on for CASH.
+- **What is regulated:** the product's **Tax class** (the same flag used for age/signature rules since 0.15). Every class except *General* and *Beverage* is regulated: cigarette, cigar, pipe, snuff/chew, roll-your-own, vapor, hemp (CBD, delta-8 and so on) and kratom. **No product data is changed by this upgrade.** If a tobacco/CBD/kratom item is set to General it is not protected: run `php artisan erp:regulated-report` to see counts, the walk-in customers, and a list of likely misses (read-only), then fix those products' Tax class. Products > filter *Regulated (no walk-in sales)* shows the regulated set.
+- **Where it is enforced (server side, no override):** POS (the line is refused with a clear message, and checkout is blocked if a regulated item is already in the cart when you switch to a walk-in customer), van sale (same; switching to a walk-in customer drops regulated lines with a message), sales orders (the line and the customer field fail validation; the model also refuses to save such a line or move an order with regulated lines to a walk-in customer; confirm is blocked), and the customer portal / compliance check (the item shows as unavailable and checkout is blocked).
+- **In the pickers:** regulated products are hidden from search and browse when a walk-in customer is selected (POS browse tiles show greyed out as *Not for walk-in*; the sales-order picker and product search hide them with a note).
+- **Known follow-up:** if CASH has a tobacco license on file, that no longer lets it buy regulated products. Existing open sales orders for walk-in customers that already contain regulated lines are not edited; they cannot be confirmed.
 
 ## What's new in 0.20.20 (includes everything through 0.20.19)
 

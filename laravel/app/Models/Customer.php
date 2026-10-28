@@ -44,13 +44,19 @@ class Customer extends Model
     /** Beginning balance is set only through CustomerBalanceService (posts to the ledger + audit). */
     protected $guarded = ['id', 'beginning_balance', 'beginning_balance_date', 'beginning_balance_applied'];
 
+    /** 0.21: the CASH customer, or any customer flagged Walk-in / cash: cannot buy regulated products. */
+    public function isWalkIn(): bool
+    {
+        return \App\Compliance\WalkInRule::isWalkIn($this);
+    }
+
     /** Never serialized (API/JSON/Livewire payloads); admin UI reads them explicitly. */
     protected $hidden = ['beginning_balance', 'beginning_balance_date', 'beginning_balance_applied'];
 
     protected function casts(): array
     {
         return [
-            'active' => 'boolean',
+            'active' => 'boolean', 'walk_in' => 'boolean',
             'msa_promo_acceptance' => 'boolean',
             'dunning_email_optout' => 'boolean', 'email_opt_in' => 'boolean', 'sms_opt_in' => 'boolean', 'ghl_synced_at' => 'datetime',
             'ghl_tags' => 'array', 'ghl_dnd' => 'boolean', 'ghl_opportunity_value' => 'decimal:2', 'ghl_contact_updated_at' => 'datetime',
