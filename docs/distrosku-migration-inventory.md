@@ -1,6 +1,6 @@
 # distrosku.com migration inventory (SiteGround -> DigitalOcean `distrosku-prod-1`)
 
-Status: **Phase 1 done (2026-10-27 evening, ET).** Server side is prepared and dormant; nothing has been changed at SiteGround or in DNS; no mail is enabled.
+Status: **Phase 2 rehearsal done (2026-10-27 late evening, ET).** All five hosts are deployed on `distrosku-prod-1` with restored data, enabled in nginx **behind the basic-auth gate and noindex**, reachable only via `curl --resolve` rehearsal (DNS still points at SiteGround). Nothing has been changed in DNS; mail stays blocked (`MAIL_MAILER=log`, outbound 25 denied). Section 7 has the per-host result. One narrow exception to "nothing at SiteGround": a single manual `dba:poll` from the DO copy of DBA sent one signed health request to the live vegatest1 (it failed signature, no state change there, DO-side failure counter reset).
 Authorised by Michael on 2026-10-27: "Start the migration of distrosku as well. All subdomains."
 No secrets are in this file. Per-site DB credentials are in root-only files on the server (`/root/distrosku-sites/<name>.env`, mode 600) and in the Grok box secrets folder (`secrets-sg/distrosku-do-<name>.env`).
 This complements `do-rebuild-plan.md` and `do-cutover-runbook.md` (read those first; this file adds the per-host detail for the whole zone).
@@ -96,3 +96,46 @@ No pull and no change. When flipping the web A records keep these records exactl
 - The apex site is the only host with no known dynamic backend; finish the File Manager read-only check before the cutover rehearsal.
 - php-fpm pools run as `www-data` like the existing `distrosku` pool (isolation is by directory and database user, not by Unix user). Splitting users per site is possible later if wanted.
 - Do not touch the SiteGround main `laravel` folder, `wp.mymediaworx.com`, or any `reserveworx*` host.
+
+## 7. Phase 2 rehearsal results (2026-10-27 late evening ET; server clock is UTC)
+
+All sites: gate on (401 without credentials), `X-Robots-Tag: noindex, nofollow`, placeholder self-signed cert, `.env` 403, mail logged not sent. No DNS, SiteGround or billable DigitalOcean change. Data came from phpMyAdmin dumps and zips kept locally at mode 600 (`jamison/sg-dumps`); every server-side copy was removed after import and verification. Checks are local `curl --resolve host:443:127.0.0.1` with the gate credentials.
+
+| Host | Deployed | Data restored | Local checks |
+|---|---|---|---|
+| `vegatest1.distrosku.com` | Vega ERP tag **v0.20.18**, `composer install --no-dev`, new `APP_KEY`, `ERP_INSTANCE`/`ERP_HOME_STATE`/`ERP_COMPANY` carried, `migrate --force` (no-op), `optimize`. Supervisor `distrosku-vegatest1-queue` (www-data) running; www-data cron `schedule:run` added. **Dunning off**, GHL/marketing off (settings blank), `MAIL_MAILER=log`. One manual `erp:backup` verified. | `dsku_vegatest1` 110 tables; `storage/app` public+private (old backups skipped) | `/admin/login` 200, `/up` 200, `/admin` 302, `/.env` 403, no 5xx; `php artisan about` clean |
+| `dba.distrosku.com` | distrosku-dba **0.1.1**, new `APP_KEY`, `MAIL_MAILER=log`, `setup-*.php` removed, `migrate` no-op, `optimize` + `filament:optimize`. **No cron yet** (a second poller would double-alert while SiteGround DBA still runs). | `dsku_dba` 16 tables, all rows equal to the dump | `/login` 200, `/up` 200, `/` 302, `/admin` 404, `/.env` 403, `/setup.php` 404; sign-in page renders |
+| `distrosku.com`, `www` | Static `index.html` only | `dsku_main` imported (stock Laravel skeleton: users 1, sessions 116, migrations 3), **nothing serves from it** | `/` 200, `/index.php` 404, `/.env` 403 |
+| `app.distrosku.com`, `www.app` | Legacy PHP tree unpacked to `public_html`; `config.php` pointed at `dsku_app`, `display_errors` off; original config kept root-only at `/root/orig-config-backups/`; `schema.sql`, `add_public_token.sql`, `php_errorlog`, `README.md` not deployed; nginx now denies `/includes/` and `/config.php`. All files lint clean on PHP 8.2.35; code needs no Composer vendor tree (no `vendor/` references) | `dsku_app` 7 tables, 27 rows equal to dump; uploads copied | `/login.php` 200, `/master.php` 200, `/index.php` `/dashboard.php` `/catalog.php` 302 to login, `/public_sku.php` 200, `/config.php` and `/includes/db.php` 403, `/schema.sql` 403, uploads served |
+| `staging.distrosku.com` | `index.php` placeholder ("No application is deployed here yet") | none | `/` 200, `/.env` 403 |
+
+`do-staging` (`165-245-139-132.sslip.io`), its queue worker and cron were not touched and still respond (gated 401, 200 with credentials).
+
+### 7.1 Row counts vs the dumps
+vegatest1: every table matches except three that the app itself wrote after import (`activity_logs` +8, `rules_syncs` +1, `sessions` +4). Key tables: customers 909, products 8016, users 5, vendors 228, customer_licenses 496, price_rules 2282, product_barcodes 8710, ship_tos 914, shared_products 7885; sales orders, inventories, stock movements, journals, POs are 0 in the source (master data only). dba: all 16 tables equal (instances 1, users 1, instance_backups 6, audit_logs 12, instance_checks 1303). app: tenants 1, skus 4, products 4, users 3, departments 7. main: users 1, sessions 116.
+
+### 7.2 What the new `APP_KEY` broke, and how it was handled
+Everything below is data that was encrypted with the SiteGround key. The ciphertext is intact in the dumps, so carrying the source `APP_KEY` into `.env` before cutover (and re-importing the two tables) restores all of it without any re-entry.
+- **vegatest1 `settings` table:** every non-null value is cast `encrypted`. 42 of 44 rows were undecryptable and were set to NULL (reads fall back to defaults; writes of an undecryptable row throw "The MAC is invalid", which broke `erp:backup` until blanked). Two rows are fresh (`install_id`, `dba_last_backup`). Keys to re-enter if the source key is not carried: `authnet_client_key`, `authnet_login_id`, `authnet_transaction_key`; `dunning_levels`; `ky_filer_{name,fein,license,address,city,state,zip}` and `ky_rep_{first,last,title,email,phone}` (KY filer/representative details); `mkt_{enabled,notify_enabled,token,location_id,app_url,webhook_url,cf_account,cf_resale,cf_state_tax}` (GHL marketing, stays off); `rules_hub_url`, `rules_hub_public_key`, `dba_secret`, `dba_rules_version`, `dba_rules_applied_at`; and the tuning values `coa_expiry_warn_days`, `count_auto_approve_pct`, `count_auto_approve_value`, `lot_expiry_alert_days`, `over_receipt_pct`, `pos_hold_days`, `reorder_cover_days`, `reorder_default_lead_days`, `reorder_velocity_days`, `msa_directory_strict`, `pact_interstate_enabled`, `phase194_shiptos_flipped`. Company Settings screens show defaults until re-entered. Do **not** turn dunning or marketing on before checking these.
+- **dba:** only `instances.secret` for the one instance (vegatest1) was encrypted (no 2FA is set on the DBA user). It was replaced with a fresh random secret under the new key, so the DBA can no longer sign to vegatest1 (poll reports "bad signature") until it is re-linked: DBA > Instances > vegatest1 > *New link secret*, then paste it into the ERP's link secret (`ERP_DBA_SECRET`). With the source key carried, no re-link is needed.
+- **app:** none (plain PHP, no APP_KEY). Its `config.php` also holds a plaintext master-admin password, carried unchanged from the source.
+
+### 7.3 Open items and gaps found
+- `distrosku.com` `index.html` references `logo.jpg`, which is not in the apex zip (404 on DO). Get the file from SiteGround File Manager before cutover (read-only).
+- `robots.txt` noted in section 1 is also not in the apex zip; the rehearsal site has none (the gate adds noindex for now).
+- The apex zip's `storage` entry was a dangling symlink and was skipped.
+- DBA settings that live in the SiteGround `.env` and were not carried (alert recipients, owner e-mail, GitHub repo) are blank on DO; re-enter before cutover. DBA mail is `log`.
+- `MAIL_MAILER=log` on vegatest1 and dba; the SMTP relay plan and SPF change are still open.
+- ERP features that need a source-side value (Spaces bucket, SMTP, Authorize.net) are not configured.
+- The gate password appeared in agent tool output during this work; rotate `/etc/nginx/distrosku.htpasswd` before the cutover rehearsal is shared.
+- A verified manual `erp:backup` exists at `/var/backups/erp/vegatest1/` (contains customer data, mode 600, www-data); the nightly 01:30 backup will add more there. Delete the manual one when no longer needed.
+
+### 7.4 Remaining before DNS cutover (nothing here is done)
+1. Michael's go-ahead and a window (vegatest1 first, own freeze).
+2. Decide `APP_KEY`: carry the SiteGround keys (ERP and DBA; obtained without printing) or accept the re-entry lists above.
+3. Fresh backup at freeze; re-run import and counts; refresh uploads.
+4. T-7: TTL 300 on `@`, `www`, `vegatest1`, `dba`, `www.dba`, `app`, `www.app`, `staging`.
+5. Per host: gate off, `distrosku-site cert <host>`, A to `165.245.139.132`, verify, keep SiteGround intact for rollback (48 h).
+6. DBA: add `schedule:run` cron on DO only after the flip; stop the SiteGround DBA cron at the same time; re-link vegatest1.
+7. Enable dunning/marketing/mail only on Michael's explicit approval.
+8. Confirm with Michael how app.distrosku.com is used (logins exist: 3 users, 1 tenant) and that the apex `logo.jpg` is fetched.
