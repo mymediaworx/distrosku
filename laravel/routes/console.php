@@ -160,7 +160,7 @@ Artisan::command('dunning:send {--as-of= : date (default today)}', function () {
 })->purpose('0.20.18: make today\'s dunning notices and email them (statement PDF attached)');
 
 // 0.20.21: read-only report on the regulated-product flag (tax_class) that drives the walk-in / cash rule.
-Artisan::command('erp:regulated-report {--limit=50 : max suspect products to list}', function () {
+Artisan::command('erp:regulated-report {--limit=50 : max suspect products to list} {--like=* : also list products whose name/SKU/brand contains this text, with their tax class (e.g. --like="white owl")}', function () {
     $regulated = \App\Enums\TaxClass::regulatedValues();
     $this->info('Regulated = product tax class other than general / beverage (tobacco, vapor, hemp/CBD, kratom).');
     $rows = [];
@@ -171,13 +171,20 @@ Artisan::command('erp:regulated-report {--limit=50 : max suspect products to lis
     $this->line('Regulated products (blocked for walk-in / cash): '.\App\Models\Product::whereIn('tax_class', $regulated)->count().' of '.\App\Models\Product::count());
     $walk = \App\Models\Customer::query()->where(fn ($q) => $q->where('walk_in', true)->orWhereRaw('UPPER(code) = ?', ['CASH']))->get(['code', 'name']);
     $this->line('Walk-in / cash customers ('.$walk->count().'): '.$walk->map(fn ($c) => "{$c->code} {$c->name}")->implode('; '));
-    $re = 'tobacco|cigar|cigarette|vape|vapor|cbd|hemp|kratom';
+    $re = 'tobacco|cigar|cigarette|vape|vapor|cbd|hemp|kratom|white owl|swisher|backwoods|dutch master|black & mild|zig.?zag|newport|marlboro|camel|copenhagen|grizzly|skoal|juul|elf bar|delta|thc|snus|nicotine';
     $suspects = \App\Models\Product::query()->whereNotIn('tax_class', $regulated)->get()->filter(
         fn ($p) => preg_match("/($re)/i", implode(' ', [$p->category, $p->department?->name, $p->name]))
     );
     $this->line('Possible misses (tax class general/beverage but tobacco/CBD/kratom wording in category, department or name): '.$suspects->count());
     foreach ($suspects->take((int) $this->option('limit')) as $p) {
         $this->line("  {$p->sku}  {$p->name}  [tax_class={$p->tax_class->value}, category={$p->category}, dept={$p->department?->name}]");
+    }
+    foreach ((array) $this->option('like') as $like) {
+        $hits = \App\Models\Product::query()->where(fn ($q) => $q->where('name', 'like', "%{$like}%")->orWhere('sku', 'like', "%{$like}%")->orWhere('brand', 'like', "%{$like}%"))->orderBy('name')->get();
+        $this->line("Products matching \"{$like}\": {$hits->count()}");
+        foreach ($hits->take((int) $this->option('limit')) as $p) {
+            $this->line("  {$p->sku}  {$p->name}  tax_class={$p->tax_class?->value}  ".($p->isRegulated() ? 'REGULATED' : 'NOT regulated (sellable to walk-in!)'));
+        }
     }
     $this->comment('Nothing was changed. Fix a miss by setting its Tax class on the product.');
 })->purpose('Report which products count as regulated (walk-in / cash rule) and list likely misses');

@@ -41,6 +41,8 @@ class CustomerPicker extends Component
 
     public string $search = '';
 
+    public string $notice = '';
+
     public function mount(): void
     {
         $this->value = $this->currentId();
@@ -78,12 +80,25 @@ class CustomerPicker extends Component
         $this->set(null);
     }
 
-    /** Explicit, never automatic: the counter's cash / walk-in account (code CASH). */
-    public function walkIn(): void
+    /**
+     * Explicit, never automatic: the counter's cash / walk-in account (account number CASH).
+     * NOT named walkIn(): that is also the public $walkIn property, and in the browser `$wire.walkIn` then resolves to
+     * the property (true), so wire:click="walkIn" silently did nothing on live (0.20.20 / 0.20.21).
+     */
+    public function selectWalkIn(): void
     {
-        if ($c = Customer::where('code', 'CASH')->first()) {
+        $this->notice = '';
+        if ($c = \App\Compliance\WalkInRule::cashCustomer()) {
             $this->set((int) $c->id);
+
+            return;
         }
+        $this->notice = 'No cash customer found. Create a customer with Account Number CASH (or switch on "Walk-in / cash customer" for one account), then try again.';
+    }
+
+    public function isWalkInSelected(): bool
+    {
+        return ($id = $this->currentId()) ? \App\Compliance\WalkInRule::isWalkInId($id) : false;
     }
 
     private function set(?int $id): void

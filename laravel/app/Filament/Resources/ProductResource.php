@@ -199,6 +199,22 @@ class ProductResource extends Resource
             ]);
     }
 
+    /** Bulk "Set tax class" (0.20.22): moves items into a regulated class so walk-in / cash customers cannot buy them. */
+    public static function applyTaxClass(iterable $records, string $class): int
+    {
+        $n = 0;
+        foreach ($records as $p) {
+            $p->tax_class = $class;
+            if (in_array($class, Product::PACT_DEFAULT_CLASSES, true)) {
+                $p->pact_covered = true;
+            }
+            $p->save();
+            $n++;
+        }
+
+        return $n;
+    }
+
     public static function table(Table $table): Table
     {
         return $table
@@ -293,6 +309,14 @@ class ProductResource extends Resource
             ->bulkActions([
                 Tables\Actions\BulkAction::make('labels')->label('Print labels')->icon('heroicon-o-qr-code')
                     ->action(fn ($records, $livewire) => $livewire->redirect(route('catalog.labels', ['ids' => $records->pluck('id')->implode(',')]))),
+                Tables\Actions\BulkAction::make('set_tax_class')->label('Set tax class')->icon('heroicon-o-shield-check')
+                    ->visible(fn () => static::canArchive())->deselectRecordsAfterCompletion()->requiresConfirmation()
+                    ->modalDescription('Tobacco, vapor, hemp/CBD and kratom items need a regulated class (not General): that is what keeps them from being sold to walk-in / cash customers.')
+                    ->form([Forms\Components\Select::make('tax_class')->label('Tax class')->options(TaxClass::options())->required()])
+                    ->action(function ($records, array $data) {
+                        $n = static::applyTaxClass($records, $data['tax_class']);
+                        Notification::make()->success()->title($n.' product(s) set to '.TaxClass::from($data['tax_class'])->label().'.')->send();
+                    }),
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\BulkAction::make('archive')->label('Archive selected')->icon('heroicon-o-archive-box')->color('warning')
                         ->requiresConfirmation()->visible(fn () => static::canArchive())->deselectRecordsAfterCompletion()

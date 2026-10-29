@@ -1,7 +1,16 @@
-# Vega ERP — Phase 20.21 UPGRADE (existing install at vegatest1.distrosku.com)
+# Vega ERP — Phase 20.22 UPGRADE (existing install at vegatest1.distrosku.com)
 
 For a site already installed from `vega-erp-phase1.zip` and upgraded through phase 3 (a phase-2 site can also take this zip: seeders are cumulative). TEST data only. No secrets in this package.
 This zip contains **no `laravel/.env` and no `laravel/storage/`**, so extracting it over the live site keeps both.
+
+## What's new in 0.20.22 (includes everything through 0.20.21)
+
+**Fix: the POS Walk-in (CASH) button did nothing on the live site. One additive, re-runnable migration (`2026_11_30_000002_phase2022_flag_cash_code_variants`: turns the walk-in flag on for cash accounts typed a little differently; never turns a flag off). No new PHP extensions, no `.env` change. No secrets are in this package.**
+
+- **Why the button did nothing:** the customer picker had both a setting and an action called `walkIn`; in the browser the click read the setting and silently did nothing (so no customer was selected, and nothing was greyed out as *Not for walk-in*). The action is now `selectWalkIn`. A test now fails if any screen reuses a name like that.
+- **Finding the cash customer:** account number matched ignoring case, spaces and punctuation (`CASH`, `cash`, ` Cash `, `CASH-WALKIN`), active accounts first; otherwise the one customer with the *Walk-in / cash customer* switch on. If none is found the button now says so on screen instead of doing nothing.
+- **Visible selection:** the picker shows the account number and name with a *Walk-in / cash: no tobacco, vapor, CBD or kratom* tag.
+- **Products:** Products list > select rows > **Set tax class** (admins) moves items into a regulated class. A product left as **General** is *not* blocked for walk-in customers (for example White Owl cigarillos): set them to Cigar (or the right class). `php artisan erp:regulated-report --like="white owl"` lists matching products with their class (read-only); the likely-misses list now also knows common cigarillo / smokeless brand names.
 
 ## What's new in 0.20.21 (includes everything through 0.20.20)
 
