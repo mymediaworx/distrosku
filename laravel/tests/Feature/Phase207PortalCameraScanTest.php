@@ -31,7 +31,7 @@ class Phase207PortalCameraScanTest extends TestCase
 
     private function signIn(string $code = 'CTEST-KY'): void
     {
-        $k = CustomerContact::create(['customer_id' => Customer::where('code', $code)->value('id'), 'name' => 'Pat Buyer', 'email' => strtolower($code).'-scan@example.test']);
+        $k = CustomerContact::create(['customer_id' => Customer::where('code', $code)->value('id'), 'name' => 'Pat Buyer', 'email' => strtolower($code).'-scan@example.test', 'is_portal_contact' => true]);
         $k->setPasswordFromLink('Secret12345');
         Auth::guard('portal')->login($k->fresh());
     }
