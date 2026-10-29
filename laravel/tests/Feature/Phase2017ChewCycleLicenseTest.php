@@ -27,7 +27,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/** 0.20.17: chew at 15% of wholesale, the cycle count plan, and license conflicts review. */
+/** 0.20.17: chew percent path (not seeded since 0.20.23), the cycle count plan, and license conflicts review. */
 class Phase2017ChewCycleLicenseTest extends TestCase
 {
     use RefreshDatabase;
@@ -38,27 +38,48 @@ class Phase2017ChewCycleLicenseTest extends TestCase
         $this->seed(CoreSeeder::class);
     }
 
-    // ---- chew 15% ----
+    // ---- chew (0.20.23: per unit by default; the % path only runs if a chew_percent row is added deliberately) ----
 
-    public function test_chew_is_15_percent_of_wholesale_from_the_switch_date_and_seeder_is_rerunnable(): void
+    private function chewPercentRow(string $from): TaxRate
+    {
+        return TaxRate::create(['jurisdiction' => 'KY', 'tax_type' => KyExcise::CHEW_PCT, 'effective_from' => $from,
+            'rate' => '0.150000', 'basis' => 'percent', 'needs_verification' => true, 'source' => 'test']);
+    }
+
+    public function test_seeder_no_longer_creates_a_chew_percent_rate_and_chew_stays_per_unit(): void
     {
         $this->seed(TaxRateSeeder::class);
         $this->seed(TaxRateSeeder::class);
-        $this->assertSame(1, TaxRate::where('jurisdiction', 'KY')->where('tax_type', KyExcise::CHEW_PCT)->count());
-        $row = TaxRate::where('tax_type', KyExcise::CHEW_PCT)->first();
-        $this->assertTrue((bool) $row->needs_verification);
-        $row->update(['effective_from' => '2026-12-01']); // an edited/verified date survives a re-seed
+        $this->assertSame(0, TaxRate::where('jurisdiction', 'KY')->where('tax_type', KyExcise::CHEW_PCT)->count());
+
+        $x = app(KyExcise::class);
+        $chew = Product::factory()->make(['tax_class' => 'snuff_chew', 'smokeless_type' => 'chew', 'net_weight_oz' => '3.0', 'units_per_case' => 1]);
+        $this->assertFalse($x->chewIsPercent('2026-11-02'));
+        $this->assertEqualsWithDelta(0.19, (float) $x->smokelessTax($chew, 1, '2026-11-02', '10'), 0.00001); // $0.19 single unit, not 15%
+    }
+
+    public function test_phase2023_migration_removes_only_the_0_20_17_seeded_chew_rate(): void
+    {
+        TaxRate::create(['jurisdiction' => 'KY', 'tax_type' => KyExcise::CHEW_PCT, 'effective_from' => '2026-11-01',
+            'rate' => '0.150000', 'basis' => 'percent', 'needs_verification' => true, 'source' => 'Owner decision 2026-10-27']);
+        $kept = $this->chewPercentRow('2030-01-01');
+        $m = require database_path('migrations/2026_12_01_000001_phase2023_remove_chew_percent.php');
+        $m->up();
+        $m->up(); // re-runnable
+        $this->assertSame([$kept->id], TaxRate::where('tax_type', KyExcise::CHEW_PCT)->pluck('id')->all());
+    }
+
+    public function test_a_deliberately_added_chew_percent_rate_still_applies_from_its_date(): void
+    {
         $this->seed(TaxRateSeeder::class);
-        $this->assertSame('2026-12-01', TaxRate::where('tax_type', KyExcise::CHEW_PCT)->first()->effective_from->toDateString());
-        $row->update(['effective_from' => '2026-11-01']);
+        $this->chewPercentRow('2026-11-01');
 
         $x = app(KyExcise::class);
         $chew = Product::factory()->make(['tax_class' => 'snuff_chew', 'smokeless_type' => 'chew', 'net_weight_oz' => '3.0', 'units_per_case' => 1]);
         $this->assertFalse($x->chewIsPercent('2026-10-31'));
         $this->assertTrue($x->chewIsPercent('2026-11-01'));
-        $this->assertEqualsWithDelta(0.19, (float) $x->smokelessTax($chew, 1, '2026-10-31', '10'), 0.00001);     // old per-unit rate before the switch
-        $this->assertEqualsWithDelta(1.5, (float) $x->smokelessTax($chew, 1, '2026-11-02', '10'), 0.00001);      // 15% of wholesale after
-        $this->assertEqualsWithDelta(0.0, (float) $x->smokelessTax($chew, 5, '2026-11-02', '0'), 0.00001);
+        $this->assertEqualsWithDelta(0.19, (float) $x->smokelessTax($chew, 1, '2026-10-31', '10'), 0.00001);
+        $this->assertEqualsWithDelta(1.5, (float) $x->smokelessTax($chew, 1, '2026-11-02', '10'), 0.00001);
         $snuff = Product::factory()->make(['tax_class' => 'snuff_chew', 'smokeless_type' => 'snuff', 'net_weight_oz' => '1.2', 'units_per_case' => 1]);
         $this->assertEquals($x->smokelessUnitTax($snuff, '2026-10-31'), $x->smokelessUnitTax($snuff, '2026-11-05')); // snuff unchanged
     }
@@ -66,6 +87,7 @@ class Phase2017ChewCycleLicenseTest extends TestCase
     public function test_po_receipt_accrues_chew_excise_at_15_percent_after_the_switch_and_old_rate_before(): void
     {
         $this->seed(TaxRateSeeder::class);
+        $this->chewPercentRow(now()->addYear()->toDateString());
         $wh = Warehouse::where('code', 'MAIN')->first();
         $chew = Product::factory()->create(['tax_class' => 'snuff_chew', 'smokeless_type' => 'chew', 'net_weight_oz' => '3.0', 'units_per_case' => 1, 'cost' => '5', 'price' => '8']);
         $v = \App\Models\Vendor::factory()->create(['ky_tobacco_licensed' => false]);
