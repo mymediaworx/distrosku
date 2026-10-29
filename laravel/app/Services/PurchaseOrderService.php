@@ -67,7 +67,7 @@ class PurchaseOrderService
                         'details' => ['ordered' => (string) $l->qty, 'previously_received' => (string) $l->qty_received, 'received_now' => Money::s($take)]]);
                 }
                 $this->inventory->move($l->product, $po->warehouse, $take, 'receipt', $po, $l->unit_cost);
-                $tax = KyExcise::vegaOwesOnPurchase($l->product, $po->vendor) ? $this->excise->smokelessTax($l->product, $take) : '0';
+                $tax = KyExcise::vegaOwesOnPurchase($l->product, $po->vendor) ? $this->excise->smokelessTax($l->product, $take, null, Money::mul($take, $l->unit_cost)) : '0';
                 $l->update(['qty_received' => Money::add($l->qty_received, $take), 'excise_accrued' => Money::add($l->excise_accrued, $tax)]);
                 $l->product->update(['cost' => $l->unit_cost]); // last-cost for now
                 $amount = Money::add($amount, Money::mul($take, $l->unit_cost));

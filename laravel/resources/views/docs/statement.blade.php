@@ -1,6 +1,6 @@
 <!doctype html><html><head><meta charset="utf-8"></head><body>
 @include('docs._head', ['docTitle' => 'STATEMENT', 'docSub' => now()->format('m/d/Y')])
-<p class="box"><strong>{{ $c->name }}</strong> ({{ $c->code }}) · Terms: {{ $c->terms }}</p>
+<p class="box"><strong>{{ $c->name }}</strong>@if(filled($c->dba))<br>DBA: {{ $c->dba }}@endif ({{ $c->code }}) · Terms: {{ $c->terms }}</p>
 <h3>Open items</h3>
 <table>
     <tr><th>Date</th><th>Reference</th><th class="r">Amount</th><th class="r">Open</th><th class="r">Days</th></tr>

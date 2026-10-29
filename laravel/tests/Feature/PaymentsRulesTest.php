@@ -150,7 +150,9 @@ class PaymentsRulesTest extends TestCase
     public function test_settings_encrypted_and_owner_only(): void
     {
         $this->actingAs(User::factory()->create(['role' => 'admin']));
-        $this->get('/admin/settings')->assertForbidden();
+        // 0.20.17: Company Settings opens for admins too, but the gateway / instance-manager / Rules Hub secrets stay owner-only
+        $this->get('/admin/settings')->assertOk();
+        Livewire::test(Settings::class)->assertSee('Company Settings')->assertDontSee('Transaction Key')->assertDontSee('Shared secret');
         $this->actingAs(User::factory()->create(['role' => 'owner']));
         Livewire::test(Settings::class)->fillForm(['authnet_login_id' => 'LOGIN123', 'authnet_transaction_key' => 'SECRETKEY', 'ky_filer_fein' => '123456789'])->call('save');
         $raw = DB::table('settings')->where('key', 'authnet_transaction_key')->value('value');

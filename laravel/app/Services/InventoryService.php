@@ -28,7 +28,7 @@ class InventoryService
             }
             $inv = $this->row($product, $warehouse);
             $new = Money::of($inv->qty)->plus(Money::of($qty));
-            if ($new->isNegative()) {
+            if ($new->isNegative() && ! ($type === 'sale' && \App\Inventory\NegativeStock::allowed())) { // 0.20.20: company setting lets SALES go negative
                 throw new InventoryException("Not enough stock for {$product->sku} in {$warehouse->code}: on hand {$inv->qty}, change {$qty}.");
             }
             $inv->qty = (string) $new;
@@ -53,7 +53,7 @@ class InventoryService
         DB::transaction(function () use ($product, $warehouse, $qty) {
             $inv = $this->row($product, $warehouse);
             $available = Money::of($inv->qty)->minus(Money::of($inv->reserved));
-            if ($available->isLessThan(Money::of($qty))) {
+            if ($available->isLessThan(Money::of($qty)) && ! \App\Inventory\NegativeStock::allowed()) {
                 throw new InventoryException("Not enough available stock for {$product->sku} in {$warehouse->code}: available {$available}, need {$qty}.");
             }
             $inv->reserved = (string) Money::of($inv->reserved)->plus(Money::of($qty));

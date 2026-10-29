@@ -8,6 +8,7 @@ use App\Models\Customer;
 use App\Models\CustomerBalanceAudit;
 use App\Models\Payment;
 use App\Models\User;
+use Brick\Math\RoundingMode;
 use Carbon\CarbonImmutable;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
@@ -33,7 +34,7 @@ class CustomerBalanceService
         if (! self::canManage($by)) {
             throw new AuthorizationException('Only owner/admin/brandworx_admin may change a beginning balance.');
         }
-        $new = Money::of($amount ?? 0);
+        $new = Money::of($amount ?? 0)->toScale(2, RoundingMode::HALF_UP);
         $old = Money::of($c->beginning_balance ?? 0);
         $oldDate = $c->beginning_balance_date?->toDateString();
         $date = $date ?: ($oldDate ?? now()->toDateString());

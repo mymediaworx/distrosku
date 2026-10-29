@@ -33,6 +33,7 @@ Route::middleware(['auth', BlockWhenSuspended::class])->prefix('warehouse')->nam
     Route::get('/print/label/{package}', [\App\Http\Controllers\WarehousePrintController::class, 'label'])->name('print.label');
     Route::get('/print/bin-labels', [\App\Http\Controllers\WarehousePrintController::class, 'binLabels'])->name('print.bins');
     Route::get('/recall.csv', [\App\Http\Controllers\WarehousePrintController::class, 'recall'])->name('recall.csv');
+    Route::get('/trace.csv', [\App\Http\Controllers\WarehousePrintController::class, 'trace'])->name('trace.csv'); // 0.20.15 (#36)
     Route::get('/print/pick/{so}', [\App\Http\Controllers\WarehousePrintController::class, 'pick'])->name('print.pick');
     Route::get('/print/pack/{so}', [\App\Http\Controllers\WarehousePrintController::class, 'pack'])->name('print.pack');
 });
@@ -58,8 +59,19 @@ Route::middleware('throttle:quick-tools')->group(function () {
     Route::get('/q/{token}/labels', [CatalogController::class, 'labels'])->where('token', '[A-Fa-f0-9]{16,64}')->name('quick-tools.labels');
 });
 
+// 0.20.17: Brand + Quick tools moved into Company Settings; the old address still works for bookmarks.
+Route::middleware(['auth', BlockWhenSuspended::class])->get('/admin/branding', function () {
+    abort_unless(auth()->user()?->canModule('company', 'manage'), 403);
+
+    return new \Illuminate\Http\RedirectResponse(\App\Filament\Pages\Settings::getUrl());
+});
+
+// 0.20.17: Counter Pickup Board TV page (full screen, no navigation, auto-refresh)
+Route::middleware(['auth', BlockWhenSuspended::class])->get('/board/pickup', \App\Http\Controllers\PickupBoardTvController::class)->name('pickup.tv');
+
 // Staff: invoice / statement PDFs
 Route::middleware(['auth', BlockWhenSuspended::class])->group(function () {
+    Route::get('/admin-docs/invoice/{so}/view', [PortalDocumentsController::class, 'adminInvoiceView'])->name('docs.invoice.view');
     Route::get('/admin-docs/invoice/{so}.pdf', [PortalDocumentsController::class, 'adminInvoice'])->name('docs.invoice');
     Route::get('/admin-docs/delivery-proof/{so}.pdf', [\App\Http\Controllers\DeliveryDocsController::class, 'proof'])->name('docs.delivery-proof');
     Route::get('/admin-docs/imports/template/{type}.{format}', [\App\Http\Controllers\ImportDownloadsController::class, 'template'])->name('imports.template');
@@ -68,7 +80,7 @@ Route::middleware(['auth', BlockWhenSuspended::class])->group(function () {
 });
 
 // B2B customer portal (guard "portal"). No emails: contacts set their password from an admin-issued one-time link.
-Route::prefix('portal')->name('portal.')->group(function () {
+Route::prefix('portal')->name('portal.')->middleware(\App\Http\Middleware\PortalEnabled::class)->group(function () {
     Route::middleware('throttle:portal-public')->group(function () {
         Route::get('/login', Portal\Login::class)->name('login');
         Route::get('/set-password/{token}', Portal\SetPassword::class)->where('token', '[A-Za-z0-9]{48}')->name('set-password');

@@ -30,6 +30,36 @@ class ProductResource extends Resource
 
     protected static ?int $navigationSort = 1;
 
+    /** 0.20.19: products turn up in the top-bar global search (name / SKU / brand / UPC / barcodes / vendor item #). */
+    protected static ?string $recordTitleAttribute = 'name';
+
+    protected static int $globalSearchResultsLimit = 15;
+
+    public static function getGlobalSearchEloquentQuery(): \Illuminate\Database\Eloquent\Builder
+    {
+        return parent::getGlobalSearchEloquentQuery()->where('products.active', true)->notArchived();
+    }
+
+    protected static function applyGlobalSearchAttributeConstraints(\Illuminate\Database\Eloquent\Builder $query, string $search): void
+    {
+        \App\Support\ProductSearch::matching($query, $search); // every word matches, any order, punctuation ignored
+    }
+
+    public static function modifyGlobalSearchQuery(\Illuminate\Database\Eloquent\Builder $query, string $search): void
+    {
+        \App\Support\ProductSearch::rank($query, $search);
+    }
+
+    public static function getGlobalSearchResultTitle(Model $record): string
+    {
+        return trim($record->sku.' '.$record->name);
+    }
+
+    public static function getGlobalSearchResultDetails(Model $record): array
+    {
+        return ['Price' => '$'.number_format((float) $record->price, 2).' / '.($record->base_unit_name ?: 'Each')];
+    }
+
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
     public static function form(Form $form): Form
@@ -53,6 +83,15 @@ class ProductResource extends Resource
                     ->helperText('Resized to max 400 px on save.'),
                 Forms\Components\TextInput::make('brand'),
                 Forms\Components\TextInput::make('manufacturer'),
+                // 0.20.20 (#11): every tax listed here is added on top of the price and shown on the invoice, per unit and in the line total.
+                Forms\Components\Repeater::make('taxes')->label('Taxes charged on top of the price (shown on invoices)')
+                    ->helperText('Leave empty if none. Per unit = a dollar amount for each unit sold; Percent = % of the unit price. The invoice line total is (price + tax) x quantity.')
+                    ->schema([
+                        Forms\Components\TextInput::make('name')->required()->maxLength(60)->placeholder('KY excise'),
+                        Forms\Components\Select::make('basis')->options([\App\Services\InvoiceTax::PER_UNIT => 'Per unit ($)', \App\Services\InvoiceTax::PERCENT => 'Percent of price (%)'])
+                            ->default(\App\Services\InvoiceTax::PER_UNIT)->required()->native(false),
+                        Forms\Components\TextInput::make('amount')->numeric()->required()->minValue(0)->maxValue(100000),
+                    ])->columns(3)->addActionLabel('Add a tax')->defaultItems(0)->columnSpanFull(),
                 Forms\Components\Fieldset::make('KY EDI (XML returns)')->schema([
                     Forms\Components\TextInput::make('manufacturer_fein')->label('Manufacturer FEIN')->regex('/^\d{2}-?\d{7}$/')->maxLength(10)
                         ->dehydrateStateUsing(fn ($state) => $state ? preg_replace('/\D/', '', $state) : null),
@@ -160,6 +199,22 @@ class ProductResource extends Resource
             ]);
     }
 
+    /** Bulk "Set tax class" (0.20.22): moves items into a regulated class so walk-in / cash customers cannot buy them. */
+    public static function applyTaxClass(iterable $records, string $class): int
+    {
+        $n = 0;
+        foreach ($records as $p) {
+            $p->tax_class = $class;
+            if (in_array($class, Product::PACT_DEFAULT_CLASSES, true)) {
+                $p->pact_covered = true;
+            }
+            $p->save();
+            $n++;
+        }
+
+        return $n;
+    }
+
     public static function table(Table $table): Table
     {
         return $table
@@ -217,6 +272,8 @@ class ProductResource extends Resource
                 Tables\Filters\TernaryFilter::make('archived')->label('Show archived')
                     ->placeholder('Hide archived')->trueLabel('Archived only')->falseLabel('All (incl. archived)')
                     ->queries(true: fn ($q) => $q->whereNotNull('archived_at'), false: fn ($q) => $q, blank: fn ($q) => $q->whereNull('archived_at')),
+                Tables\Filters\TernaryFilter::make('regulated')->label('Regulated (no walk-in sales)')
+                    ->queries(true: fn ($q) => $q->regulated(), false: fn ($q) => $q->notRegulated(), blank: fn ($q) => $q),
                 Tables\Filters\SelectFilter::make('department_id')->label('Department')->relationship('department', 'name'),
                 Tables\Filters\SelectFilter::make('product_subtype')->label('Subtype')->options(\App\Models\Product::SUBTYPES),
                 Tables\Filters\Filter::make('coa_expiring')->label('COA expired / expiring soon')
@@ -233,6 +290,14 @@ class ProductResource extends Resource
                     ->url(fn (Product $r) => route('catalog.labels', ['ids' => $r->id]), shouldOpenInNewTab: true)
                     ->visible(fn () => auth()->user()?->canModule('catalog', 'view')),
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('duplicate')->label('Duplicate')->icon('heroicon-o-document-duplicate')
+                    ->visible(fn () => static::canCreate())->requiresConfirmation()
+                    ->modalDescription('Makes a copy with a new SKU and no UPC, then opens it so you can edit it. Stock is not copied.')
+                    ->action(function (Product $r) {
+                        $copy = app(\App\Catalog\CatalogService::class)->duplicate($r);
+
+                        return redirect(static::getUrl('edit', ['record' => $copy]));
+                    }),
                 Tables\Actions\Action::make('archive')->label('Archive')->icon('heroicon-o-archive-box')->color('warning')->requiresConfirmation()
                     ->visible(fn (Product $r) => ! $r->isArchived() && static::canArchive())
                     ->action(fn (Product $r) => $r->archive(auth()->user())),
@@ -244,6 +309,14 @@ class ProductResource extends Resource
             ->bulkActions([
                 Tables\Actions\BulkAction::make('labels')->label('Print labels')->icon('heroicon-o-qr-code')
                     ->action(fn ($records, $livewire) => $livewire->redirect(route('catalog.labels', ['ids' => $records->pluck('id')->implode(',')]))),
+                Tables\Actions\BulkAction::make('set_tax_class')->label('Set tax class')->icon('heroicon-o-shield-check')
+                    ->visible(fn () => static::canArchive())->deselectRecordsAfterCompletion()->requiresConfirmation()
+                    ->modalDescription('Tobacco, vapor, hemp/CBD and kratom items need a regulated class (not General): that is what keeps them from being sold to walk-in / cash customers.')
+                    ->form([Forms\Components\Select::make('tax_class')->label('Tax class')->options(TaxClass::options())->required()])
+                    ->action(function ($records, array $data) {
+                        $n = static::applyTaxClass($records, $data['tax_class']);
+                        Notification::make()->success()->title($n.' product(s) set to '.TaxClass::from($data['tax_class'])->label().'.')->send();
+                    }),
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\BulkAction::make('archive')->label('Archive selected')->icon('heroicon-o-archive-box')->color('warning')
                         ->requiresConfirmation()->visible(fn () => static::canArchive())->deselectRecordsAfterCompletion()
@@ -276,6 +349,7 @@ class ProductResource extends Resource
     public static function getRelations(): array
     {
         return [
+            \App\Filament\Resources\ProductResource\RelationManagers\VendorItemsRelationManager::class,
             \App\Filament\Resources\ProductResource\RelationManagers\CoasRelationManager::class,
             \App\Filament\Resources\ProductResource\RelationManagers\VapeListingsRelationManager::class,
             \App\Filament\RelationManagers\HistoryRelationManager::class,

@@ -23,7 +23,7 @@ class VanSaleService
     public function __construct(private SalesOrderService $orders, private SignatureService $sig, private PricingEngine $pricing) {}
 
     /**
-     * @param  list<array{product_id:int, qty:mixed, price?:mixed}>  $lines  price omitted = engine price
+     * @param  list<array{product_id:int, qty:mixed, price?:mixed, lot_id?:?int}>  $lines  price omitted = engine price
      */
     public function sell(Warehouse $van, Customer $c, ?ShipTo $st, array $lines, string $tender, ?array $signature = null, string $fulfillment = SalesOrder::PICKUP): SalesOrder
     {
@@ -69,7 +69,9 @@ class VanSaleService
             foreach ($lines as $l) {
                 $p = $products[$l['product_id']];
                 $price = isset($l['price']) && $l['price'] !== '' ? $l['price'] : $this->pricing->quote($p, $c, $l['qty'])->price;
-                $so->lines()->create(['product_id' => $p->id, 'qty' => Money::s($l['qty']), 'unit_price' => Money::s($price)]);
+                $lotId = ! empty($l['lot_id']) ? (int) $l['lot_id'] : null; // 0.20.15 (#36): optional lot from the picker
+                app(\App\Warehouse\LotService::class)->assertSellable($lotId, $p);
+                $so->lines()->create(['product_id' => $p->id, 'qty' => Money::s($l['qty']), 'unit_price' => Money::s($price), 'lot_id' => $lotId]);
             }
             $this->orders->confirm($so, $tender === 'account');
             $so->refresh();

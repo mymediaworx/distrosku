@@ -1,8 +1,6 @@
 @php
     use App\Sales\PickupBoard as B;
     $cols = $this->columns();
-    $tv = $this->tv;
-    $fs = $tv ? 1.35 : 1;
     $canMove = B::canMove(); $canHand = B::canHandOver(); $canSign = B::canSign();
     $ageBg = ['gray' => '#f3f4f6', 'amber' => '#fef3c7', 'red' => '#fee2e2'];
     $ageFg = ['gray' => '#374151', 'amber' => '#92400e', 'red' => '#991b1b'];
@@ -10,7 +8,7 @@
 @endphp
 <x-filament-panels::page>
 <style>.cpb-cols{grid-template-columns:repeat(4,minmax(0,1fr))}@media(max-width:1100px){.cpb-cols{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:640px){.cpb-cols{grid-template-columns:1fr}}</style>
-    <div wire:poll.30s style="font-size: {{ $fs }}rem">
+    <div wire:poll.30s >
         <div style="display:flex; flex-wrap:wrap; gap:.75rem; align-items:center; margin-bottom:1rem">
             <select wire:model.live="warehouseId" style="border:1px solid #d1d5db; border-radius:.5rem; padding:.4rem .6rem; font-size:inherit">
                 <option value="">All warehouses</option>
@@ -20,9 +18,9 @@
             </select>
             <input type="search" wire:model.live.debounce.400ms="search" placeholder="Search order #, customer, phone"
                    style="border:1px solid #d1d5db; border-radius:.5rem; padding:.4rem .6rem; min-width:0; width:min(16rem,100%); font-size:inherit">
-            <x-filament::button color="gray" wire:click="toggleTv" icon="heroicon-o-tv" size="sm">
-                {{ $tv ? 'Normal view' : 'TV mode (large type)' }}
-            </x-filament::button>
+ <x-filament::button tag="a" color="gray" size="sm" icon="heroicon-o-arrow-top-right-on-square" data-test="tv-popout" target="_blank" rel="noopener"
+                href="{{ route('pickup.tv', array_filter(['wh' => $this->warehouseId])) }}"
+                onclick="window.open(this.href,'pickupTv','popup=yes,width=1600,height=900');return false;">Open TV</x-filament::button>
             <span style="color:#6b7280; font-size:.85em">Refreshes every 30 seconds · amber over {{ B::AMBER_HOURS }}h, red over {{ B::RED_HOURS }}h or past the requested pickup date</span>
         </div>
 

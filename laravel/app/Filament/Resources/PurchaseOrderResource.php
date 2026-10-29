@@ -4,10 +4,12 @@ namespace App\Filament\Resources;
 
 use App\Accounting\ApService;
 use App\Filament\Concerns\RoleGated;
+use App\Filament\Forms\Components\ProductPickerField;
 use App\Filament\Resources\PurchaseOrderResource\Pages;
 use App\Models\Product;
 use App\Models\PurchaseOrder;
 use App\Models\Setting;
+use App\Support\ProductSearch;
 use App\Services\PurchaseOrderService;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -62,6 +64,9 @@ class PurchaseOrderResource extends Resource
                         ->visible(fn (?PurchaseOrder $record) => $record && \App\Purchasing\InboundTracking::links($record))
                         ->content(fn (?PurchaseOrder $record) => new \Illuminate\Support\HtmlString($record ? \App\Purchasing\InboundTracking::html($record) : '')),
                 ]),
+            Forms\Components\Actions::make([
+                ProductPickerField::addLinesAction('lines', fn (Product $p) => ['product_id' => $p->id, 'qty' => 1, 'unit_cost' => $p->cost], showCost: true),
+            ])->visible(fn (?PurchaseOrder $record) => ! in_array($record?->status, ['received', 'partial'], true))->columnSpanFull()->key('add_products'),
             Forms\Components\Repeater::make('lines')->relationship()->columns(['default' => 2, 'md' => 4])
                 ->disabled(fn (?PurchaseOrder $record) => in_array($record?->status, ['received', 'partial'], true))
                 ->schema([
@@ -71,7 +76,7 @@ class PurchaseOrderResource extends Resource
                                 $fail("Product {$p->sku} is archived and can't be added to new orders.");
                             }
                         })
-                        ->getSearchResultsUsing(fn (string $search) => Product::notArchived()->where(fn ($w) => $w->where('sku', 'like', "%$search%")->orWhere('upc', 'like', "%$search%")->orWhere('name', 'like', "%$search%"))->limit(30)->get()->mapWithKeys(fn ($p) => [$p->id => "{$p->sku} {$p->name}"]))
+                        ->getSearchResultsUsing(fn (string $search) => ProductSearch::options($search))
                         ->getOptionLabelUsing(fn ($value) => ($p = Product::find($value)) ? "{$p->sku} {$p->name}" : null)
                         ->live()->afterStateUpdated(fn ($state, Set $set) => $set('unit_cost', Product::find($state)?->cost))
                         ->columnSpan(['default' => 2, 'md' => 2]),

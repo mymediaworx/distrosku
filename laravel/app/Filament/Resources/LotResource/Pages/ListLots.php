@@ -12,6 +12,9 @@ class ListLots extends ListRecords
 
     protected function getHeaderActions(): array
     {
-        return [Action::make('recall')->label('Recall look-up')->icon('heroicon-o-magnifying-glass')->url(RecallLookup::getUrl())];
+        return [Action::make('trace')->label('Trace')->icon('heroicon-o-magnifying-glass-circle')->url(Trace::getUrl()),
+            Action::make('review')->label(fn () => 'Needs review ('.\App\Models\LotReviewItem::where('status', 'open')->count().')')->icon('heroicon-o-exclamation-triangle')
+                ->url(\App\Filament\Resources\LotReviewItemResource::getUrl()),
+            Action::make('recall')->label('Recall look-up')->icon('heroicon-o-magnifying-glass')->url(RecallLookup::getUrl())];
     }
 }

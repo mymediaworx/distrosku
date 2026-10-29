@@ -69,7 +69,7 @@ class Phase194CounterPickupTest extends TestCase
         // portal + POS
         $this->assertSame('pickup', SalesOrder::create(['customer_id' => $this->ky->id, 'ship_to_id' => $this->ky->defaultShipTo()->id, 'channel' => 'portal',
             'warehouse_id' => Warehouse::value('id'), 'order_date' => now()->toDateString()])->fulfillment);
-        Livewire::test(CounterPos::class)->set('cart', [])->set('scan', 'TST-GEN-001')->call('add')->call('checkout');
+        Livewire::test(CounterPos::class)->set('customerId', \App\Models\Customer::where('code', 'CASH')->value('id'))->set('cart', [])->set('scan', 'TST-GEN-001')->call('add')->call('checkout');
         $this->assertSame('pickup', SalesOrder::where('channel', 'pos')->value('fulfillment'));
     }
 

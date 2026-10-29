@@ -41,6 +41,7 @@ class Product extends Model
             'ky_tax_paid_by_supplier' => 'boolean',
             'archived_at' => 'datetime',
             'hemp_cannabinoid' => 'boolean',
+            'taxes' => 'array',
         ];
     }
 
@@ -84,6 +85,22 @@ class Product extends Model
     public function scopeNotArchived($q)
     {
         return $q->whereNull($q->getModel()->qualifyColumn('archived_at'));
+    }
+
+    /** 0.21: regulated = tobacco, vapor, hemp/CBD, kratom (every tax class except General and Beverage). Walk-in/cash customers cannot buy these. */
+    public function isRegulated(): bool
+    {
+        return (bool) $this->tax_class?->isRegulated();
+    }
+
+    public function scopeRegulated($q)
+    {
+        return $q->whereIn('tax_class', \App\Enums\TaxClass::regulatedValues());
+    }
+
+    public function scopeNotRegulated($q)
+    {
+        return $q->where(fn ($w) => $w->whereNull('tax_class')->orWhereNotIn('tax_class', \App\Enums\TaxClass::regulatedValues()));
     }
 
     public function isArchived(): bool
@@ -176,11 +193,22 @@ class Product extends Model
         return $this->belongsTo(Vendor::class, 'preferred_vendor_id');
     }
 
+    public function vendorItems()
+    {
+        return $this->hasMany(VendorItem::class);
+    }
+
     public const PACT_DEFAULT_CLASSES = ['cigarette_stamped', 'ryo', 'snuff_chew', 'vapor'];
 
     /** PACT covered defaults on for cigarette / RYO / smokeless / vapor unless set explicitly. */
     protected static function booted(): void
     {
+        // 0.20.15 (#36): new products in a lot-tracked department / tax class inherit tracking (can be switched off per product after).
+        static::creating(function (Product $p) {
+            if (! $p->track_lots && \App\Warehouse\LotTracking::appliesTo($p)) {
+                $p->track_lots = true;
+            }
+        });
         static::saving(function (Product $p) {
             $cls = $p->tax_class instanceof \BackedEnum ? $p->tax_class->value : $p->tax_class;
             $explicit = $p->exists ? $p->isDirty('pact_covered') : array_key_exists('pact_covered', $p->getAttributes());

@@ -67,7 +67,7 @@ class Phase13ReturnApprovalTest extends TestCase
     private function sale(Product $p, string $qty): SalesOrder
     {
         $c = Customer::factory()->create(['type' => 'retailer', 'fein' => '111222333']);
-        CustomerLicense::factory()->create(['customer_id' => $c->id, 'state' => 'KY', 'type' => 'tobacco_retail', 'number' => 'R-555']);
+        CustomerLicense::factory()->create(['customer_id' => $c->id, 'state' => 'KY', 'type' => 'tobacco_retail', 'number' => 'R-555-'.$c->id]);
         $s = ShipTo::factory()->create(['customer_id' => $c->id, 'state' => 'KY', 'address' => '5 Shop St', 'city' => 'Lexington', 'zip' => '40507']);
         $so = SalesOrder::create(['customer_id' => $c->id, 'ship_to_id' => $s->id, 'warehouse_id' => $this->wh->id, 'order_date' => now()->toDateString()]);
         $so->lines()->create(['product_id' => $p->id, 'qty' => $qty, 'unit_price' => $p->price]);

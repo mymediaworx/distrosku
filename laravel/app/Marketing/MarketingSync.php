@@ -10,7 +10,7 @@ use Illuminate\Support\Str;
 use RuntimeException;
 
 /**
- * 0.19 BrandWorx Marketing v1:
+ * 0.19 Marketing v1:
  *  - customers -> contacts (upsert + custom fields; tags vega, type:*, state:*, route:* added; ERP opt-ins drive DND). One-way since 0.19.2.
  *  - order events -> tag on the contact (removed + re-added so "Tag added" workflow triggers fire every time) and, if set,
  *    a POST to the inbound-webhook workflow trigger URL with the order details.
@@ -71,7 +71,7 @@ class MarketingSync
             $t[] = 'route:'.Str::slug($st->route_name);
         }
 
-        return $t; // ERP-owned tags only (added, never removed); consent tags belong to BrandWorx Marketing
+        return $t; // ERP-owned tags only (added, never removed); consent tags belong to Marketing
     }
 
     public static function contactPayload(Customer $c): array
@@ -85,7 +85,7 @@ class MarketingSync
         // 0.19.2: one-way sync, the ERP opt-in switches drive consent.
         //  - opt-in OFF  -> DND on for that channel (always).
         //  - opt-in ON   -> DND cleared only on a contact the ERP itself created; on a contact that already existed in
-        //                   BrandWorx Marketing (or before we know) we send nothing, so DND set there is never wiped.
+        //                   Marketing (or before we know) we send nothing, so DND set there is never wiped.
         $dnd = [];
         foreach (['SMS' => 'sms_opt_in', 'Email' => 'email_opt_in'] as $ch => $f) {
             if (! $c->{$f}) {
@@ -105,7 +105,7 @@ class MarketingSync
     public function syncContact(Customer $c): string
     {
         if (! $c->email && ! $c->phone) {
-            throw new SkipException('No email or phone on the customer; BrandWorx Marketing needs one to match a contact.');
+            throw new SkipException('No email or phone on the customer; Marketing needs one to match a contact.');
         }
         $p = self::contactPayload($c);
         [$fields, $notes] = app(MarketingFields::class)->payload($c);
@@ -120,7 +120,7 @@ class MarketingSync
         if ($id === '') {
             throw new RuntimeException('Contact upsert returned no contact id.');
         }
-        $this->client->addTags($id, self::tags($c)); // additive: never replaces tags set in BrandWorx Marketing
+        $this->client->addTags($id, self::tags($c)); // additive: never replaces tags set in Marketing
         $fill = ['ghl_contact_id' => $id, 'ghl_synced_at' => now()];
         if (! $c->ghl_contact_id || $c->ghl_contact_id !== $id) {
             $fill['ghl_created_by_erp'] = (bool) $r->json('new', false); // true only when the upsert created the contact

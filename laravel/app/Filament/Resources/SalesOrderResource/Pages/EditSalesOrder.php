@@ -17,6 +17,8 @@ class EditSalesOrder extends EditRecord
         // 0.20: the order-to-cash steps are buttons on the order page (only the ones that apply show).
         return [
             ...OrderActions::flow(Actions\Action::class),
+            Actions\Action::make('invoiceView')->label('View invoice')->icon('heroicon-o-eye')->color('gray')
+                ->visible(fn () => $this->record->status === \App\Enums\SalesOrderStatus::Invoiced)->url(fn () => route('docs.invoice.view', $this->record))->openUrlInNewTab(),
             Actions\Action::make('invoicePdf')->label('Invoice PDF')->icon('heroicon-o-document-arrow-down')->color('gray')
                 ->visible(fn () => $this->record->status === \App\Enums\SalesOrderStatus::Invoiced)->url(fn () => route('docs.invoice', $this->record)),
             Actions\DeleteAction::make()->visible(fn () => in_array($this->record->status instanceof \BackedEnum ? $this->record->status->value : $this->record->status, ['draft'], true)),

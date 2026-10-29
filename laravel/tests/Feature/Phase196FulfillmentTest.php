@@ -129,7 +129,7 @@ class Phase196FulfillmentTest extends TestCase
     public function test_portal_pickup_order_without_ship_to(): void
     {
         $abc = $this->abc();
-        $k = CustomerContact::create(['customer_id' => $abc->id, 'name' => 'Pat', 'email' => 'pat196@example.test']);
+        $k = CustomerContact::create(['customer_id' => $abc->id, 'name' => 'Pat', 'email' => 'pat196@example.test', 'is_portal_contact' => true]);
         $k->setPasswordFromLink('Secret12345');
         Auth::guard('portal')->login($k->fresh());
         Livewire::test(Catalog::class)->assertSet('fulfillment', 'pickup')->assertDontSee('No ship-to address on file');

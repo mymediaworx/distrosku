@@ -23,6 +23,15 @@ class PortalDocumentsController extends Controller
             ->setPaper('letter')->download("invoice-{$so->number}.pdf");
     }
 
+    /** 0.20.20: the same invoice as a normal page (on screen), for staff. */
+    public function adminInvoiceView(SalesOrder $so)
+    {
+        abort_unless(auth()->user()?->canModule('customers', 'view') || auth()->user()?->canModule('sales_orders', 'view'), 403);
+        $so->load('lines.product', 'customer', 'shipTo', 'payments', 'signatures.user');
+
+        return view('docs.invoice', ['so' => $so, 'company' => Company::current(), 'info' => config('erp.company'), 'screen' => true]);
+    }
+
     public static function statementPdf(Customer $c)
     {
         $svc = app(CustomerBalanceService::class);

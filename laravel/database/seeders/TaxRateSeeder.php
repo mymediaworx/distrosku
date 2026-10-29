@@ -40,6 +40,10 @@ class TaxRateSeeder extends Seeder
             );
         }
 
+        // 0.20.23: no chew-percent row is seeded. revenue.ky.gov (checked 2026-10-29) still taxes chewing tobacco per unit
+        // (KRS 138.140); the 0.20.17 "15% of wholesale" row is removed by migration phase2023_remove_chew_percent.
+        // KyExcise still honours a KY chew_percent row if one is ever added deliberately (e.g. after a law change).
+
         // TEST demo products only: fill the new tax fields so reports have data. Never touches real SKUs.
         Product::where('sku', 'TST-SNF-001')->whereNull('net_weight_oz')->update(['smokeless_type' => 'snuff', 'net_weight_oz' => '1.2', 'units_per_case' => 5]);
         Product::where('sku', 'TST-CIG-001')->whereNull('sticks_per_unit')->update(['sticks_per_unit' => 200]);

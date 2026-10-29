@@ -88,13 +88,33 @@ class WarehouseService
         return $out;
     }
 
-    public function scanReceive(ReceivingSession $s, string $code, mixed $qty = 1, ?string $lot = null, ?string $expires = null): array
+    /**
+     * 0.20.15 (#36): a GS1 scan fills lot (AI 10) and expiry (AI 17) and looks up the GTIN (AI 01); typed values win.
+     * $trackLots = true switches lot tracking on for the product from this receipt on. $coaId links a COA to the lot.
+     */
+    public function scanReceive(ReceivingSession $s, string $code, mixed $qty = 1, ?string $lot = null, ?string $expires = null, bool $trackLots = false, ?int $coaId = null): array
     {
         if ($s->status !== 'open') {
             throw new WorkflowException('This receiving session is closed.');
         }
+        $gs1 = Gs1::parse($code);
+        if ($gs1) {
+            $lot = trim((string) $lot) ?: $gs1['lot'];
+            $expires = $expires ?: $gs1['expires'];
+            if ($gs1['gtin']) {
+                $g = $gs1['gtin']; // GTIN-14 with leading zeros = EAN-13 / UPC-A
+                $code = collect([$g, substr($g, 1), substr($g, 2)])->first(fn ($c) => ProductLookup::resolve($c) !== null) ?? $g;
+            }
+        }
         $r = self::resolve($code);
         $p = $r['product'];
+        $turnOn = $trackLots && ! $p->track_lots;
+        if ($turnOn) {
+            $p->track_lots = true; // saved with the scan below
+        }
+        if ($coaId && ! \App\Models\ProductCoa::where('id', $coaId)->where('product_id', $p->id)->exists()) {
+            throw new WorkflowException("That COA is not for {$p->sku}.");
+        }
         $q = self::baseQty($r, $qty);
         $lot = trim((string) $lot) ?: null;
         if ($p->track_lots && ! $lot) {
@@ -113,11 +133,15 @@ class WarehouseService
             $pct = PurchaseOrderService::allowancePct($s->purchaseOrder);
             throw new WorkflowException("Over-receipt: {$p->sku} has only {$left} left to receive on this PO".(Money::of($pct)->isPositive() ? " (incl. {$pct}% allowance)." : '.'));
         }
+        if ($turnOn) {
+            $p->save();
+        }
         $s->scans()->create(['purchase_order_line_id' => $row['line']->id, 'qty' => Money::s($q), 'code' => mb_substr($code, 0, 64),
-            'lot_number' => $p->track_lots ? $lot : null, 'expires_on' => $p->track_lots ? ($expires ?: null) : null, 'unit_code' => $r['unit']?->code]);
+            'lot_number' => $p->track_lots ? $lot : null, 'expires_on' => $p->track_lots ? ($expires ?: null) : null, 'unit_code' => $r['unit']?->code,
+            'product_coa_id' => $p->track_lots ? $coaId : null]);
         $remaining = Money::of($row['remaining'])->minus($q);
 
-        return ['product' => $p, 'qty' => Money::s($q), 'unit' => $r['unit']?->code, 'remaining' => Money::s(BigDecimal::max($remaining, BigDecimal::zero())),
+        return ['product' => $p, 'qty' => Money::s($q), 'lot' => $p->track_lots ? $lot : null, 'expires' => $p->track_lots ? ($expires ?: null) : null, 'unit' => $r['unit']?->code, 'remaining' => Money::s(BigDecimal::max($remaining, BigDecimal::zero())),
             'over' => $remaining->isNegative() ? Money::s($remaining->negated()) : null];
     }
 
@@ -155,7 +179,7 @@ class WarehouseService
             foreach ($s->scans()->whereNotNull('lot_number')->get()->groupBy(fn ($x) => $x->purchase_order_line_id.'|'.$x->lot_number) as $grp) {
                 $l = $status[$grp->first()->purchase_order_line_id]['line'];
                 $this->lots->receive($l->product, $po->warehouse_id, $grp->first()->lot_number, $grp->first()->expires_on?->toDateString(),
-                    Money::add(...$grp->pluck('qty')->all()), $po);
+                    Money::add(...$grp->pluck('qty')->all()), $po, $grp->whereNotNull('product_coa_id')->first()?->product_coa_id);
             }
             foreach ($q as $lineId => $qty) {
                 $l = $status[$lineId]['line'];

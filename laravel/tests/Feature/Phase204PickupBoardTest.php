@@ -113,7 +113,6 @@ class Phase204PickupBoardTest extends TestCase
         $this->assertSame(S::Invoiced, $o->status);
         $this->assertSame('done', PickupBoard::stage($o));
         $this->assertEqualsWithDelta(0, (float) $o->balance(), 0.001);
-        Livewire::test(CounterPickupBoard::class)->call('toggleTv')->assertSet('tv', true)->assertSee('Normal view');
     }
 
     public function test_permissions(): void

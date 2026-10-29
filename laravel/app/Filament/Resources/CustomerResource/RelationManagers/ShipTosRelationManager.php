@@ -16,7 +16,7 @@ class ShipTosRelationManager extends RelationManager
 {
     protected static string $relationship = 'shipTos';
 
-    protected static ?string $title = 'Ship-to addresses';
+    protected static ?string $title = 'Ship To';
 
     public static function canViewForRecord(Model $ownerRecord, string $pageClass): bool
     {

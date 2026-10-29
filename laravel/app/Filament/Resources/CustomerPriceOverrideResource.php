@@ -3,9 +3,12 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Concerns\RoleGated;
+use App\Filament\Forms\Components\ProductPickerField;
 use App\Filament\Resources\CustomerPriceOverrideResource\Pages;
 use App\Models\CustomerPriceOverride;
 use App\Models\Product;
+use App\Models\SalesOrder;
+use App\Support\ProductSearch;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
@@ -43,12 +46,32 @@ class CustomerPriceOverrideResource extends Resource
     public static function form(Form $form): Form
     {
         return $form->columns(2)->schema([
-            Forms\Components\Select::make('product_id')->label('Product')->required()->searchable()
-                ->getSearchResultsUsing(fn (string $search) => Product::notArchived()->where(fn ($w) => $w->where('sku', 'like', "%$search%")->orWhere('name', 'like', "%$search%"))->limit(30)->get()->mapWithKeys(fn ($p) => [$p->id => "{$p->sku} {$p->name}"]))
-                ->getOptionLabelUsing(fn ($value) => ($p = Product::find($value)) ? "{$p->sku} {$p->name} (list \${$p->price})" : null),
-            Forms\Components\Select::make('customer_id')->label('Customer')->relationship('customer', 'name')->searchable()->nullable()
+            // 0.20.17: the ONE standard product picker (search / scan / browse, thumbnails). Several products on create, one on edit.
+            ProductPickerField::make('product_ids')->label('Products')->multiple()->columnSpanFull()
+                ->visible(fn ($livewire) => $livewire instanceof Pages\CreateCustomerPriceOverride)
+                ->required(fn ($livewire) => $livewire instanceof Pages\CreateCustomerPriceOverride)
+                ->helperText('The same special price is created for every product you pick.'),
+            ProductPickerField::make('product_id')->label('Product')->columnSpanFull()
+                ->visible(fn ($livewire) => ! ($livewire instanceof Pages\CreateCustomerPriceOverride))
+                ->required(fn ($livewire) => ! ($livewire instanceof Pages\CreateCustomerPriceOverride)),
+            \App\Filament\Forms\Components\CustomerPickerField::make('customer_id')->label('Customer')->nullable()
                 ->helperText('Blank = all customers. A customer-specific price beats an all-customers one.'),
-            Forms\Components\TextInput::make('price')->numeric()->required()->prefix('$')->minValue(0),
+            Forms\Components\Placeholder::make('base_price_display')
+                ->label('Current list price')
+                ->content(function (Get $get) {
+                    $ids = array_values(array_filter((array) ($get('product_ids') ?: $get('product_id'))));
+                    if (count($ids) > 1) {
+                        return count($ids).' products selected — each keeps its own list price; the special price below applies to all.';
+                    }
+
+                    return ProductSearch::basePriceLabel($ids ? Product::find($ids[0]) : null);
+                }),
+            Forms\Components\TextInput::make('price')->numeric()->required()->prefix('$')->minValue(0)
+                ->helperText(function (Get $get) {
+                    $ids = array_values(array_filter((array) ($get('product_ids') ?: $get('product_id'))));
+
+                    return count($ids) === 1 ? ProductSearch::basePriceLabel(Product::find($ids[0])) : null;
+                }),
             Forms\Components\Select::make('duration')->options(CustomerPriceOverride::DURATIONS)->default('ongoing')->required()->live()
                 ->helperText('One time: used by the first confirmed order line, then marked Used.'),
             Forms\Components\DatePicker::make('starts_on')->label('From')->required(fn (Get $get) => $get('duration') === 'range'),
@@ -73,7 +96,7 @@ class CustomerPriceOverrideResource extends Resource
             Tables\Columns\TextColumn::make('ends_on')->date()->placeholder('-'),
             Tables\Columns\TextColumn::make('status')->badge()->state(fn (CustomerPriceOverride $r) => $r->status()),
             Tables\Columns\TextColumn::make('used_sales_order_id')->label('Used on order')->placeholder('-')
-                ->formatStateUsing(fn ($state) => \App\Models\SalesOrder::find($state)?->number),
+                ->formatStateUsing(fn ($state) => SalesOrder::find($state)?->number),
         ])->filters([
             Tables\Filters\SelectFilter::make('duration')->options(CustomerPriceOverride::DURATIONS),
             Tables\Filters\TernaryFilter::make('active'),

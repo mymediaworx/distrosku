@@ -82,7 +82,7 @@ class Phase17ImportsTest extends TestCase
     public function test_customers_dry_run_then_commit_update_or_create_and_logged(): void
     {
         $b = $this->imp('customers', [
-            ['Customer number', 'Name', 'Terms', 'Email', 'Credit limit', 'Delivery days'],
+            ['Account Number', 'Name', 'Terms', 'Email', 'Credit limit', 'Delivery days'],
             ['CTEST-KY', 'Renamed Corner Market', 'Net 30', '', '2500', 'mon,thu'],
             ['NEW1', 'New Shop', 'COD', 'bad-email', '', ''],
             ['NEW2', 'Other Shop', 'Net 15', 'a@b.test', '1,000', 'Tuesday?'],
@@ -90,7 +90,7 @@ class Phase17ImportsTest extends TestCase
             ['NEW3', 'Third again', '', '', '', ''],
         ]);
         $this->assertSame('validated', $b->status);
-        $this->assertSame(['code' => 'Customer number', 'name' => 'Name', 'email' => 'Email', 'terms' => 'Terms', 'credit_limit' => 'Credit limit', 'delivery_days' => 'Delivery days'],
+        $this->assertSame(['code' => 'Account Number', 'name' => 'Name', 'email' => 'Email', 'terms' => 'Terms', 'credit_limit' => 'Credit limit', 'delivery_days' => 'Delivery days'],
             array_intersect_key($b->mapping, array_flip(['code', 'name', 'email', 'terms', 'credit_limit', 'delivery_days'])));
         $this->assertSame(2, $b->valid_rows);
         $this->assertSame(3, $b->error_rows);
@@ -116,7 +116,7 @@ class Phase17ImportsTest extends TestCase
         $this->assertTrue(ActivityLog::where('subject_type', Customer::class)->where('event', 'created')->where('subject_label', 'NEW3')->exists());
         $csv = $this->r->errorReportCsv($b);
         $this->assertStringContainsString('bad-email', $csv);
-        $this->assertStringStartsWith('Row,Status,Problem,"Customer number"', $csv);
+        $this->assertStringStartsWith('Row,Status,Problem,"Account Number"', $csv);
     }
 
     public function test_products_with_upcs_uom_vendor_items_and_conflicts(): void
@@ -151,7 +151,7 @@ class Phase17ImportsTest extends TestCase
         $this->r->startCommit($this->imp('vendors', [['Vendor code', 'Name', 'Manufacturer (yes/no)'], ['VNEW', 'New Vendor', 'yes']]), $this->owner);
         $this->assertTrue((bool) Vendor::where('code', 'VNEW')->value('is_manufacturer'));
 
-        $b = $this->imp('ship_tos', [['Customer number', 'Ship-to name', 'State (2 letters)', 'City', 'Route name', 'Route sequence'],
+        $b = $this->imp('ship_tos', [['Account Number', 'Ship-to name', 'State (2 letters)', 'City', 'Route name', 'Route sequence'],
             ['CTEST-KY', 'Main store', 'KY', 'Lexington', 'East', '3'], ['CTEST-KY', 'Store 2', 'KY', 'Paris', 'East', '4'], ['NOPE', 'X', 'KY', '', '', '']]);
         $this->assertSame(1, $b->error_rows);
         $this->r->startCommit($b, $this->owner);
@@ -159,21 +159,21 @@ class Phase17ImportsTest extends TestCase
         $this->assertSame(2, Customer::where('code', 'CTEST-KY')->first()->shipTos()->count());
 
         CustomerGroup::create(['code' => 'GOLD', 'name' => 'Gold']);
-        $b = $this->imp('price_lists', [['SKU or UPC', 'Customer number (contract price)', 'Price group code', 'Minimum qty', 'Price', 'Starts on'],
+        $b = $this->imp('price_lists', [['SKU or UPC', 'Account Number (contract price)', 'Price group code', 'Minimum qty', 'Price', 'Starts on'],
             ['TST-GEN-001', 'CTEST-KY', '', '1', '20', ''], ['000000000103', '', 'GOLD', '10', '19', '2026-11-01'], ['TST-GEN-001', 'CTEST-KY', 'GOLD', '', '1', '']]);
         $this->assertSame([2, 1], [$b->valid_rows, $b->error_rows]);
         $this->r->startCommit($b, $this->owner);
         $this->assertSame(2, PriceRule::count());
-        $again = $this->imp('price_lists', [['SKU or UPC', 'Customer number (contract price)', 'Minimum qty', 'Price'], ['TST-GEN-001', 'CTEST-KY', '1', '18']]);
+        $again = $this->imp('price_lists', [['SKU or UPC', 'Account Number (contract price)', 'Minimum qty', 'Price'], ['TST-GEN-001', 'CTEST-KY', '1', '18']]);
         $this->assertSame('update', $again->rows()->value('action'));
         $this->r->startCommit($again, $this->owner);
         $this->assertSame(2, PriceRule::count());
         $this->assertSame('18.0000', (string) PriceRule::whereNotNull('customer_id')->value('price'));
 
-        $b = $this->imp('opening_balances', [['Customer number', 'Opening balance (negative = credit)', 'As-of date'], ['CTEST-KY', '1,250.50', '10/31/2026'], ['CASH', '-20', '']]);
+        $b = $this->imp('opening_balances', [['Account Number', 'Opening balance (negative = credit)', 'As-of date'], ['CTEST-KY', '1,250.50', '10/31/2026'], ['CASH', '-20', '']]);
         $this->r->startCommit($b, $this->owner);
-        $this->assertSame('1250.5000', (string) Customer::where('code', 'CTEST-KY')->value('beginning_balance'));
-        $this->assertSame('-20.0000', (string) Customer::where('code', 'CASH')->value('beginning_balance'));
+        $this->assertSame('1250.50', (string) Customer::where('code', 'CTEST-KY')->value('beginning_balance'));
+        $this->assertSame('-20.00', (string) Customer::where('code', 'CASH')->value('beginning_balance'));
         $this->assertSame(2, CustomerBalanceAudit::count());
     }
 
@@ -260,7 +260,7 @@ class Phase17ImportsTest extends TestCase
     public function test_page_flow_and_access(): void
     {
         $this->get('/admin/imports')->assertOk()->assertSee('New import')->assertSee('Powered by DistroSKU');
-        $file = UploadedFile::fake()->createWithContent('c.csv', "Customer number,Name\nPG1,Page Shop\n");
+        $file = UploadedFile::fake()->createWithContent('c.csv', "Account Number,Name\nPG1,Page Shop\n");
         $lw = Livewire::test(Imports::class)->set('type', 'customers')->set('file', $file)->call('upload');
         $b = ImportBatch::latest('id')->first();
         $lw->assertSet('batch', $b->id)->call('dryRun')->assertSee('Commit 1 rows')->call('commit');

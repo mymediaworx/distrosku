@@ -158,7 +158,7 @@ class Phase201InboundPoTest extends TestCase
     public function test_modules_and_sidebar_order(): void
     {
         $this->assertSame(['POS', 'Sales Orders', 'Customers', 'Payments', 'Pricing', 'Promotions', 'Products', 'Vendors', 'Purchasing', 'Warehouse', 'Inventory', 'Counter Pickup',
-            'Delivery', 'Driver', 'Van Sales', 'Accounting', 'Bills (AP)', 'Reports', 'Tax Filings', 'MSA Weekly', 'PACT Reports', 'Compliance', 'Users', 'Settings', 'Imports'],
+            'Delivery', 'Driver', 'Van Sales', 'Accounting', 'Reports', 'Tax Filings', 'MSA Weekly', 'PACT Reports', 'Compliance', 'Users', 'Company Settings', 'Imports'],
             array_column(Modules::definitions(), 0));
         $this->assertSame(NavOrder::flat(), array_column(Modules::definitions(), 0));
         $labels = array_column(Modules::tiles(), 'label');
@@ -177,10 +177,12 @@ class Phase201InboundPoTest extends TestCase
         $this->assertSame('Payments', \App\Filament\Resources\PaymentResource::getNavigationGroup());
         $this->assertSame('Counter Pickup', \App\Filament\Pages\CounterPickupBoard::getNavigationGroup());
         $this->assertSame(0, Modules::section('Counter Pickup'));
-        $this->assertSame('Bills (AP)', \App\Filament\Resources\VendorBillResource::getNavigationGroup());
+        $this->assertSame('Purchasing', \App\Filament\Resources\VendorBillResource::getNavigationGroup()); // 0.20.17: moved out of the old Bills (AP) group
+        $this->assertSame('Purchasing', \App\Filament\Resources\VendorPaymentResource::getNavigationGroup());
+        $this->assertNotContains('Bills (AP)', NavOrder::GROUPS);
         $this->get('/admin')->assertOk();
         $html = $this->get('/admin/modules')->assertOk()->getContent();
         $pos = fn ($s) => strpos($html, '<span>'.$s.'</span>');
-        $this->assertTrue($pos('POS') < $pos('Sales Orders') && $pos('Inventory') < $pos('Counter Pickup') && $pos('Counter Pickup') < $pos('Delivery') && $pos('Compliance') < $pos('Users') && $pos('Settings') < $pos('Imports'));
+        $this->assertTrue($pos('POS') < $pos('Sales Orders') && $pos('Inventory') < $pos('Counter Pickup') && $pos('Counter Pickup') < $pos('Delivery') && $pos('Compliance') < $pos('Users') && $pos('Company Settings') < $pos('Imports'));
     }
 }

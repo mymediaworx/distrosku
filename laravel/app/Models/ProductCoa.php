@@ -16,6 +16,11 @@ class ProductCoa extends Model
         return ['tested_on' => 'date', 'expires_on' => 'date', 'thc_total_mg' => 'decimal:4'];
     }
 
+    public function lot()
+    {
+        return $this->belongsTo(Lot::class);
+    }
+
     public function product()
     {
         return $this->belongsTo(Product::class);

@@ -43,8 +43,8 @@
             {{-- Order details live with the cart so the tender column fits a tablet screen. --}}
             <div class="card details" data-test="order-details">
                 <div class="dgrid">
-                    <div class="dcust"><label for="pos-customer">Customer</label>
-                        <select id="pos-customer" wire:model.live="customerId">@foreach($customers as $c)<option value="{{ $c->id }}">{{ $c->name }}</option>@endforeach</select>
+                    <div class="dcust">
+                        <livewire:customer-picker wire:model.live="customerId" :walk-in="true" label="Customer" wire:key="pos-customer-picker" />
                         @if(! is_null($this->customerBalance))<small data-test="customer-balance">Account balance: {{ number_format((float) $this->customerBalance, 2) }}{{ (float) $this->customerBalance < 0 ? ' (credit)' : '' }}</small>@endif</div>
                     <div><label for="pos-fulfillment">Fulfillment</label>
                         <select id="pos-fulfillment" wire:model.live="fulfillment" data-test="fulfillment"><option value="pickup">Counter pickup</option><option value="delivery">Delivery</option></select></div>
@@ -86,6 +86,7 @@
         <div class="side">
             <div class="card checkout" id="pos-checkout" data-test="checkout">
                 <p class="total">${{ number_format((float) $this->total, 2) }}</p>
+                @if(($posTax = (float) \App\Services\InvoiceTax::cartTax($cart)) > 0)<small data-test="pos-tax">Includes ${{ number_format($posTax, 2) }} tax</small>@endif
                 <div class="tenders">
                     @foreach(['cash' => 'Cash', 'check' => 'Check', 'card' => 'Card (manual)', 'account' => 'Charge to account'] as $k => $v)
                         <button type="button" wire:click="$set('tender', '{{ $k }}')" class="{{ $tender === $k ? 'on' : '' }}">{{ $v }}</button>
@@ -138,8 +139,8 @@
                 @endif
                 <div class="tiles">
                     @forelse($this->browseTiles as $t)
-                        <button type="button" class="tile" wire:key="t{{ $t['id'] }}" wire:click="pick({{ $t['id'] }})" data-test="tile">
-                            <strong>{{ $t['name'] }}</strong><small>{{ $t['sku'] }} · {{ $t['unit'] }}</small>
+                        <button type="button" class="tile" wire:key="t{{ $t['id'] }}" wire:click="pick({{ $t['id'] }})" data-test="tile" @if(! empty($t['restricted'])) disabled aria-disabled="true" data-restricted="1" title="Regulated: not for walk-in / cash customers" style="opacity:.45;cursor:not-allowed" @endif>
+                            <strong>{{ $t['name'] }}</strong><small>{{ $t['sku'] }} · {{ $t['unit'] }}@if(! empty($t['restricted'])) · <b>Not for walk-in</b>@endif</small>
                             <span class="tp">${{ number_format((float) $t['price'], 2) }}</span><small class="{{ (float) $t['stock'] > 0 ? '' : 'out' }}">Stock: {{ $t['stock'] }}</small>
                         </button>
                     @empty

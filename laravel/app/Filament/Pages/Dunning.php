@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Accounting\DunningMailer;
 use App\Accounting\DunningService;
 use App\Models\DunningBatch;
 use App\Models\DunningNotice;
@@ -16,7 +17,9 @@ use Filament\Tables\Table;
 
 /**
  * Overdue reminders. "Run dunning" makes a batch of DRAFT notices and a statement PDF batch.
- * The ERP never emails: download a notice as an unsent .eml draft and send it from your own mailbox.
+ * 0.20.18: with Company Settings > Email > Auto-email dunning ON, a daily job emails each notice (statement PDF attached); see DunningMailer.
+ * Otherwise (and for customers with no email / opted out) a notice can be printed or saved as a PDF letter, or downloaded as an unsent .eml draft.
+ * The page says so when the server has no real mail transport.
  */
 class Dunning extends Page implements HasTable
 {
@@ -41,12 +44,29 @@ class Dunning extends Page implements HasTable
         return (bool) $u && $u->canModule('dunning');
     }
 
+    /** True when the server has no real mail transport (log / array / default local SMTP). Dunning is unaffected; this only explains the page. */
+    public static function emailNotConfigured(): bool
+    {
+        $m = (string) config('mail.default');
+
+        return in_array($m, ['log', 'array'], true) || ($m === 'smtp' && in_array((string) config('mail.mailers.smtp.host'), ['', '127.0.0.1', 'localhost'], true));
+    }
+
     public function intro(): string
     {
         $lv = collect(DunningService::levels())->map(fn ($l) => "Level {$l['level']} \u{2013} ".e($l['name'])." ({$l['days']}+ days late)")->implode(' · ');
 
-        return 'Due date = invoice date + the customer\'s terms (Net N). '.$lv.'. Notices are <strong>drafts only</strong>: nothing is emailed by the ERP. '
-            .'Download a notice as an unsent email draft (.eml) to review and send from your own mailbox, or print the statement batch.';
+        $notice = static::emailNotConfigured()
+            ? '<p class="mb-2 font-semibold text-warning-600" data-test="email-not-configured">Email is not configured on this server, so nothing is emailed. '
+                .'Use <em>Print / PDF</em> on a notice (or the statement batch PDF) to mail or hand it over, or <em>Download draft (.eml)</em> to send from your own mailbox. '
+                .'An owner can set up email in Company Settings &gt; Email.</p>'
+            : '';
+        $auto = DunningMailer::enabled()
+            ? '<strong data-test="auto-email-on">Auto-email is ON</strong>: each morning at 07:00 new notices are emailed with the statement PDF. Customers with no email or opted out are on the print list.'
+            : '<strong data-test="auto-email-off">Auto-email is OFF</strong>: notices are drafts to print, or to download as an unsent email (.eml).';
+        $print = DunningMailer::printList()->count();
+
+        return $notice.'Due date = invoice date + the customer\'s terms (Net N). '.$lv.'. '.$auto.($print ? " <strong>{$print} notice(s) on the print list</strong> (use <em>Print list PDF</em>)." : '');
     }
 
     protected function getHeaderActions(): array
@@ -63,6 +83,24 @@ class Dunning extends Page implements HasTable
                     ->options(fn () => DunningBatch::latest('id')->limit(30)->get()->mapWithKeys(fn ($b) => [$b->id => "#{$b->id} as of {$b->as_of->toDateString()} ({$b->notice_count})"]))])
                 ->action(fn (array $data) => response()->streamDownload(fn () => print (app(DunningService::class)->statementsPdf(DunningBatch::findOrFail($data['batch']))),
                     "dunning-statements-{$data['batch']}.pdf", ['Content-Type' => 'application/pdf'])),
+            Action::make('print_list')->label('Print list PDF')->icon('heroicon-o-printer')->color('gray')
+                ->visible(fn () => DunningMailer::printList()->exists())
+                ->modalDescription('Statements for notices that could not be emailed (no email on file, opted out, or sending kept failing). They leave the print list once printed.')
+                ->requiresConfirmation()
+                ->action(function () {
+                    $notices = DunningMailer::printList()->with('customer', 'batch')->get();
+                    $pdf = app(DunningService::class)->noticesPdf($notices, now()->toDateString());
+                    DunningNotice::whereIn('id', $notices->pluck('id'))->update(['printed_at' => now()]);
+
+                    return response()->streamDownload(fn () => print ($pdf), 'dunning-print-list-'.now()->toDateString().'.pdf', ['Content-Type' => 'application/pdf']);
+                }),
+            Action::make('send_now')->label('Email pending notices now')->icon('heroicon-o-paper-airplane')->color('gray')
+                ->visible(fn () => DunningMailer::enabled() && auth()->user()?->isAdmin())
+                ->requiresConfirmation()->modalDescription('Runs the same job as the 07:00 schedule: emails pending notices (one per customer per stage).')
+                ->action(function () {
+                    $r = app(DunningMailer::class)->runDaily();
+                    Notification::make()->title($r['skipped'] ?: "Sent {$r['sent']}, failed {$r['failed']}, print list {$r['print']}")->color($r['skipped'] || $r['failed'] ? 'warning' : 'success')->send();
+                }),
             Action::make('levels')->label('Levels')->icon('heroicon-o-adjustments-horizontal')->color('gray')
                 ->fillForm(fn () => ['levels' => DunningService::levels()])
                 ->form([Forms\Components\Repeater::make('levels')->columns(2)->schema([
@@ -73,9 +111,16 @@ class Dunning extends Page implements HasTable
         ];
     }
 
+    /** Printable PDF letter for one notice (no email needed). */
+    public static function noticePdf(DunningNotice $n): string
+    {
+        return \Barryvdh\DomPDF\Facade\Pdf::loadView('docs.dunning-notice', ['n' => $n->loadMissing('customer'), 'company' => \App\Models\Company::current(), 'info' => config('erp.company')])
+            ->setPaper('letter')->output();
+    }
+
     public static function eml(DunningNotice $n): string
     {
-        $from = config('mail.from.address', 'billing@example.com');
+        $from = config('mail.from.address') ?: 'billing@example.com';
         $headers = "X-Unsent: 1\r\nTo: ".($n->to_email ?: '')."\r\nFrom: $from\r\nSubject: ".str_replace(["\r", "\n"], ' ', $n->subject)
             ."\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: 8bit\r\n\r\n";
 
@@ -93,16 +138,24 @@ class Dunning extends Page implements HasTable
                 Tables\Columns\TextColumn::make('overdue_amount')->money('USD'),
                 Tables\Columns\TextColumn::make('to_email')->label('To')->placeholder('no email on file'),
                 Tables\Columns\TextColumn::make('status')->badge(),
+                Tables\Columns\TextColumn::make('email_status')->label('Email')->badge()->placeholder('—')
+                    ->formatStateUsing(fn ($state) => ['sent' => 'Sent', 'failed' => 'Failed (will retry)', 'no_email' => 'No email: print', 'opted_out' => 'Opted out: print', 'duplicate' => 'Stage already sent', 'not_due' => 'No longer due'][$state] ?? $state)
+                    ->color(fn ($state) => match ($state) { 'sent' => 'success', 'failed' => 'danger', 'no_email', 'opted_out' => 'warning', default => 'gray' })
+                    ->tooltip(fn (DunningNotice $n) => $n->email_error ?: null),
+                Tables\Columns\TextColumn::make('emailed_at')->label('Emailed')->dateTime()->placeholder('—')->toggleable(),
                 Tables\Columns\TextColumn::make('created_at')->dateTime(),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('dunning_batch_id')->label('Batch')->options(fn () => DunningBatch::latest('id')->limit(30)->pluck('id', 'id')->map(fn ($i) => "#$i")),
+                Tables\Filters\Filter::make('print_list')->label('Print list (not emailed)')->query(fn ($q) => $q->whereIn('email_status', ['no_email', 'opted_out', 'failed'])),
                 Tables\Filters\SelectFilter::make('status')->options(['draft' => 'Draft', 'reviewed' => 'Reviewed', 'dismissed' => 'Dismissed']),
             ])
             ->actions([
                 Tables\Actions\Action::make('preview')->label('Preview')->modalSubmitAction(false)
                     ->modalHeading(fn (DunningNotice $n) => $n->subject)
                     ->modalContent(fn (DunningNotice $n) => new \Illuminate\Support\HtmlString('<pre class="whitespace-pre-wrap text-sm">'.e($n->body).'</pre>')),
+                Tables\Actions\Action::make('pdf')->label('Print / PDF')->icon('heroicon-o-printer')
+                    ->action(fn (DunningNotice $n) => response()->streamDownload(fn () => print (self::noticePdf($n)), "dunning-{$n->id}-{$n->customer->code}.pdf", ['Content-Type' => 'application/pdf'])),
                 Tables\Actions\Action::make('eml')->label('Download draft (.eml)')->icon('heroicon-o-envelope')
                     ->action(fn (DunningNotice $n) => response()->streamDownload(fn () => print (self::eml($n)), "dunning-{$n->id}-{$n->customer->code}.eml", ['Content-Type' => 'message/rfc822'])),
                 Tables\Actions\Action::make('reviewed')->label('Mark reviewed')->visible(fn (DunningNotice $n) => $n->status === 'draft')

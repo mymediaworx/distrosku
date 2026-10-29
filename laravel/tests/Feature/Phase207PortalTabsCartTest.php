@@ -21,7 +21,7 @@ class Phase207PortalTabsCartTest extends TestCase
     {
         parent::setUp();
         $this->seed([CoreSeeder::class, DemoSeeder::class]);
-        $k = CustomerContact::create(['customer_id' => Customer::where('code', 'CTEST-KY')->value('id'), 'name' => 'Pat Buyer', 'email' => 'tabs@example.test']);
+        $k = CustomerContact::create(['customer_id' => Customer::where('code', 'CTEST-KY')->value('id'), 'name' => 'Pat Buyer', 'email' => 'tabs@example.test', 'is_portal_contact' => true]);
         $k->setPasswordFromLink('Secret12345');
         Auth::guard('portal')->login($k->fresh());
     }

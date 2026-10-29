@@ -26,7 +26,7 @@ class PriceListsImport extends ImportType
     {
         return [
             'product' => ['label' => 'SKU or UPC', 'required' => true, 'example' => 'MARL-RED-KS'],
-            'customer_code' => ['label' => 'Customer number (contract price)'],
+            'customer_code' => ['label' => 'Account Number (contract price)'],
             'group_code' => ['label' => 'Price group code'],
             'min_qty' => ['label' => 'Minimum qty', 'example' => '1'],
             'price' => ['label' => 'Price', 'required' => true, 'example' => '62.50'],

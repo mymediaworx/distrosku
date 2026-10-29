@@ -25,7 +25,7 @@ class OpeningBalancesImport extends ImportType
     public function fields(): array
     {
         return [
-            'customer_code' => ['label' => 'Customer number', 'required' => true, 'example' => 'C1001'],
+            'customer_code' => ['label' => 'Account Number', 'required' => true, 'example' => 'C1001'],
             'balance' => ['label' => 'Opening balance (negative = credit)', 'required' => true, 'example' => '1250.00'],
             'as_of' => ['label' => 'As-of date', 'example' => '2026-10-31'],
         ];
@@ -34,12 +34,15 @@ class OpeningBalancesImport extends ImportType
     public function evaluate(array $v, ImportBatch $b): RowResult
     {
         $e = [];
-        static::required($v, ['customer_code' => 'Customer number', 'balance' => 'Opening balance'], $e);
+        static::required($v, ['customer_code' => 'Account Number', 'balance' => 'Opening balance'], $e);
         $c = ($cc = static::s($v, 'customer_code')) ? Customer::where('code', $cc)->first() : null;
         if ($cc && ! $c) {
             $e[] = "Customer \"{$cc}\" does not exist.";
         }
         $bal = static::num($v, 'balance', $e, 'Opening balance', true);
+        if ($bal !== null) {
+            $bal = number_format((float) $bal, 2, '.', '');
+        }
         $date = static::date($v, 'as_of', $e);
         if ($c && $bal !== null && Money::of($bal)->isPositive() && Money::of($c->beginning_balance_applied ?? 0)->isGreaterThan(Money::of($bal))) {
             $e[] = "Payments of {$c->beginning_balance_applied} are already applied; the balance cannot go below that.";

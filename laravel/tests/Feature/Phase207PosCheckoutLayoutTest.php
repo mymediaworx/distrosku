@@ -61,7 +61,7 @@ class Phase207PosCheckoutLayoutTest extends TestCase
     {
         Livewire::test(CounterPos::class)
             ->assertSeeHtml('<h1 class="sr-only">Counter POS</h1>')
-            ->assertSeeHtml('for="pos-customer"')->assertSeeHtml('id="pos-customer"')
+            ->assertSeeHtml('data-test="customer-picker"')->assertSeeHtml('data-test="customer-search"')->assertSeeHtml('<label for="cp-')
             ->assertSeeHtml('for="pos-fulfillment"')->assertSeeHtml('for="pos-warehouse"')
             ->assertSeeHtml('for="pos-notes"');
     }

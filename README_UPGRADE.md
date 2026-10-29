@@ -1,7 +1,136 @@
-# Vega ERP — Phase 20.12 UPGRADE (existing install at vegatest1.distrosku.com)
+# Vega ERP — Phase 20.23 UPGRADE (existing install at vegatest1.distrosku.com)
 
 For a site already installed from `vega-erp-phase1.zip` and upgraded through phase 3 (a phase-2 site can also take this zip: seeders are cumulative). TEST data only. No secrets in this package.
 This zip contains **no `laravel/.env` and no `laravel/storage/`**, so extracting it over the live site keeps both.
+
+## What's new in 0.20.23 (includes everything through 0.20.22)
+
+**Tax fix: chewing tobacco stays on Kentucky's per-unit rates. One re-runnable migration (`2026_12_01_000001_phase2023_remove_chew_percent`). No new PHP extensions, no `.env` change. No secrets are in this package.**
+
+- **Why:** 0.20.17 added a "chew at 15% of wholesale" rate starting 2026-11-01 from a walkthrough note. The Kentucky Department of Revenue tobacco page (checked 2026-10-29) still taxes chewing tobacco per unit, and its 15% rate covers tobacco products *other than* snuff and chew. Approved by Michael 2026-10-29.
+- **What changes:** the migration deletes only the 15% chew rate that 0.20.17 created (Tax Filings > Tax rates, type `chew_percent`, source "Owner decision 2026-10-27"). No other rate is touched. Chew stays at $0.19 under 4 oz, $0.40 for 4–8 oz, $0.65 for over 8–16 oz, plus $0.19 per 4 oz over 16 oz. The seeder no longer adds the 15% rate.
+- **Nothing to recompute:** the 15% rate started 2026-11-01, so no real sale was taxed with it if this is installed before then. If it is installed later, re-check chew lines on POs received and sales delivered from 11/01 onward.
+
+## What's new in 0.20.22 (includes everything through 0.20.21)
+
+**Fix: the POS Walk-in (CASH) button did nothing on the live site. One additive, re-runnable migration (`2026_11_30_000002_phase2022_flag_cash_code_variants`: turns the walk-in flag on for cash accounts typed a little differently; never turns a flag off). No new PHP extensions, no `.env` change. No secrets are in this package.**
+
+- **Why the button did nothing:** the customer picker had both a setting and an action called `walkIn`; in the browser the click read the setting and silently did nothing (so no customer was selected, and nothing was greyed out as *Not for walk-in*). The action is now `selectWalkIn`. A test now fails if any screen reuses a name like that.
+- **Finding the cash customer:** account number matched ignoring case, spaces and punctuation (`CASH`, `cash`, ` Cash `, `CASH-WALKIN`), active accounts first; otherwise the one customer with the *Walk-in / cash customer* switch on. If none is found the button now says so on screen instead of doing nothing.
+- **Visible selection:** the picker shows the account number and name with a *Walk-in / cash: no tobacco, vapor, CBD or kratom* tag.
+- **Products:** Products list > select rows > **Set tax class** (admins) moves items into a regulated class. A product left as **General** is *not* blocked for walk-in customers (for example White Owl cigarillos): set them to Cigar (or the right class). `php artisan erp:regulated-report --like="white owl"` lists matching products with their class (read-only); the likely-misses list now also knows common cigarillo / smokeless brand names.
+
+## What's new in 0.20.21 (includes everything through 0.20.20)
+
+**New rule from Michael: walk-in / cash customers cannot buy regulated products (tobacco, vapor, CBD/hemp, kratom). One additive, re-runnable migration (`2026_11_30_000001_phase2021_walk_in_customers`: a `walk_in` flag on customers, switched on for the CASH customer). No new PHP extensions, no `.env` change. No secrets are in this package.**
+
+- **Who is a walk-in customer:** the **CASH** customer (recognised by its code, so it works even before the migration) and any customer with the new **Walk-in / cash customer** switch on (Customers > edit). The switch is locked on for CASH.
+- **What is regulated:** the product's **Tax class** (the same flag used for age/signature rules since 0.15). Every class except *General* and *Beverage* is regulated: cigarette, cigar, pipe, snuff/chew, roll-your-own, vapor, hemp (CBD, delta-8 and so on) and kratom. **No product data is changed by this upgrade.** If a tobacco/CBD/kratom item is set to General it is not protected: run `php artisan erp:regulated-report` to see counts, the walk-in customers, and a list of likely misses (read-only), then fix those products' Tax class. Products > filter *Regulated (no walk-in sales)* shows the regulated set.
+- **Where it is enforced (server side, no override):** POS (the line is refused with a clear message, and checkout is blocked if a regulated item is already in the cart when you switch to a walk-in customer), van sale (same; switching to a walk-in customer drops regulated lines with a message), sales orders (the line and the customer field fail validation; the model also refuses to save such a line or move an order with regulated lines to a walk-in customer; confirm is blocked), and the customer portal / compliance check (the item shows as unavailable and checkout is blocked).
+- **In the pickers:** regulated products are hidden from search and browse when a walk-in customer is selected (POS browse tiles show greyed out as *Not for walk-in*; the sales-order picker and product search hide them with a note).
+- **Known follow-up:** if CASH has a tobacco license on file, that no longer lets it buy regulated products. Existing open sales orders for walk-in customers that already contain regulated lines are not edited; they cannot be confirmed.
+
+## What's new in 0.20.20 (includes everything through 0.20.19)
+
+**Michael's 2026-10-28 walkthrough, first batch. One additive, re-runnable migration (`2026_11_29_000001_phase2020_taxes_quick_counts`: product taxes, tax columns on order lines/orders, a quick-counts table). No new PHP extensions, no `.env` change. No secrets are in this package.**
+
+- **Customer search, no default customer (#1):** every place a customer is chosen (sales order, POS, van sale, ship-tos, promotions, price rules, customer price overrides, management report filter) is now a search box instead of a dropdown. Type any of account number, name, DBA, phone or city; every word must match, any order, punctuation ignored (same idea as product search). A new order starts with **no customer** and one must be picked. POS starts blank and will not check out until a customer is picked; the **Walk-in (CASH)** button is one tap for cash sales.
+- **TV mode removed (#5):** the large-type board is gone. **Open TV** (the full-screen pop-out) stays on the Counter pickup board.
+- **Sales order lines (#8):** the product gets half of the line row so full names are visible; quantity, price and total share the rest. Stacks on narrow screens.
+- **Marketing (#10):** "BrandWorx Marketing" is now just **Marketing** in the menu and on the customer page.
+- **Taxes on invoices (#11):** add taxes on a product (Products > edit > *Taxes charged on top of the price*: a name plus either dollars per unit or a percent of the price). Invoices (on screen via *View invoice*, and the PDF) show **Unit cost, Tax / unit and Line total = (cost + tax) x quantity**, then the subtotal, **every tax by name**, total tax and the total. POS and van-sale totals include the same taxes. Tax collected posts to account 2200 *Sales Tax Payable* (not revenue). **No tax is added to any product until you set one; KY excise is not added automatically** (existing prices are assumed to include it). Credit memos and returns on taxed lines are not tax-adjusted yet.
+- **Duplicate a product (#12):** *Duplicate* on the Products list and on the product page. Copies the product with the next SKU in its department, a blank UPC, no extra barcodes and no stock, names it "... (copy)", and opens it for editing.
+- **Negative inventory (#9, part):** *Company Settings > Warehouse > Allow negative inventory sales*. **Off by default (nothing changes).** When on, a sale (counter, order, van) may take stock below zero; adjustments and transfers still may not.
+- **Quick counts (#9, part):** a **Count** tab on the Quick Tools page (no login). Pick an item and a location, enter the count and your name. It only records the count; a manager reviews it under *Warehouse > Quick counts* and **Apply** (posts an adjustment) or **Dismiss**.
+
+## What's new in 0.20.19 (includes everything through 0.20.18)
+
+**Smart product search. No migration, no schema or index change, no new PHP extensions, no `.env` change. No secrets are in this package.**
+
+- **Every word, any order:** typing `white owl platinum` finds *White Owl Mini 3/1.29 Platinum*. The text is split on spaces and **every** word must match somewhere in the product's name, brand, SKU / item code (J-####), UPC and other barcodes, vendor item numbers or department. Upper/lower case and punctuation (`& . / - ' ,`) are ignored, so `black n mild` finds *Black & Mild*.
+- **Abbreviations** are listed in `laravel/config/product_search.php` (`synonyms`). Shipped: `bm`, `b&m`, `black n mild` → black & mild; `ss` → swisher sweets; `dm` → dutch masters; `wo` → white owl; `bw` → backwoods; `ft` → filter tip; plus common flavor and unit short forms. To add one, add a line `'key' => 'full words'` (or a list of alternatives) to that file and run `php artisan config:clear`; keys are case and punctuation insensitive.
+- **Ranking:** exact SKU / UPC / barcode / vendor item number first, then names that start with what you typed, then names containing more of your words, then active in-stock items.
+- **Results show** thumbnail, price and pack / case unit (for example `$1.29 / Pack · CS ×12`) so look-alike items can be told apart (the picker shows up to 20 results).
+- **Barcode scan unchanged:** a scanned UPC / SKU / barcode still resolves first; the name search is only the fallback.
+- **Same search elsewhere:** the Products list search box, the Filament global search (products show "SKU name" and price) and the Counter POS browse filter.
+- **Behaviour change:** words now match anywhere in a name (so `01` also finds items numbered 0001 or 0101), not only as one exact phrase.
+
+## What's new in 0.20.18 (includes everything through 0.20.17)
+
+**Automatic dunning email + editable email settings (#47). One additive, re-runnable migration. A cron is required (already used by this site); `.env` mail keys are optional if you save them in the app. No secrets are in this package.**
+
+- **Auto-email dunning:** a scheduled job (`dunning:send`, daily **07:00**) makes the day's dunning notices (same stages, days-late rules and 14-day no-repeat rule as before) and **emails each one** through Laravel mail with the customer's **statement PDF attached**. Run it by hand with `php artisan dunning:send`, or use **Email pending notices now** on the Dunning page.
+  - **Off by default.** Turn it on in *Company Settings → Email → Auto-email dunning*. Only notices created after it is switched on are ever emailed (existing drafts are left alone).
+  - **Who gets it:** the customer's *active* contacts that have an email, preferring those marked **Billing / AR contact** (new flag on the contact); if none is marked, the customer's email; if that is blank, the first contact with an email.
+  - **No duplicates:** a customer is emailed once per dunning stage (90-day quiet period per stage); a repeat is marked "Stage already sent" and skipped.
+  - **Print list:** customers with no email address, and customers with **Do not auto-email dunning notices** ticked (new customer opt-out), are not emailed; they appear on the Dunning page print list (filter *Print list*, count in the intro, **Print list PDF** button which marks them printed).
+  - **Failures** are recorded on the notice (error text, no credentials) and **retried on every run** (up to 5 attempts; then they join the print list).
+  - **Logging:** every attempt writes a customer History entry (who/when/to/stage/result; "System (scheduled dunning email)" for the job) and the Dunning list shows Email status / Emailed columns.
+  - The "Email is not configured" notice stays, and nothing is sent, while the server mailer is log/array/local.
+- **Company Settings → Email tab (owner / Brandworx admin only):** SMTP host, port, encryption (**SSL/SMTPS** for port 465, **TLS** (STARTTLS) for 587, or none), username, password, from address, from name, the Auto-email toggle, and **Send test email** (to an address you type; shown in the page header). **The password is stored encrypted and is never displayed back**: the field shows "A password is set" and a blank save keeps it; type a new one to replace it. Saved values win over `.env` `MAIL_*`; leave the host blank to fall back to `.env`. Applies to dunning and every other email the ERP sends. Changes are in the audit log (`mail_settings`) **without** the password.
+- **`.env` (only if you do not save the settings in the app):** `MAIL_MAILER` (smtp), `MAIL_SCHEME` (smtps for port 465, else blank), `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_FROM_ADDRESS`, `MAIL_FROM_NAME`. Add them to the server's `.env` yourself; this package contains no values (`.env.example` has blank placeholders). Blank `.env` values fall back to safe defaults.
+- **Requires the normal Laravel scheduler cron (`schedule:run`, already used by this site).**
+- **Migration** (re-runnable): `2026_11_28_000001_phase2018_dunning_email` adds `customers.dunning_email_optout`, `customer_contacts.is_billing_contact` and the email tracking columns on `dunning_notices`.
+- **No new PHP extensions.**
+
+## What's new in 0.20.17 (includes everything through 0.20.16)
+
+**Owner walkthrough release (#46). Three additive, re-runnable migrations; no stock or GL posting logic changed. One `.env` addition (log rotation).**
+
+- **Dashboard:** every KPI tile now clicks through to its report or list (no link when your role cannot open the target). New **Customers dropped off** tile with counts for 60 / 90 / 120 / 180 days, opening *Reports → Customers dropped off* (window selector). Definition: an *active* customer with at least one invoiced order whose latest non-draft, non-cancelled order/invoice is older than N days (windows are cumulative; POS and van sales count as orders; inactive customers are excluded). Open orders opens the sales-order list filtered to open orders.
+- **Company Settings:** *Settings → Settings* is now **Company Settings** with tabs Company (name, address, phone, email, logo, brand, quick tools, defaults), Payment gateway, **B2B Customer Portal**, Warehouse, Compliance, Integrations. Admins can open it; secret tabs (gateway, integrations) stay owner / BrandWorx admin only. *Brand* and *Quick tools* no longer have their own menu entries (`/admin/branding` redirects). The portal switch there turns the customer portal off with a "temporarily unavailable" page. The company address and phone print on invoices, statements and dunning letters; the customer statement PDF has more space between the logo and the company name.
+- **Purchasing:** *Vendor bills*, *Vendor payments* and *AP aging* moved into the Purchasing group.
+- **Vendor item numbers** are tied to a product (they always were a required product link; there are no unlinked rows to migrate). Product pages now show a **Vendor item numbers** tab; the vendor-side picker uses the standard product search.
+- **One product picker everywhere:** sales orders, purchase orders, customer special prices, and the Products and Departments lists use the same search (name / SKU / barcode / vendor item number, scan field, browse by department or vendor, thumbnails, add several at once).
+- **Dunning:** *(0.20.17 behaviour; superseded in 0.20.18, which can email notices, see above)* it never sent email, so it did not need SMTP. Notices are drafts: download as an unsent `.eml`, print the statement batch PDF, or print a single notice (**Print / PDF**). The page shows an "Email is not configured" notice when the mail transport is log/array/local. No mail credentials are set by this release.
+- **Counter Pickup Board TV view:** a *Full screen (TV)* button opens a navigation-free page in a new window (auto-refreshes every 30 s, read-only; optional warehouse filter).
+- **Cycle count plan (Warehouse hub):** a daily or weekly plan picks products to count, ranked by past discrepancies, high-risk categories (tax classes / departments you set), ABC class by 90-day sales value, and days since last counted (A 30 d, B 90 d, C 180 d, high-risk 14 d). The hub shows **Today's cycle counts** with take / skip / **Count** (one blind cycle count through the existing count screen; submit, approve and post are unchanged). Plan settings are in Company Settings → Warehouse. Tasks are created when the hub is opened or by the scheduled `warehouse:cycle-plan` command (05:30; `--force` to run now). **Requires the normal Laravel scheduler cron (`schedule:run`, already used by this site).**
+- **KY chew tobacco tax = 15% of wholesale** (replaces the per-unit weight rates incl. $0.19 per 4 oz). Seeded as a `chew_percent` tax rate (re-runnable; never overwrites an edited row) with effective date **2026-11-01, flagged "needs verification"** (set `KY_CHEW_PCT_EFFECTIVE` before seeding, or edit the rate in Tax rates). PO receipts on/after that date accrue 15% of receipt qty x unit cost; earlier dates and already-accrued journals keep the old rates. Posted invoices are unaffected (sales invoices carry no excise). The 73A422 report shows a **C%** line. The XML chew StateDesc codes are unchanged pending confirmation of the new MyTaxes codes.
+- **Licenses:** license records accept attached documents (PDF/JPG/PNG, private storage) and a research note. **Customers → License conflicts** steps through detected conflicts one at a time (approve / edit / skip; skipped ones return at the end): no Site ID or number, expired, duplicate state tax ID, duplicate customer name, orders with no license. Detection is re-runnable and never changes customers or licenses by itself.
+- **Logs rotate daily:** `LOG_STACK` now defaults to `daily`; keep `LOG_DAILY_DAYS=14` (days of logs retained) in `.env` (also in `.env.example`). Existing sites that set `LOG_STACK=single` keep that until changed.
+- **Migrations** (re-runnable): `2026_11_25_000001_phase2017_company_profile`, `2026_11_26_000001_phase2017_cycle_count_tasks`, `2026_11_27_000001_phase2017_license_documents_conflicts`. Run the upgrade page as usual.
+- **No new PHP extensions.**
+
+## What's new in 0.20.16 (includes everything through 0.20.15)
+
+**Maintenance release. No migrations, no app behaviour change, no `.env` or cron changes.**
+
+- Brings the automated tests in line with the customer changes approved in 0.20.13/0.20.14: beginning balance stored to 2 decimals, license numbers unique per state, and portal login only for contacts marked **Portal contact**. The full suite passes on SQLite and MariaDB.
+- Install exactly like 0.20.15 (a site already on 0.20.15 just gets the new version number).
+
+## What's new in 0.20.15 (includes everything through 0.20.14)
+
+**Lot traceability (#36). One migration; stock quantities and GL postings work exactly as before.**
+
+- **Receiving:** GS1 barcodes (e.g. `(01)…(17)YYMMDD(10)LOT` or raw scanner output) fill lot and expiry automatically; typed values win. A **Track lots for this item** box turns lot tracking on for an item the first time it is received, and a **COA** picker links an existing certificate to the received lot.
+- **COAs per lot:** COAs can be linked to a lot (Products → COAs → Lot). The free-text `batch_lot` stays. Hemp/cannabinoid lots with no COA show **COA missing** on Lots (filter: "Hemp lots with COA missing").
+- **Tracking by product type:** Settings → *Lot tracking by product type* picks departments and tax classes. New products in those inherit lot tracking (can be switched off per product). "Apply to existing products" only turns tracking on.
+- **Lots on sales:** POS, van and offline sales accept an optional lot per line. If exactly one lot is on hand it is assigned automatically; otherwise the line goes to **Lots: needs review** (the sale is never blocked). Choose the lot there, or resolve with a note.
+- **Trace:** Lots → Trace searches by lot number, SKU/UPC, or order/PO number; shows received, sold-to, on hand and COAs; lets admins put a lot on hold; exports CSV; logs customer contacts (who, when, how).
+- **Migration** `2026_11_24_000001_phase2015_traceability` (re-runnable). Run the upgrade page as usual.
+- **No new PHP extensions, `.env` settings or cron changes.**
+
+## What's new in 0.20.14 (includes everything through 0.20.13)
+
+**Customers: "Code" relabelled "Account Number" everywhere. No migrations, no .env changes.**
+
+- **Account Number label:** the customer `code` column is unchanged (still unique), but every user-facing label now says **Account Number** — customer create/edit/list, CSV import/export templates, ship-to / opening-balance / price-list imports, and BrandWorx Marketing's Vega Account Number mapping note.
+- **POS and van pickers:** Counter POS and Van sale customer dropdowns show `Account Number — Name` (and terms on van). Admin customer pickers (sales orders, ship-tos, price rules, promotions, special prices, license form, receivables filter) search by account number, name or DBA and show the same label.
+- **No data change in this upgrade.** A separate one-time loader (not in this zip) renames Jamison `J-{n}` codes to the real account numbers from the owner's listing. Run that only after reviewing the match report.
+- **No new PHP extensions, `.env` settings or cron changes.**
+
+## What's new in 0.20.13 (includes everything through 0.20.12)
+
+**Customers: KY ABC Site ID, DBA, Customer Contacts / portal flag, mid-form tabs, beginning balance to 2 decimals, and a full product lookup on special prices. One migration.**
+
+- **License Site ID (KY ABC):** `customer_licenses.site_id` holds the ABC Site ID. On upgrade, numeric KY values that were stored in `number` move into `site_id` (reversible on rollback). For Kentucky, a license is valid with Site ID **or** license number (or both). Site ID and number are each unique per state when set. The license form links to the KY ABC lookup page (that page does not accept URL prefill — paste the Site ID there).
+- **Customer Name / DBA:** the customer name field is labelled **Customer Name**; optional **DBA** (`customers.dba`) shows under the name on invoices, delivery proofs, statements and POS receipts, and is available in the customer table, search and CSV import/export.
+- **Customer Contacts (was Portal contacts):** relation tab retitled; email is optional; new `is_portal_contact` flag (default off, backfilled for contacts that already have a portal password, invite or login). Only portal contacts can sign in or be invited; turning on portal requires an email; clearing email turns portal off.
+- **Relation tab order on Edit customer:** Customer Contacts → Ship To → Licenses → History (then any extras). Those tabs sit **below the Customer section and above Terms & pricing** on the edit screen (hidden until the customer exists). Create still uses the usual flow.
+- **Beginning balance:** stored and shown at **2 decimal places** (step 0.01). Migration rounds existing `beginning_balance` / `beginning_balance_applied` and balance-audit amounts, then changes the columns from decimal(12,4) to decimal(12,2). Credit limit was already (12,2).
+- **Customer special prices — product lookup:** the plain product dropdown is replaced with (a) a searchable picker matching SKU, name, barcode/UPC and vendor item number; (b) a scan field that adds on Enter (USB/wedge scanners work like POS; optional camera via the same html5-qrcode asset used by Quick Tools — POS itself uses typed/wedge scan, not camera); (c) a **Browse catalog** modal with department and vendor filters, search, and Load more (same paging idea as POS Browse in 0.20.12). On create you can select several products and create the same special price for each. The product's current list price is shown next to the special-price field.
+- **Migration** `2026_11_23_000001_phase2013_license_site_id_and_customer_dba` (re-runnable). Run the upgrade page as usual.
+- **No new PHP extensions, `.env` settings or cron changes.**
 
 ## What's new in 0.20.12 (includes everything through 0.20.11)
 
@@ -209,7 +338,7 @@ This zip contains **no `laravel/.env` and no `laravel/storage/`**, so extracting
 ## What's new in 0.19.2 (includes everything through 0.19.1)
 - **BrandWorx Marketing sync is ONE-WAY: ERP -> Marketing.** The 0.19.1 inbound pull, Preview/Sync-now page, Leads list and `/hooks/marketing` webhook are removed (the migration drops `marketing_leads` and the old inbound settings; re-runnable).
 - **Consent:** the ERP opt-in switches drive email/SMS consent. Opt-in off -> DND on for that channel. Opt-in on clears DND only on contacts the ERP itself created; DND set in Marketing on pre-existing contacts is never wiped.
-- **Contact custom fields:** Vega Account Number = customer code, State Tax ID (new customer field), Resale certificate (newest `resale` license number). Mapped by field key or ID in Marketing settings, looked up via the API at sync time. Only text fields are written; empty ERP values are never sent.
+- **Contact custom fields:** Vega Account Number = customer Account Number (`code`), State Tax ID (new customer field), Resale certificate (newest `resale` license number). Mapped by field key or ID in Marketing settings, looked up via the API at sync time. Only text fields are written; empty ERP values are never sent.
 - **Nightly (02:45):** only customers not yet linked to a contact are sent. Edits still sync right away through the queue.
 - **Push all customers** button (Marketing settings, admin): queues every active customer, 20 per 10 seconds.
 
@@ -431,7 +560,7 @@ then send the log to BrandWorx. If the upgrade file did not delete itself, delet
 - **Financial statements** (CSV/PDF, compare with prior period or same period last year): `/admin/accounting/trial-balance`, `/profit-loss`, `/balance-sheet`, `/cash-flow`.
 - **Period close** (`/admin/accounting/periods`): closed months refuse every posting; admin reopen requires a reason; audit log on the page.
 - **Dunning** (`/admin/accounting/dunning`): levels (default 1 / 30 / 60 days past due; due = invoice date + Net N terms), *Run dunning* makes a batch of **draft** notices and a
-  statement-batch PDF. **Nothing is emailed** — download a notice as an unsent .eml draft and send it from your own mailbox.
+  statement-batch PDF. Notices are drafts you can download as an unsent .eml, **or** (0.20.18, off by default) emailed automatically at 07:00 with the statement PDF attached, see *What's new in 0.20.18*.
 - **Manual journal entry** (Accounting > Journals > *Manual entry*), admin only, balanced, open period only.
 
 ## What's new (phase 7) - MSA MULTICAT weekly file (.TOB)

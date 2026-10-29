@@ -12,10 +12,9 @@
                 <label>As of<x-filament::input.wrapper><x-filament::input type="date" wire:model.live="as_of" /></x-filament::input.wrapper></label>
             @endif
             @if (in_array('customer', $used))
-                <label class="md:col-span-2">Customer<x-filament::input.wrapper><x-filament::input.select wire:model.live="customer_id">
-                    <option value="">All customers</option>
-                    @foreach ($this->customerOptions() as $id => $n)<option value="{{ $id }}">{{ $n }}</option>@endforeach
-                </x-filament::input.select></x-filament::input.wrapper></label>
+                <div class="md:col-span-2" data-test="report-customer">
+                    <livewire:customer-picker wire:model.live="customer_id" label="Customer" :active-only="false" placeholder="All customers (search to pick one)" wire:key="report-customer-picker" />
+                </div>
             @endif
             @if (in_array('department', $used))
                 <label>Department<x-filament::input.wrapper><x-filament::input.select wire:model.live="department_id">
@@ -27,6 +26,11 @@
                 <label class="md:col-span-2">Product<x-filament::input.wrapper><x-filament::input.select wire:model.live="product_id">
                     <option value="">All products</option>
                     @foreach ($this->productOptions() as $id => $n)<option value="{{ $id }}">{{ $n }}</option>@endforeach
+                </x-filament::input.select></x-filament::input.wrapper></label>
+            @endif
+            @if (in_array('window', $used))
+                <label>No order in the last<x-filament::input.wrapper><x-filament::input.select wire:model.live="window">
+                    @foreach (\App\Analytics\DroppedCustomers::WINDOWS as $d)<option value="{{ $d }}">{{ $d }} days</option>@endforeach
                 </x-filament::input.select></x-filament::input.wrapper></label>
             @endif
             @if (in_array('compare', $used))

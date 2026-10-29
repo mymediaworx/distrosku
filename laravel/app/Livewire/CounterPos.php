@@ -98,8 +98,7 @@ class CounterPos extends Component
 
     public function mount(): void
     {
-        $cash = Customer::where('code', 'CASH')->first() ?? Customer::first();
-        $this->customerId = $cash?->id;
+        $this->customerId = null; // 0.20.20: no default customer; pick one (or tap Walk-in) for every sale
         $this->shipToId = null;
         $this->warehouseId = Warehouse::where('code', 'MAIN')->value('id') ?? Warehouse::value('id');
         // 0.14.1: an in-progress sale survives the idle lock / employee switch (kept in this terminal's session).
@@ -186,6 +185,10 @@ class CounterPos extends Component
         $this->shipToId = $this->fulfillment === 'delivery' ? Customer::find($this->customerId)?->resolveShipToId() : null;
         $this->reprice(true);
         $this->recheck();
+        // 0.21: tell the cashier why lines turned red when switching to a walk-in / cash customer
+        if (($c = Customer::find($this->customerId)) && collect($this->cart)->contains(fn ($l) => \App\Compliance\WalkInRule::blocks($c, Product::find($l['product_id'])))) {
+            $this->error = 'Walk-in / cash customers can\'t buy regulated products (tobacco, vapor, CBD/hemp, kratom). Remove the red items, or pick a customer account.';
+        }
     }
 
     public function updatedShipToId(): void
@@ -207,26 +210,38 @@ class CounterPos extends Component
 
             return;
         }
-        $this->addProduct($hit['product'], $hit['qty']);
+        if (! $this->addProduct($hit['product'], $hit['qty'])) {
+            $this->scan = '';
+
+            return;
+        }
         $this->message = \App\Pos\SaleScan::addedMessage($hit);
         $this->scan = '';
     }
 
     /** Shared by scan/search and Browse: same pricing and eligibility checks. */
-    private function addProduct(Product $p, string $qty): void
+    private function addProduct(Product $p, string $qty): bool
     {
+        // 0.21: walk-in / cash customers cannot buy regulated products: the line is never added.
+        if (\App\Compliance\WalkInRule::blocks(Customer::find($this->customerId), $p)) {
+            $this->error = \App\Compliance\WalkInRule::message($p);
+
+            return false;
+        }
         foreach ($this->cart as $i => $line) {
             if ($line['product_id'] === $p->id) {
                 $this->cart[$i]['qty'] = self::q(Money::add($line['qty'], $qty));
                 $this->reprice();
                 $this->recheck();
 
-                return;
+                return true;
             }
         }
         $q = $this->quote($p, $qty);
         $this->cart[] = ['product_id' => $p->id, 'sku' => $p->sku, 'name' => $p->name, 'qty' => self::q($qty), 'price' => $q->price, 'quoted' => $q->price, 'source' => $q->source, 'reasons' => []];
         $this->recheck();
+
+        return true;
     }
 
     // ---- 0.19.3 Browse catalog -------------------------------------------------
@@ -276,7 +291,7 @@ class CounterPos extends Component
             ->when($this->browseDepartment, fn ($q) => $q->where('department_id', $this->browseDepartment))
             ->when($this->browseCategory, fn ($q) => $q->where('category', $this->browseCategory))
             ->when($this->browseBrand, fn ($q) => $q->where('brand', $this->browseBrand))
-            ->when($f !== '', fn ($q) => $q->where(fn ($w) => $w->where('name', 'like', "%{$f}%")->orWhere('sku', 'like', "%{$f}%")->orWhere('upc', $f)->orWhere('brand', 'like', "%{$f}%")));
+            ->when($f !== '', fn ($q) => \App\Support\ProductSearch::matching($q, $f)); // 0.20.19: every word matches, any order
     }
 
     /** Products matching the current department / category / brand / filter (all pages). */
@@ -287,6 +302,11 @@ class CounterPos extends Component
 
     public function pick(int $id): void
     {
+        if (($p = Product::find($id)) && \App\Compliance\WalkInRule::blocks(Customer::find($this->customerId), $p)) {
+            $this->error = \App\Compliance\WalkInRule::message($p);
+
+            return;
+        }
         $this->pickProductId = $id;
         $this->pickQty = '1';
         $this->pickFresh = true;
@@ -317,9 +337,11 @@ class CounterPos extends Component
 
             return;
         }
-        $this->addProduct($p, (string) $qty);
+        $added = $this->addProduct($p, (string) $qty);
         $this->pickProductId = null;
-        $this->message = "Added {$qty} × {$p->name}.";
+        if ($added) {
+            $this->message = "Added {$qty} × {$p->name}.";
+        }
     }
 
     private function catalogQuery()
@@ -338,6 +360,7 @@ class CounterPos extends Component
         $c = Customer::find($this->customerId);
 
         return $ps->map(fn (Product $p) => ['id' => $p->id, 'name' => $p->name, 'sku' => $p->sku, 'unit' => $p->unit, 'brand' => $p->brand,
+            'restricted' => \App\Compliance\WalkInRule::blocks($c, $p), // 0.21: disabled tile for walk-in / cash customers
             'price' => app(PricingEngine::class)->quote($p, $c, 1)->price,
             'stock' => isset($stock[$p->id]) ? self::q(Money::of($stock[$p->id]->qty)->minus(Money::of($stock[$p->id]->reserved))) : '0'])->all();
     }
@@ -392,8 +415,7 @@ class CounterPos extends Component
         $this->notes = '';
         $this->recallNotes = [];
         $this->resetSignature();
-        $cash = Customer::where('code', 'CASH')->first() ?? Customer::first();
-        $this->customerId = $cash?->id;
+        $this->customerId = null; // 0.20.20: the next sale starts with no customer
         $this->shipToId = null;
         $this->fulfillment = 'pickup';
     }
@@ -531,7 +553,8 @@ class CounterPos extends Component
 
     public function getTotalProperty(): string
     {
-        return Money::add(...(array_map(fn ($l) => Money::mul($l['qty'] ?: 0, $l['price'] ?: 0), $this->cart) ?: [0]));
+        // 0.20.20: product taxes are part of what the customer pays (and of the invoice total)
+        return Money::add(\App\Services\InvoiceTax::cartTax($this->cart), ...array_map(fn ($l) => Money::mul($l['qty'] ?: 0, $l['price'] ?: 0), $this->cart));
     }
 
     public function getBlockedProperty(): bool
@@ -542,6 +565,11 @@ class CounterPos extends Component
     public function checkout(SalesOrderService $svc): void
     {
         $this->reset('message', 'error');
+        if (! $this->customerId || ! Customer::whereKey($this->customerId)->exists()) { // 0.20.20: never sell to a guessed customer
+            $this->error = 'Pick a customer first (search above, or tap Walk-in).';
+
+            return;
+        }
         $this->recheck();
         if ($this->cart && $this->blocked) {
             \App\Audit\Audit::durable('pos_sale_blocked', null, 'POS checkout blocked by compliance', ['channel' => 'pos', 'customer_id' => $this->customerId,
@@ -603,7 +631,6 @@ class CounterPos extends Component
     public function render()
     {
         return view('livewire.counter-pos', [
-            'customers' => Customer::where('active', true)->orderBy('name')->get(['id', 'name']),
             'shipTos' => ShipTo::where('customer_id', $this->customerId)->orderByDesc('is_default')->orderBy('name')->get(),
             'addShipToUrl' => $this->customerId ? \App\Filament\Resources\CustomerResource::getUrl('edit', ['record' => $this->customerId]) : null,
             'warehouses' => Warehouse::where('active', true)->get(),

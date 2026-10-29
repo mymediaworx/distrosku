@@ -51,7 +51,8 @@ table{width:100%;border-collapse:collapse}td{vertical-align:top;padding:.08rem 0
     <table class="sm">
         <tr><td>Sale</td><td class="num b">{{ $so->number }}</td></tr>
         <tr><td>Date</td><td class="num">{{ $so->created_at->timezone(config('app.timezone'))->format('M j, Y g:i A') }}</td></tr>
-        <tr><td>Customer</td><td class="num">{{ $so->customer?->name }}</td></tr>
+        <tr><td>Customer</td><td class="num">{{ $so->customer?->name }}</td></tr>@if(filled($so->customer?->dba))
+        <tr><td>DBA</td><td class="num">{{ $so->customer->dba }}</td></tr>@endif
         @if($so->isPickup())<tr><td>Fulfillment</td><td class="num">Counter pickup</td></tr>@else<tr><td>Fulfillment</td><td class="num">Delivery</td></tr>@endif
     </table>
     <hr>

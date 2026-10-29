@@ -29,6 +29,34 @@
         @endforelse
     </section>
 
+    @if($tasks->isNotEmpty() || (\App\Warehouse\CycleCountPlanner::enabled() && auth()->user()->canModule('counts', 'manage')))
+    <section class="card" data-test="cycle-tasks"><h2>Today's cycle counts</h2>
+        @if($ok)<p class="ok" data-test="ok">{{ $ok }}</p>@endif @if($err)<p class="err">{{ $err }}</p>@endif
+        @forelse($tasks as $t)
+            <div class="item" data-test="cycle-task">
+                <div class="meta"><strong>{{ $t->product->sku }}</strong> <span class="pill">{{ $t->status }}</span>
+                    <span class="sub">{{ $t->product->name }} · {{ $t->warehouse->code }}</span>
+                    <span class="sub small">{{ $t->reasonLabel() }}@if($t->abc_class) · class {{ $t->abc_class }}@endif @if($t->assignee) · {{ $t->assignee->name }}@endif</span></div>
+                <div class="acts">
+                    @if($t->status === 'open')
+                        <button class="btn" wire:click="startTasks({{ $t->warehouse_id }}, {{ $t->id }})">Count</button>
+                        @if($t->assigned_to !== auth()->id())<button class="btn sec" wire:click="takeTask({{ $t->id }})">Take</button>
+                        @else<button class="btn sec" wire:click="releaseTask({{ $t->id }})">Release</button>@endif
+                        <button class="btn sec" wire:click="skipTask({{ $t->id }})">Skip</button>
+                    @elseif($t->status === 'counting' && $t->inventoryCount)
+                        <a class="btn" href="{{ route('wh.count', $t->inventoryCount) }}">Continue {{ $t->inventoryCount->number }}</a>
+                    @endif
+                </div>
+            </div>
+        @empty
+            <p class="none">No cycle count tasks today.</p>
+        @endforelse
+        @foreach($tasks->where('status', 'open')->groupBy('warehouse_id') as $wid => $group)
+            @if($group->count() > 1)<div class="acts" style="margin-top:.5rem"><button class="btn wide" wire:click="startTasks({{ $wid }})" data-test="start-all">Count all {{ $group->count() }} open tasks ({{ $group->first()->warehouse->code }})</button></div>@endif
+        @endforeach
+    </section>
+    @endif
+
     <section class="card"><h2>Counts in progress</h2>
         @forelse($counts as $c)
             <div class="item">

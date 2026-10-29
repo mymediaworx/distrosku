@@ -47,6 +47,7 @@ class KyTobaccoDistributorReport extends TaxReport
         $vaporClosedUnits = Money::of(0);
         $snuffUnits = Money::of(0);
         $chew = ['single' => Money::of(0), 'half_pound' => Money::of(0), 'pound' => Money::of(0)];
+        $chewPctBase = Money::of(0); // 0.20.17: chew sold on/after the switch date, taxed as % of price
         $over16 = Money::of(0); // tax amount for >16oz units
         $detail = [];
         $refs = []; // drill-down: bucket => [ref ...]
@@ -63,6 +64,12 @@ class KyTobaccoDistributorReport extends TaxReport
             $bucket = 'otp';
             $tax = BigDecimal::zero();
             switch (true) {
+                case $p->tax_class === TaxClass::SnuffChew && ($p->smokeless_type ?? 'snuff') !== 'snuff' && $x->chewIsPercent($so->delivered_at):
+                    $chewPctBase = $chewPctBase->plus(Money::of($l->line_total));
+                    $tax = Money::of($l->line_total)->multipliedBy($x->rate(KyExcise::CHEW_PCT, $so->delivered_at));
+                    $basis = 'chew % of price';
+                    $bucket = 'chew_pct';
+                    break;
                 case $p->tax_class === TaxClass::SnuffChew && $p->net_weight_oz === null:
                     $notes[$p->sku] = "{$p->sku}: no net weight; excluded from snuff/chew lines. Fix the product.";
                     $basis = 'MISSING WEIGHT';
@@ -114,7 +121,7 @@ class KyTobaccoDistributorReport extends TaxReport
         }
 
         // Returns (posted credit memos, memo date in period, KY ship-to): reduce the period's taxable base (lines 2/9/18/23/28).
-        $adj = ['otp' => Money::of(0), 'snuff' => Money::of(0), 'single' => Money::of(0), 'half_pound' => Money::of(0), 'pound' => Money::of(0), 'over16' => Money::of(0), 'premium' => Money::of(0)];
+        $adj = ['otp' => Money::of(0), 'snuff' => Money::of(0), 'single' => Money::of(0), 'half_pound' => Money::of(0), 'pound' => Money::of(0), 'over16' => Money::of(0), 'chew_pct' => Money::of(0), 'premium' => Money::of(0)];
         $returns = [];
         $cml = CreditMemoLine::with(['product', 'creditMemo.customer'])
             ->whereHas('creditMemo', fn ($q) => $q->where('status', 'posted')->whereBetween('memo_date', [$start->toDateString(), $end->toDateString()])
@@ -123,12 +130,14 @@ class KyTobaccoDistributorReport extends TaxReport
         foreach ($cml as $l) {
             $p = $l->product;
             $units = KyExcise::consumerUnits($p, $l->qty);
-            if ($p->tax_class === TaxClass::SnuffChew && $p->net_weight_oz === null) {
+            $chewPct = $p->tax_class === TaxClass::SnuffChew && ($p->smokeless_type ?? 'snuff') !== 'snuff' && $x->chewIsPercent($l->creditMemo->memo_date);
+            if (! $chewPct && $p->tax_class === TaxClass::SnuffChew && $p->net_weight_oz === null) {
                 continue;
             }
             $cm = $l->creditMemo;
             $bucket = match (true) {
                 $p->tax_class === TaxClass::SnuffChew && ($p->smokeless_type ?? 'snuff') === 'snuff' => 'snuff',
+                $chewPct => 'chew_pct',
                 $p->tax_class === TaxClass::SnuffChew => 'chew_'.KyExcise::chewBucket($p->net_weight_oz),
                 $p->premium_cigar && $start->greaterThanOrEqualTo('2026-07-01') => 'premium',
                 default => 'otp',
@@ -136,6 +145,8 @@ class KyTobaccoDistributorReport extends TaxReport
             $ref($bucket.'_ret', 'cm', $cm, $cm->customer->name, $p, $l->qty, $l->line_total);
             if ($p->tax_class === TaxClass::SnuffChew && ($p->smokeless_type ?? 'snuff') === 'snuff') {
                 $adj['snuff'] = $adj['snuff']->plus($units->multipliedBy(KyExcise::snuffIncrements($p->net_weight_oz)));
+            } elseif ($chewPct) {
+                $adj['chew_pct'] = $adj['chew_pct']->plus(Money::of($l->line_total));
             } elseif ($p->tax_class === TaxClass::SnuffChew) {
                 $b = KyExcise::chewBucket($p->net_weight_oz);
                 $b === 'over_16' ? $adj['over16'] = $adj['over16']->plus($x->smokelessUnitTax($p, $on)->multipliedBy($units)) : $adj[$b] = $adj[$b]->plus($units);
@@ -169,7 +180,10 @@ class KyTobaccoDistributorReport extends TaxReport
         $cs = $chew['single']->multipliedBy($r(KyExcise::CHEW_SINGLE));
         $ch = $chew['half_pound']->multipliedBy($r(KyExcise::CHEW_HALF_POUND));
         $cp = $chew['pound']->multipliedBy($r(KyExcise::CHEW_POUND));
-        $chewTotal = $cs->plus($ch)->plus($cp)->plus($over16);
+        $chewPctNet = $chewPctBase->minus($adj['chew_pct']);
+        $chewPctRate = $chewPctBase->isZero() && $adj['chew_pct']->isZero() && ! $x->chewIsPercent($on) ? BigDecimal::zero() : $r(KyExcise::CHEW_PCT);
+        $chewPctTax = $chewPctNet->multipliedBy($chewPctRate);
+        $chewTotal = $cs->plus($ch)->plus($cp)->plus($over16)->plus($chewPctTax);
         $chewNet = $chewTotal->minus($chewTotal->multipliedBy($disc));
         $premTax = $start->greaterThanOrEqualTo('2026-07-01') ? $premium->multipliedBy($r(KyExcise::PREMIUM_CIGAR_PCT)) : BigDecimal::zero();
         $l16 = $l7->plus($l14)->plus($chewNet);
@@ -179,14 +193,14 @@ class KyTobaccoDistributorReport extends TaxReport
         foreach ($poLines as $pl) {
             $ref('accrual', 'po', $pl->purchaseOrder, $pl->purchaseOrder->vendor?->name, $pl->product, $pl->qty_received, $pl->excise_accrued);
         }
-        $chewAll = ['chew_single', 'chew_single_ret', 'chew_half_pound', 'chew_half_pound_ret', 'chew_pound', 'chew_pound_ret', 'chew_over_16', 'chew_over_16_ret'];
+        $chewAll = ['chew_single', 'chew_single_ret', 'chew_half_pound', 'chew_half_pound_ret', 'chew_pound', 'chew_pound_ret', 'chew_over_16', 'chew_over_16_ret', 'chew_pct', 'chew_pct_ret'];
         $drillMap = [
             '1' => ['otp'], '2' => ['otp_ret'], '3' => ['otp', 'otp_ret'], '5' => ['otp', 'otp_ret'], '6' => ['otp', 'otp_ret'], '7' => ['otp', 'otp_ret'],
             '8' => ['snuff'], '9' => ['snuff_ret'], '10' => ['snuff', 'snuff_ret'], '12' => ['snuff', 'snuff_ret'], '13' => ['snuff', 'snuff_ret'], '14' => ['snuff', 'snuff_ret'],
             '15' => $chewAll, '16' => array_merge(['otp', 'otp_ret', 'snuff', 'snuff_ret'], $chewAll),
             '18/23/28' => ['chew_single_ret', 'chew_half_pound_ret', 'chew_pound_ret', 'chew_over_16_ret'],
             '17-21' => ['chew_single', 'chew_single_ret'], '22-26' => ['chew_half_pound', 'chew_half_pound_ret'], '27-31' => ['chew_pound', 'chew_pound_ret'],
-            '32-39' => ['chew_over_16', 'chew_over_16_ret'], '40' => $chewAll, 'S1' => ['premium', 'premium_ret'], 'S2' => ['vapor'], 'R1' => ['accrual'],
+            '32-39' => ['chew_over_16', 'chew_over_16_ret'], 'C%' => ['chew_pct', 'chew_pct_ret'], '40' => $chewAll, 'S1' => ['premium', 'premium_ret'], 'S2' => ['vapor'], 'R1' => ['accrual'],
         ];
 
         $notes += [
@@ -221,6 +235,7 @@ class KyTobaccoDistributorReport extends TaxReport
                 ['22-26', 'Chew half-pound units (4-8 oz) / tax', $u($chew['half_pound']).' / '.$c2($ch)],
                 ['27-31', 'Chew pound units (>8-16 oz) / tax', $u($chew['pound']).' / '.$c2($cp)],
                 ['32-39', 'Chew over 16 oz tax (guess at line range)', $c2($over16)],
+                ['C%', 'Chew at % of price (from switch date): net sales / rate / tax', $c2($chewPctNet).' / '.(string) $chewPctRate->toScale(4).' / '.$c2($chewPctTax)],
                 ['40', 'Total chewing tobacco tax', $c2($chewTotal)],
                 ['S1', 'Supplemental: premium cigar sales / 6% tax', $c2($premium).' / '.$c2($premTax)],
                 ['S2', 'Reference: vapor closed cartridges / open-system sales', $u($vaporClosedUnits).' / '.$c2($vaporOpen)],

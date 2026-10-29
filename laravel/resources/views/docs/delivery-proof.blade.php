@@ -1,7 +1,7 @@
 <!doctype html><html><head><meta charset="utf-8"></head><body>
 @include('docs._head', ['docTitle' => 'DELIVERY RECEIPT', 'docSub' => $so->number])
 <table style="border:0;margin:10px 0"><tr>
-    <td style="border:0;width:50%" class="box"><strong>Customer</strong><br>{{ $so->customer->name }}<br>{{ $so->customer->code }} · Terms {{ $so->customer->terms }}</td>
+    <td style="border:0;width:50%" class="box"><strong>Customer</strong><br>{{ $so->customer->name }}@if(filled($so->customer->dba))<br><span style="font-size:0.95em">DBA: {{ $so->customer->dba }}</span>@endif<br>{{ $so->customer->code }} · Terms {{ $so->customer->terms }}</td>
     <td style="border:0;width:50%" class="box">@if($so->isPickup())<strong>Fulfillment</strong><br>Counter pickup @else<strong>Delivered to</strong><br>{{ $so->shipTo?->name }}<br>{{ $so->shipTo?->address }} {{ $so->shipTo?->city }} {{ $so->shipTo?->state }} {{ $so->shipTo?->zip }}@endif</td>
 </tr></table>
 @foreach($so->deliveryStops as $st)

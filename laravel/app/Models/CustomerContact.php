@@ -2,10 +2,11 @@
 
 namespace App\Models;
 
+use App\Exceptions\WorkflowException;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Support\Str;
 
-/** A customer's portal login (guard "portal"). Never emailed: admins copy a one-time set-password link. */
+/** A customer's contact; optional portal login (guard "portal") when is_portal_contact + email. */
 class CustomerContact extends Authenticatable
 {
     public const LINK_HOURS = 72;
@@ -16,12 +17,33 @@ class CustomerContact extends Authenticatable
 
     protected function casts(): array
     {
-        return ['active' => 'boolean', 'password' => 'hashed', 'setup_token_expires_at' => 'datetime', 'last_login_at' => 'datetime'];
+        return [
+            'active' => 'boolean',
+            'is_portal_contact' => 'boolean', 'is_billing_contact' => 'boolean',
+            'password' => 'hashed',
+            'setup_token_expires_at' => 'datetime',
+            'last_login_at' => 'datetime',
+        ];
+    }
+
+    protected static function booted(): void
+    {
+        static::saving(function (CustomerContact $c) {
+            $email = trim((string) ($c->email ?? ''));
+            if ($email === '') {
+                $c->attributes['email'] = null;
+                $c->is_portal_contact = false;
+            }
+            if ($c->is_portal_contact && blank($c->email)) {
+                throw new WorkflowException('Portal access requires an email address.');
+            }
+        });
     }
 
     public function setEmailAttribute($v): void
     {
-        $this->attributes['email'] = mb_strtolower(trim((string) $v));
+        $v = trim((string) $v);
+        $this->attributes['email'] = $v === '' ? null : mb_strtolower($v);
     }
 
     public function customer()
@@ -43,6 +65,9 @@ class CustomerContact extends Authenticatable
     /** Issue a new one-time set-password link (invalidates any previous link). Returns the full URL to show the admin. */
     public function issueSetupLink(): string
     {
+        if (! $this->canInviteToPortal()) {
+            throw new WorkflowException('Portal access requires an email address and the portal-contact flag.');
+        }
         $token = Str::random(48);
         $this->forceFill(['setup_token_hash' => hash('sha256', $token), 'setup_token_expires_at' => now()->addHours(self::LINK_HOURS)])->save();
 
@@ -64,8 +89,18 @@ class CustomerContact extends Authenticatable
         $this->forceFill(['password' => $password, 'setup_token_hash' => null, 'setup_token_expires_at' => null, 'remember_token' => Str::random(60)])->save();
     }
 
+    public function canInviteToPortal(): bool
+    {
+        return $this->is_portal_contact && filled($this->email);
+    }
+
     public function canUsePortal(): bool
     {
-        return $this->active && $this->password !== null && ($this->customer?->active ?? false) && ! Company::isSuspended();
+        return $this->is_portal_contact
+            && filled($this->email)
+            && $this->active
+            && $this->password !== null
+            && ($this->customer?->active ?? false)
+            && ! Company::isSuspended();
     }
 }

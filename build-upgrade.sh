@@ -41,7 +41,7 @@ case "$PHASE" in
   17.2) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
   17.3) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
   18) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
-  19|19.1|19.2|19.3|19.4|19.5|19.6|20.0|20.1|20.2|20.3|20.4|20.5|20.6|20.7|20.8|20.9|20.10|20.11|20.12) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
+  19|19.1|19.2|19.3|19.4|19.5|19.6|20.0|20.1|20.2|20.3|20.4|20.5|20.6|20.7|20.8|20.9|20.10|20.11|20.12|20.13|20.14|20.15|20.16|20.17|20.18|20.19|20.20|20.21|20.22|20.23) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
   18.2) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
   18.1) SEEDERS="TaxRateSeeder Phase3Seeder Phase4Seeder Phase8Seeder Phase11Seeder Phase12Seeder Phase14Seeder" ;;
   *) echo "No seeder list for phase $PHASE"; exit 1 ;;
@@ -823,6 +823,116 @@ if [ "$PHASE" = "12" ]; then
   done
   ! grep -rqiE "Http::|curl_|guzzle" $L/app/Warehouse/ShippingService.php $L/app/Compliance || { echo "CHECK FAILED: no live carrier / state API calls"; exit 1; }
   echo "Phase 12 files OK"
+fi
+if [ "$PHASE" = "20.23" ]; then
+  L=stage-up/laravel
+  grep -q "'version' => '0.20.23'" $L/config/erp.php || { echo "CHECK FAILED: erp version is not 0.20.23"; exit 1; }
+  test -f $L/database/migrations/2026_12_01_000001_phase2023_remove_chew_percent.php || { echo "CHECK FAILED: 20.23 migration missing"; exit 1; }
+  ! grep -q "CHEW_PCT, 'effective_from'" $L/database/seeders/TaxRateSeeder.php || { echo "CHECK FAILED: seeder still creates the 15% chew rate"; exit 1; }
+  echo "Phase 20.23 checks OK"
+fi
+if [ "$PHASE" = "20.22" ]; then
+  L=stage-up/laravel
+  grep -q "'version' => '0.20.22'" $L/config/erp.php || { echo "CHECK FAILED: erp version is not 0.20.22"; exit 1; }
+  grep -q "function selectWalkIn" $L/app/Livewire/CustomerPicker.php || { echo "CHECK FAILED: selectWalkIn missing"; exit 1; }
+  grep -q "function walkIn" $L/app/Livewire/CustomerPicker.php && { echo "CHECK FAILED: walkIn() method must not exist (clashes with the walkIn property)"; exit 1; }
+  grep -q 'wire:click="selectWalkIn"' $L/resources/views/livewire/customer-picker.blade.php || { echo "CHECK FAILED: walk-in button not wired to selectWalkIn"; exit 1; }
+  grep -q "function cashCustomer" $L/app/Compliance/WalkInRule.php || { echo "CHECK FAILED: cashCustomer lookup missing"; exit 1; }
+  test -f $L/database/migrations/2026_11_30_000002_phase2022_flag_cash_code_variants.php || { echo "CHECK FAILED: 20.22 migration missing"; exit 1; }
+  echo "Phase 20.22 checks OK"
+fi
+if [ "$PHASE" = "20.21" ]; then
+  L=stage-up/laravel
+  grep -q "'version' => '0.20.21'" $L/config/erp.php || { echo "CHECK FAILED: erp version is not 0.20.21"; exit 1; }
+  for f in app/Compliance/WalkInRule.php database/migrations/2026_11_30_000001_phase2021_walk_in_customers.php; do
+    test -f $L/$f || { echo "CHECK FAILED: $f missing"; exit 1; }
+  done
+  grep -q "WalkInRule::reason" $L/app/Services/ComplianceChecker.php || { echo "CHECK FAILED: walk-in rule not wired into ComplianceChecker"; exit 1; }
+  grep -q "WalkInRule" $L/app/Models/SalesOrderLine.php || { echo "CHECK FAILED: walk-in rule missing from order lines"; exit 1; }
+  grep -q "erp:regulated-report" $L/routes/console.php || { echo "CHECK FAILED: regulated report command missing"; exit 1; }
+  echo "Phase 20.21 checks OK"
+fi
+if [ "$PHASE" = "20.20" ]; then
+  L=stage-up/laravel
+  grep -q "'version' => '0.20.20'" $L/config/erp.php || { echo "CHECK FAILED: erp version is not 0.20.20"; exit 1; }
+  for f in database/migrations/2026_11_29_000001_phase2020_taxes_quick_counts.php app/Support/CustomerSearch.php app/Livewire/CustomerPicker.php app/Filament/Forms/Components/CustomerPickerField.php app/Services/InvoiceTax.php app/Inventory/NegativeStock.php app/Inventory/QuickCountService.php app/Filament/Resources/QuickCountResource.php; do
+    test -f $L/$f || { echo "CHECK FAILED: $f missing"; exit 1; }
+  done
+  ! grep -rq "toggleTv" $L/app/Filament/Pages/CounterPickupBoard.php || { echo "CHECK FAILED: TV mode is back"; exit 1; }
+  ! grep -q "BrandWorx Marketing" $L/app/Filament/Pages/MarketingSettingsPage.php || { echo "CHECK FAILED: old Marketing label"; exit 1; }
+  grep -q "Tax / unit" $L/resources/views/docs/invoice.blade.php || { echo "CHECK FAILED: invoice tax columns missing"; exit 1; }
+  echo "Phase 20.20 checks OK"
+fi
+if [ "$PHASE" = "20.19" ]; then
+  L=stage-up/laravel
+  grep -q "'version' => '0.20.19'" $L/config/erp.php || { echo "CHECK FAILED: erp version is not 0.20.19"; exit 1; }
+  for f in config/product_search.php app/Support/ProductSearch.php app/Livewire/ProductPicker.php; do
+    test -f $L/$f || { echo "CHECK FAILED: $f missing"; exit 1; }
+  done
+  grep -q "'synonyms'" $L/config/product_search.php || { echo "CHECK FAILED: synonym map missing"; exit 1; }
+  echo "Phase 20.19 checks OK"
+fi
+if [ "$PHASE" = "20.18" ]; then
+  L=stage-up/laravel
+  grep -q "'version' => '0.20.18'" $L/config/erp.php || { echo "CHECK FAILED: erp version is not 0.20.18"; exit 1; }
+  for f in database/migrations/2026_11_28_000001_phase2018_dunning_email.php app/Accounting/DunningMailer.php app/Mailing/MailConfig.php app/Mail/DunningNoticeMail.php resources/views/mail/dunning-notice.blade.php; do
+    test -f $L/$f || { echo "CHECK FAILED: $f missing"; exit 1; }
+  done
+  grep -q "dunning:send" $L/routes/console.php || { echo "CHECK FAILED: dunning:send schedule missing"; exit 1; }
+  grep -qE "^MAIL_PASSWORD=$" $L/.env.example || { echo "CHECK FAILED: .env.example MAIL_PASSWORD must be blank"; exit 1; }
+  echo "Phase 20.18 checks OK"
+fi
+if [ "$PHASE" = "20.17" ]; then
+  L=stage-up/laravel
+  grep -q "'version' => '0.20.17'" $L/config/erp.php || { echo "CHECK FAILED: erp version is not 0.20.17"; exit 1; }
+  for f in database/migrations/2026_11_25_000001_phase2017_company_profile.php database/migrations/2026_11_26_000001_phase2017_cycle_count_tasks.php database/migrations/2026_11_27_000001_phase2017_license_documents_conflicts.php app/Livewire/ProductPicker.php app/Filament/Forms/Components/ProductPickerField.php app/Analytics/DroppedCustomers.php app/Warehouse/CycleCountPlanner.php app/Licensing/LicenseConflictScanner.php app/Filament/Pages/LicenseConflictReview.php app/Http/Controllers/PickupBoardTvController.php app/Http/Middleware/PortalEnabled.php; do
+    test -f $L/$f || { echo "CHECK FAILED: $f missing"; exit 1; }
+  done
+  test ! -f $L/app/Filament/Pages/CompanyBranding.php || { echo "CHECK FAILED: CompanyBranding page should be gone"; exit 1; }
+  grep -q "CHEW_PCT" $L/database/seeders/TaxRateSeeder.php || { echo "CHECK FAILED: chew percent seeder row missing"; exit 1; }
+  echo "Phase 20.17 checks OK"
+fi
+if [ "$PHASE" = "20.15" ] || [ "$PHASE" = "20.16" ]; then
+  L=stage-up/laravel
+  grep -q "'version' => '0.$PHASE'" $L/config/erp.php || { echo "CHECK FAILED: erp version is not 0.$PHASE"; exit 1; }
+  test -f $L/database/migrations/2026_11_24_000001_phase2015_traceability.php || { echo "CHECK FAILED: phase2015 migration missing"; exit 1; }
+  for f in app/Warehouse/Gs1.php app/Warehouse/LotTracking.php app/Models/LotReviewItem.php app/Models/LotContact.php app/Filament/Resources/LotResource/Pages/Trace.php app/Filament/Resources/LotReviewItemResource.php resources/views/filament/pages/lot-trace.blade.php; do
+    test -f $L/$f || { echo "CHECK FAILED: $f missing"; exit 1; }
+  done
+  grep -q "function lotsOnHand" $L/app/Warehouse/LotService.php || { echo "CHECK FAILED: LotService::lotsOnHand missing"; exit 1; }
+  grep -q "lot_id" $L/app/Pos/PosCheckout.php || { echo "CHECK FAILED: PosCheckout lot_id missing"; exit 1; }
+  grep -q "lines.\*.lot_id" $L/app/Pos/OfflineSaleSync.php || { echo "CHECK FAILED: offline lot_id rule missing"; exit 1; }
+  grep -q "trace.csv" $L/routes/web.php || { echo "CHECK FAILED: trace CSV route missing"; exit 1; }
+  test -f $L/database/migrations/2026_11_23_000001_phase2013_license_site_id_and_customer_dba.php || { echo "CHECK FAILED: phase2013 migration missing"; exit 1; }
+  echo "Phase $PHASE checks OK"
+fi
+if [ "$PHASE" = "20.14" ]; then
+  L=stage-up/laravel
+  grep -q "'version' => '0.20.14'" $L/config/erp.php || { echo "CHECK FAILED: erp version is not 0.20.14"; exit 1; }
+  grep -q "Account Number" $L/app/Filament/Resources/CustomerResource.php || { echo "CHECK FAILED: Account Number label missing on CustomerResource"; exit 1; }
+  grep -q "labelWithAccount" $L/app/Models/Customer.php || { echo "CHECK FAILED: Customer::labelWithAccount missing"; exit 1; }
+  grep -q "optionsForSelect" $L/app/Models/Customer.php || { echo "CHECK FAILED: Customer::optionsForSelect missing"; exit 1; }
+  grep -q "orderBy('code')" $L/app/Livewire/CounterPos.php || { echo "CHECK FAILED: CounterPos customers not ordered by Account Number"; exit 1; }
+  grep -q '\$c->code' $L/resources/views/livewire/counter-pos.blade.php || { echo "CHECK FAILED: CounterPos option missing Account Number"; exit 1; }
+  grep -q "orderBy('code')" $L/app/Livewire/Driver/VanSale.php || { echo "CHECK FAILED: VanSale customers not ordered by Account Number"; exit 1; }
+  grep -q '\$c->code' $L/resources/views/livewire/driver/van-sale.blade.php || { echo "CHECK FAILED: VanSale option missing Account Number"; exit 1; }
+  grep -q "Account Number" $L/app/Filament/Pages/MarketingSettingsPage.php || { echo "CHECK FAILED: MarketingSettingsPage Account Number note missing"; exit 1; }
+  # 0.20.13 pieces still present
+  test -f $L/database/migrations/2026_11_23_000001_phase2013_license_site_id_and_customer_dba.php || { echo "CHECK FAILED: phase2013 migration missing"; exit 1; }
+  echo "Phase 20.14 checks OK"
+fi
+if [ "$PHASE" = "20.13" ]; then
+  L=stage-up/laravel
+  grep -q "'version' => '0.20.13'" $L/config/erp.php || { echo "CHECK FAILED: erp version is not 0.20.13"; exit 1; }
+  test -f $L/database/migrations/2026_11_23_000001_phase2013_license_site_id_and_customer_dba.php || { echo "CHECK FAILED: phase2013 migration missing"; exit 1; }
+  grep -q "site_id" $L/app/Models/CustomerLicense.php || { echo "CHECK FAILED: CustomerLicense site_id missing"; exit 1; }
+  grep -q "is_portal_contact" $L/app/Models/CustomerContact.php || { echo "CHECK FAILED: is_portal_contact missing"; exit 1; }
+  grep -q "InteractsWithSpecialPriceProductLookup" $L/app/Filament/Resources/CustomerPriceOverrideResource/Pages/CreateCustomerPriceOverride.php || { echo "CHECK FAILED: special-price product lookup missing"; exit 1; }
+  test -f $L/app/Support/ProductSearch.php || { echo "CHECK FAILED: ProductSearch missing"; exit 1; }
+  test -f $L/resources/views/filament/forms/special-price-product-lookup.blade.php || { echo "CHECK FAILED: special-price lookup view missing"; exit 1; }
+  grep -q "Customer Contacts" $L/app/Filament/Resources/CustomerResource/RelationManagers/ContactsRelationManager.php || { echo "CHECK FAILED: Customer Contacts title missing"; exit 1; }
+  grep -q "embedded-relations" $L/app/Filament/Resources/CustomerResource.php || { echo "CHECK FAILED: mid-form embedded relations missing"; exit 1; }
+  echo "Phase 20.13 checks OK"
 fi
 if [ "$PHASE" = "20.12" ]; then
   L=stage-up/laravel

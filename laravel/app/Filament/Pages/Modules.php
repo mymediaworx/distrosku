@@ -45,14 +45,13 @@ class Modules extends Page
             ['Driver', 'heroicon-o-map-pin', 'driver.today', $can('driver_app')],
             ['Van Sales', 'heroicon-o-banknotes', 'driver.van', $can('van_sales', 'manage')],
             ['Accounting', 'heroicon-o-book-open', Resources\JournalResource::class],
-            ['Bills (AP)', 'heroicon-o-document-text', Resources\VendorBillResource::class],
             ['Reports', 'heroicon-o-chart-bar', SalesByCustomer::class],
             ['Tax Filings', 'heroicon-o-receipt-percent', Resources\TaxFilingResource::class],
             ['MSA Weekly', 'heroicon-o-document-arrow-up', MsaWeekly::class],
             ['PACT Reports', 'heroicon-o-flag', Resources\PactReportResource::class],
             ['Compliance', 'heroicon-o-shield-check', Resources\ComplianceRuleVersionResource::class],
             ['Users', 'heroicon-o-users', Resources\UserResource::class],
-            ['Settings', 'heroicon-o-cog-6-tooth', Settings::class],
+            ['Company Settings', 'heroicon-o-cog-6-tooth', Settings::class],
             ['Imports', 'heroicon-o-arrow-up-tray', Imports::class],
         ];
     }

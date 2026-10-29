@@ -39,6 +39,9 @@ abstract class BaseReport extends Page
 
     public string $group = 'product';
 
+    /** 0.20.17: days-without-an-order window (Customers dropped off). */
+    public int $window = 90;
+
     /** Financial statements: none | prior_period | prior_year */
     public string $compare = 'none';
 
@@ -56,6 +59,7 @@ abstract class BaseReport extends Page
         $this->as_of = request()->query('as_of', now()->toDateString());
         $this->customer_id = request()->query('customer_id');
         $this->compare = (string) request()->query('compare', 'none');
+        $this->window = \App\Analytics\DroppedCustomers::normalizeWindow(request()->query('window', 90));
     }
 
     abstract public function build(): array;

@@ -75,6 +75,36 @@ class CatalogService
     }
 
     /** Link a SKU to the shared product master by normalized name (create if missing) and record a price submission. */
+    /**
+     * 0.20.20 (#12): copy a product. New SKU (next in the department, else "<SKU>-COPY[n]"), blank UPC and no extra barcodes,
+     * name gets " (copy)", and it starts active and unarchived. Stock, lots and history are NOT copied. Returns the saved copy.
+     */
+    public function duplicate(Product $src): Product
+    {
+        return DB::transaction(function () use ($src) {
+            $copy = $src->replicate(['sku', 'upc', 'archived_at', 'archived_by', 'shared_product_id', 'created_at', 'updated_at']);
+            $copy->sku = $src->department ? $this->nextSku($src->department) : $this->copySku($src->sku);
+            $copy->upc = null;
+            $copy->name = mb_substr(rtrim($src->name).' (copy)', 0, 255);
+            $copy->active = true;
+            $copy->save();
+            $this->link($copy, 'admin');
+
+            return $copy;
+        });
+    }
+
+    private function copySku(string $sku): string
+    {
+        $base = mb_substr($sku, 0, 44).'-COPY';
+        $try = $base;
+        for ($i = 2; Product::where('sku', $try)->exists(); $i++) {
+            $try = $base.$i;
+        }
+
+        return $try;
+    }
+
     public function link(Product $p, string $source = 'admin'): SharedProduct
     {
         $norm = SharedProduct::normalize($p->name);

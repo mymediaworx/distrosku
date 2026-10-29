@@ -84,6 +84,21 @@ class WarehousePrintController extends Controller
         }, 'recall-'.preg_replace('/[^A-Za-z0-9._-]/', '_', (string) $r->query('lot')).'.csv', ['Content-Type' => 'text/csv']);
     }
 
+    /** 0.20.15 (#36): Trace screen CSV (lot, SKU or order search), formula-safe. */
+    public function trace(Request $r)
+    {
+        abort_unless($r->user()?->canModule('lots'), 403);
+        $rows = app(LotService::class)->traceCsvRows((string) $r->query('q'));
+
+        return response()->streamDownload(function () use ($rows) {
+            $h = fopen('php://output', 'w');
+            foreach ($rows as $row) {
+                fputcsv($h, array_map(fn ($v) => is_string($v) && preg_match('/^[=+\-@]/', $v) ? "'".$v : $v, $row));
+            }
+            fclose($h);
+        }, 'trace-'.preg_replace('/[^A-Za-z0-9._-]/', '_', (string) $r->query('q')).'.csv', ['Content-Type' => 'text/csv']);
+    }
+
     /** Printable count sheet (blind counts hide expected qty from non-admins). No footer. */
     public function countSheet(Request $r, InventoryCount $count)
     {

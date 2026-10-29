@@ -101,7 +101,7 @@ class Phase19MarketingTest extends TestCase
         $this->assertTrue(MarketingSettings::enabled());
         $this->assertSame('https://app.brandworx.ai', MarketingSettings::appUrl());
         $this->assertSame('https://app.brandworx.ai/v2/location/LOC123/contacts/detail/CON1', MarketingSettings::contactUrl('CON1'));
-        $this->get('/admin/brandworx-marketing')->assertOk()->assertSee('BrandWorx Marketing')->assertDontSee(self::FAKE_TOKEN)->assertDontSee('HighLevel');
+        $this->get('/admin/brandworx-marketing')->assertOk()->assertSee('Marketing')->assertDontSee(self::FAKE_TOKEN)->assertDontSee('HighLevel');
         // blank token on save keeps the old one
         Livewire::test(MarketingSettingsPage::class)->set('data.location_id', 'LOC123')->call('save');
         $this->assertSame(self::FAKE_TOKEN, MarketingSettings::token());

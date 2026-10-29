@@ -1,7 +1,14 @@
 <?php
 
 return [
-    'version' => '0.20.12',
+    'version' => '0.20.23',
+    // 0.20.22: POS Walk-in (CASH) button fixed (Livewire property/method name clash made the click a no-op in the browser); robust CASH lookup; visible selection; Products bulk Set tax class.
+    // 0.20.21: walk-in / cash customers (CASH or flagged "Walk-in / cash") cannot buy regulated products (tobacco, vapor, CBD/hemp, kratom): POS, van, sales orders, portal, picker.
+    // 0.20.20: customer search picker (no default customer), TV mode removed, wider order lines, Marketing label, taxes on invoices, product Duplicate, negative-inventory setting, Quick Tools counts.
+    // 0.20.19: smart product search (every word, any order, punctuation ignored, abbreviations from config/product_search.php, ranked results with price + pack unit; also Products table and global search).
+    // 0.20.16: 0.20.15 + test suite brought in line with 0.20.13 behaviour (no app code changes).
+    // 0.20.15: lot traceability (#36) — GS1 receiving, COA per lot, tracking by product type, lot on sale lines, Needs review, Trace.
+    // 0.20.14: customer Code → Account Number label (column unchanged). Includes 0.20.13: KY Site ID, DBA, Customer Contacts / portal flag, mid-form tabs, beginning balance 2dp, special-price lookup.
     // 0.20.12: admin tables offer 10/25/50/100 per page (no 'All'); big-table selects search instead of preloading.
     // 0.20.11 (#26): an offline sale goes to Needs review when a line is priced below cost, or more than this % below the
     // current price, or when the device didn't send the age of its saved prices. Owner/admin can approve and complete it.
@@ -95,6 +102,7 @@ return [
         'warehouse_scan' => ['view' => ['warehouse'], 'manage' => ['warehouse']],
         'bins' => ['view' => ['warehouse'], 'manage' => ['warehouse']],
         'lots' => ['view' => ['warehouse', 'sales'], 'manage' => []],          // lots, expiry alerts, recall look-up; hold = admin
+        'quick_counts' => ['view' => ['warehouse'], 'manage' => []],         // 0.20.20: counts typed on the Quick Tools page; applying = admin
         'counts' => ['view' => ['warehouse'], 'manage' => ['warehouse']],      // create/scan/submit; approve + post = admin
         'reorder' => ['view' => ['warehouse'], 'manage' => []],              // suggestions; creating draft POs = admin
         'pact' => ['view' => [], 'manage' => []],                            // PACT registrations + monthly reports (admin)

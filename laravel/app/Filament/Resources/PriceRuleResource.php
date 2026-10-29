@@ -41,7 +41,7 @@ class PriceRuleResource extends Resource
             Forms\Components\Select::make('product_id')->label('Product')->required()->searchable()
                 ->getSearchResultsUsing(fn (string $search) => Product::notArchived()->where(fn ($w) => $w->where('sku', 'like', "%$search%")->orWhere('name', 'like', "%$search%"))->limit(30)->get()->mapWithKeys(fn ($p) => [$p->id => "{$p->sku} {$p->name}"]))
                 ->getOptionLabelUsing(fn ($value) => ($p = Product::find($value)) ? "{$p->sku} {$p->name} (list \${$p->price})" : null),
-            Forms\Components\Select::make('customer_id')->label('Customer (contract price)')->relationship('customer', 'name')->searchable()->nullable()->live()
+            \App\Filament\Forms\Components\CustomerPickerField::make('customer_id')->label('Customer (contract price)')->nullable()->live()
                 ->disabled(fn (Get $get) => filled($get('customer_group_id'))),
             Forms\Components\Select::make('customer_group_id')->label('Price group')->relationship('customerGroup', 'name')->preload()->nullable()->live()
                 ->disabled(fn (Get $get) => filled($get('customer_id')))->helperText('Leave customer and group blank for all customers.'),

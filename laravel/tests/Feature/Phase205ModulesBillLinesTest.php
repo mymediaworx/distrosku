@@ -28,7 +28,7 @@ class Phase205ModulesBillLinesTest extends TestCase
         $i = array_search('Inventory', $labels, true);
         $this->assertSame('Counter Pickup', $labels[$i + 1] ?? null);
         $this->assertSame(0, Modules::section('Counter Pickup'));
-        $this->assertCount(25, Modules::definitions());
+        $this->assertCount(24, Modules::definitions()); // 0.20.17: Brand & Quick tools folded into Company Settings
         $this->get('/admin/sales/counter-pickup')->assertOk();
         $this->assertTrue(version_compare(config('erp.version'), '0.20.5', '>='));
     }

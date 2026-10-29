@@ -7,6 +7,7 @@ use App\Imports\RowResult;
 use App\Models\Customer;
 use App\Models\CustomerGroup;
 use App\Models\ImportBatch;
+use App\Support\CustomerType;
 
 class CustomersImport extends ImportType
 {
@@ -23,8 +24,9 @@ class CustomersImport extends ImportType
     public function fields(): array
     {
         return [
-            'code' => ['label' => 'Customer number', 'required' => true, 'example' => 'C1001'],
-            'name' => ['label' => 'Name', 'required' => true, 'example' => 'Corner Market'],
+            'code' => ['label' => 'Account Number', 'required' => true, 'example' => 'C1001'],
+            'name' => ['label' => 'Customer Name', 'required' => true, 'example' => 'Corner Market'],
+            'dba' => ['label' => 'DBA', 'example' => 'Corner Mkt'],
             'type' => ['label' => 'Type (C-store, Liquor store, Smoke shop, Retailer, Restaurant, Food truck, Wholesale distributor, Other)', 'example' => 'retailer'],
             'email' => ['label' => 'Email'], 'phone' => ['label' => 'Phone'],
             'terms' => ['label' => 'Terms', 'example' => 'Net 15'],
@@ -39,15 +41,15 @@ class CustomersImport extends ImportType
     public function evaluate(array $v, ImportBatch $b): RowResult
     {
         $e = [];
-        static::required($v, ['code' => 'Customer number'], $e);
+        static::required($v, ['code' => 'Account Number'], $e);
         $code = static::s($v, 'code');
         $c = $code ? Customer::where('code', $code)->first() : null;
         if (! $c && static::s($v, 'name') === null) {
             $e[] = 'Name is required for a new customer.';
         }
         $type = static::s($v, 'type');
-        if ($type && \App\Support\CustomerType::map($type) === 'other' && strtolower(trim($type)) !== 'other') {
-            $e[] = "Type \"{$type}\" must be one of: ".implode(', ', \App\Support\CustomerType::OPTIONS).'.';
+        if ($type && CustomerType::map($type) === 'other' && strtolower(trim($type)) !== 'other') {
+            $e[] = "Type \"{$type}\" must be one of: ".implode(', ', CustomerType::OPTIONS).'.';
         }
         $email = static::s($v, 'email');
         if ($email && ! filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -62,8 +64,8 @@ class CustomersImport extends ImportType
         }
         $days = static::s($v, 'delivery_days');
         $attrs = [
-            'name' => static::s($v, 'name'), 'type' => $type ? \App\Support\CustomerType::map($type) : null, 'email' => $email, 'phone' => static::s($v, 'phone'),
-            'terms' => static::s($v, 'terms'), 'credit_limit' => static::num($v, 'credit_limit', $e, 'Credit limit'), 'fein' => static::s($v, 'fein'),
+            'name' => static::s($v, 'name'), 'dba' => static::s($v, 'dba'), 'type' => $type ? CustomerType::map($type) : null, 'email' => $email, 'phone' => static::s($v, 'phone'),
+            'terms' => static::s($v, 'terms'), 'credit_limit' => (($cl = static::num($v, 'credit_limit', $e, 'Credit limit')) === null ? null : number_format((float) $cl, 2, '.', '')), 'fein' => static::s($v, 'fein'),
             'customer_group_id' => $groupId, 'delivery_days' => $days ? DeliveryDays::toCsv($days) : null, 'active' => static::bool($v, 'active', $e),
         ];
         if ($days && ! $attrs['delivery_days']) {

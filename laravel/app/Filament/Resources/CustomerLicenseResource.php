@@ -4,8 +4,9 @@ namespace App\Filament\Resources;
 
 use App\Filament\Concerns\RoleGated;
 use App\Filament\Resources\CustomerLicenseResource\Pages;
+use App\Filament\Resources\CustomerResource\RelationManagers\LicensesRelationManager;
 use App\Models\CustomerLicense;
-use Filament\Forms;
+use App\Models\LicenseType;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -28,7 +29,7 @@ class CustomerLicenseResource extends Resource
     public static function form(Form $form): Form
     {
         return $form
-            ->schema(\App\Filament\Resources\CustomerResource\RelationManagers\LicensesRelationManager::licenseFields(true))
+            ->schema(LicensesRelationManager::licenseFields(true))
             ->columns(['default' => 1, 'md' => 2]);
     }
 
@@ -47,9 +48,10 @@ class CustomerLicenseResource extends Resource
                 Tables\Columns\TextColumn::make('shipTo.name')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('type')->badge()
-                    ->formatStateUsing(fn ($state) => \App\Models\LicenseType::label($state))->searchable(),
-                Tables\Columns\TextColumn::make('number')
-                    ->searchable(),
+                    ->formatStateUsing(fn ($state) => LicenseType::label($state))->searchable(),
+                Tables\Columns\TextColumn::make('site_id')->label('Site ID')->searchable()->placeholder('—')->toggleable(),
+                Tables\Columns\TextColumn::make('number')->label('License #')
+                    ->searchable()->placeholder('—'),
                 Tables\Columns\TextColumn::make('state')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('expires_at')
@@ -65,7 +67,7 @@ class CustomerLicenseResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('type')->label('License type')->options(fn () => \App\Models\LicenseType::options(null, false)),
+                Tables\Filters\SelectFilter::make('type')->label('License type')->options(fn () => LicenseType::options(null, false)),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

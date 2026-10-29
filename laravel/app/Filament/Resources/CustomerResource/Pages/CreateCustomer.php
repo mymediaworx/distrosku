@@ -24,7 +24,13 @@ class CreateCustomer extends CreateRecord
         if (! array_key_exists('beginning_balance', $d)) {
             return;
         }
-        app(CustomerBalanceService::class)->setBeginningBalance($this->record->refresh(), $d['beginning_balance'] ?: 0,
-            $d['beginning_balance_date'] ?: null, auth()->user(), $d['beginning_balance_note'] ?? null);
+        $amount = round((float) ($d['beginning_balance'] ?: 0), 2);
+        app(CustomerBalanceService::class)->setBeginningBalance(
+            $this->record->refresh(),
+            $amount,
+            $d['beginning_balance_date'] ?: null,
+            auth()->user(),
+            $d['beginning_balance_note'] ?? null
+        );
     }
 }

@@ -26,7 +26,9 @@ if (is_file(base_path('.env')) || app()->configurationIsCached() || app()->runni
     Schedule::command('costs:apply')->dailyAt('00:05')->withoutOverlapping();
     Schedule::command('pos:expire-holds')->dailyAt('00:15')->withoutOverlapping(); // 0.19.3
     Schedule::command('marketing:reconcile')->dailyAt('02:45')->withoutOverlapping(); // 0.19.2: nightly, NEW (unlinked) customers only
+    Schedule::command('warehouse:cycle-plan')->dailyAt('05:30')->withoutOverlapping(); // 0.20.17 daily/weekly cycle count tasks
     Schedule::command('po:inbound-digest')->dailyAt('06:30')->withoutOverlapping(); // 0.20.1 receiving-team morning digest
+    Schedule::command('dunning:send')->dailyAt('07:00')->withoutOverlapping(); // 0.20.18 auto-email dunning (no-op while the setting is off)
     Schedule::command('marketing:invoice-events')->dailyAt('07:00')->withoutOverlapping(); // 0.19 (no-op when BrandWorx Marketing is off)
 
     // 0.20.8: suspended by the instance manager = pause every scheduled job and alert (queue included). Backups keep running.
@@ -137,3 +139,52 @@ Artisan::command('erp:rules-export {--out=}', function () {
     $json = json_encode(app(\App\Dba\RulesApplier::class)->export(), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     $this->option('out') ? file_put_contents($this->option('out'), $json) : $this->line($json);
 })->purpose('Export license types, eligibility, compliance rules and tax rates as a distrosku-rules/1 rule set');
+
+Artisan::command('warehouse:cycle-plan {--force : generate for today even if already run}', function () {
+    $p = app(\App\Warehouse\CycleCountPlanner::class);
+    $n = $this->option('force') ? $p->generateAll() : $p->ensureCurrent();
+    $this->info("Cycle count plan: {$n} task(s) created.");
+})->purpose('Generate the daily/weekly cycle count tasks (0.20.17)');
+
+// 0.20.18: automatic dunning email. Does nothing unless Company Settings > Email > Auto-email dunning is ON and a real mail server is set up.
+Artisan::command('dunning:send {--as-of= : date (default today)}', function () {
+    $r = app(\App\Accounting\DunningMailer::class)->runDaily($this->option('as-of') ?: null);
+    if ($r['skipped']) {
+        $this->line($r['skipped']);
+
+        return 0;
+    }
+    $this->info("Dunning email: {$r['created']} new notice(s); {$r['sent']} sent, {$r['failed']} failed (retry next run), {$r['print']} on the print list, {$r['duplicate']} duplicate stage(s) skipped, {$r['not_due']} no longer due.");
+
+    return 0;
+})->purpose('0.20.18: make today\'s dunning notices and email them (statement PDF attached)');
+
+// 0.20.21: read-only report on the regulated-product flag (tax_class) that drives the walk-in / cash rule.
+Artisan::command('erp:regulated-report {--limit=50 : max suspect products to list} {--like=* : also list products whose name/SKU/brand contains this text, with their tax class (e.g. --like="white owl")}', function () {
+    $regulated = \App\Enums\TaxClass::regulatedValues();
+    $this->info('Regulated = product tax class other than general / beverage (tobacco, vapor, hemp/CBD, kratom).');
+    $rows = [];
+    foreach (\App\Enums\TaxClass::cases() as $tc) {
+        $rows[] = [$tc->value, \App\Models\Product::where('tax_class', $tc->value)->count(), $tc->isRegulated() ? 'REGULATED' : '-'];
+    }
+    $this->table(['tax_class', 'products', 'walk-in rule'], $rows);
+    $this->line('Regulated products (blocked for walk-in / cash): '.\App\Models\Product::whereIn('tax_class', $regulated)->count().' of '.\App\Models\Product::count());
+    $walk = \App\Models\Customer::query()->where(fn ($q) => $q->where('walk_in', true)->orWhereRaw('UPPER(code) = ?', ['CASH']))->get(['code', 'name']);
+    $this->line('Walk-in / cash customers ('.$walk->count().'): '.$walk->map(fn ($c) => "{$c->code} {$c->name}")->implode('; '));
+    $re = 'tobacco|cigar|cigarette|vape|vapor|cbd|hemp|kratom|white owl|swisher|backwoods|dutch master|black & mild|zig.?zag|newport|marlboro|camel|copenhagen|grizzly|skoal|juul|elf bar|delta|thc|snus|nicotine';
+    $suspects = \App\Models\Product::query()->whereNotIn('tax_class', $regulated)->get()->filter(
+        fn ($p) => preg_match("/($re)/i", implode(' ', [$p->category, $p->department?->name, $p->name]))
+    );
+    $this->line('Possible misses (tax class general/beverage but tobacco/CBD/kratom wording in category, department or name): '.$suspects->count());
+    foreach ($suspects->take((int) $this->option('limit')) as $p) {
+        $this->line("  {$p->sku}  {$p->name}  [tax_class={$p->tax_class->value}, category={$p->category}, dept={$p->department?->name}]");
+    }
+    foreach ((array) $this->option('like') as $like) {
+        $hits = \App\Models\Product::query()->where(fn ($q) => $q->where('name', 'like', "%{$like}%")->orWhere('sku', 'like', "%{$like}%")->orWhere('brand', 'like', "%{$like}%"))->orderBy('name')->get();
+        $this->line("Products matching \"{$like}\": {$hits->count()}");
+        foreach ($hits->take((int) $this->option('limit')) as $p) {
+            $this->line("  {$p->sku}  {$p->name}  tax_class={$p->tax_class?->value}  ".($p->isRegulated() ? 'REGULATED' : 'NOT regulated (sellable to walk-in!)'));
+        }
+    }
+    $this->comment('Nothing was changed. Fix a miss by setting its Tax class on the product.');
+})->purpose('Report which products count as regulated (walk-in / cash rule) and list likely misses');

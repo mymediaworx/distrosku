@@ -22,7 +22,7 @@ final class PosCheckout
 
     /**
      * @param  array{customer_id: int, warehouse_id: int, fulfillment?: string, ship_to_id?: ?int, notes?: ?string,
-     *               tender: string, lines: list<array{product_id: int, qty: mixed, price: mixed}>,
+     *               tender: string, lines: list<array{product_id: int, qty: mixed, price: mixed, lot_id?: ?int}>,
      *               signature?: ?array, order_date?: ?string, credit_override_reason?: ?string}  $sale
      */
     public function complete(array $sale, ?\App\Models\User $overrideBy = null): SalesOrder
@@ -38,7 +38,11 @@ final class PosCheckout
                 'order_date' => $sale['order_date'] ?? now()->toDateString(), 'notes' => trim((string) ($sale['notes'] ?? '')) ?: null,
             ]);
             foreach ($sale['lines'] as $l) {
-                $so->lines()->create(['product_id' => $l['product_id'], 'qty' => Money::s($l['qty']), 'unit_price' => Money::s($l['price'])]);
+                $lotId = isset($l['lot_id']) && $l['lot_id'] ? (int) $l['lot_id'] : null; // 0.20.15 (#36): optional lot from the picker
+                if ($lotId) {
+                    app(\App\Warehouse\LotService::class)->assertSellable($lotId, \App\Models\Product::findOrFail($l['product_id']));
+                }
+                $so->lines()->create(['product_id' => $l['product_id'], 'qty' => Money::s($l['qty']), 'unit_price' => Money::s($l['price']), 'lot_id' => $lotId]);
             }
             if ($overrideBy && filled($sale['credit_override_reason'] ?? null)) {
                 // Owner/admin override, e.g. resolving an offline account sale that went over the limit (logged by CreditLimit).

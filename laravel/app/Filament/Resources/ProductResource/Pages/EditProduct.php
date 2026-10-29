@@ -15,6 +15,14 @@ class EditProduct extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            Actions\Action::make('duplicate')->label('Duplicate')->icon('heroicon-o-document-duplicate')->color('gray')
+                ->visible(fn () => ProductResource::canCreate())->requiresConfirmation()
+                ->modalDescription('Makes a copy with a new SKU and no UPC, then opens it so you can edit it. Stock is not copied.')
+                ->action(function () {
+                    $copy = app(CatalogService::class)->duplicate($this->record);
+
+                    return redirect(ProductResource::getUrl('edit', ['record' => $copy]));
+                }),
             Actions\Action::make('archive')->label('Archive')->color('warning')->requiresConfirmation()
                 ->visible(fn () => ! $this->record->isArchived() && ProductResource::canArchive())
                 ->action(fn () => $this->record->archive(auth()->user())),
