@@ -61,6 +61,35 @@ class Catalog extends Component
         $this->message = "Added {$p->sku}.";
     }
 
+    /**
+     * #37: a barcode scanned with the phone camera (or typed). Pack, carton and case barcodes all work
+     * (ProductLookup gives the base-unit quantity for the scanned level). Same availability rules as the catalog.
+     * The result is also sent to the scanner overlay so the customer sees each scan without closing the camera.
+     */
+    public function scan(string $code): void
+    {
+        $this->reset('message', 'error');
+        $code = mb_substr(trim($code), 0, 64);
+        $hit = $code !== '' ? \App\Warehouse\ProductLookup::resolve($code) : null;
+        if (! $hit) {
+            $this->error = "No product found for barcode {$code}.";
+            $this->dispatch('portal-scan', ok: false, text: $this->error);
+
+            return;
+        }
+        $p = $hit['product'];
+        $qty = rtrim(rtrim((string) $hit['factor'], '0'), '.') ?: '1';
+        $this->add($p->id, $qty);
+        if ($this->error) {
+            $this->dispatch('portal-scan', ok: false, text: "{$p->name}: {$this->error}");
+
+            return;
+        }
+        $unit = $hit['unit'] && $qty !== '1' ? "1 {$hit['unit']->code} ({$qty} {$p->base_unit_name})" : '1';
+        $this->message = "Added {$unit} × {$p->name}.";
+        $this->dispatch('portal-scan', ok: true, text: $this->message, cart: count($this->cart));
+    }
+
     public function addAgain(int $productId): void
     {
         $this->add($productId, max(1, (int) ($this->againQty[$productId] ?? 1)));

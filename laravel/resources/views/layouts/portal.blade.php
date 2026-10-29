@@ -29,6 +29,19 @@ table{width:100%;border-collapse:collapse}td,th{padding:.45rem .3rem;border-bott
 .cartbar button{width:auto;background:#fff;color:#1e3a8a}
 .tabs{display:flex;gap:.25rem;margin:.5rem 0;padding:.25rem;background:#e2e8f0;border-radius:10px}
 .tabs button{flex:1;background:transparent;color:#334155;min-height:44px}.tabs button.on{background:#fff;color:#1e3a8a;box-shadow:0 1px 3px #0f172a26}
+/* #37 camera scanning */
+[x-cloak]{display:none!important}
+.scanbtn{margin-top:.5rem;background:#047857;min-height:48px}
+.scanner{position:fixed;inset:0;z-index:60;background:#0f172a;color:#fff;display:flex;flex-direction:column;padding:.75rem;padding-bottom:calc(.75rem + env(safe-area-inset-bottom));overflow-y:auto}
+.scanner-top{display:flex;justify-content:space-between;align-items:center;gap:.5rem;margin-bottom:.5rem}
+.scan-done{width:auto;min-width:96px;min-height:44px;background:#fff;color:#0f172a}
+.scanner-view{position:relative;width:100%;max-width:560px;margin:0 auto;aspect-ratio:4/3;background:#000;border-radius:10px;overflow:hidden}
+.scanner-view video{width:100%;height:100%;object-fit:cover}
+.scanner-aim{position:absolute;left:10%;right:10%;top:35%;bottom:35%;border:3px solid #22c55e;border-radius:8px;box-shadow:0 0 0 999px #0006}
+.scanner-status{text-align:center;margin:.6rem 0;min-height:1.4em}
+.scanner .inline{max-width:560px;margin-left:auto;margin-right:auto}.scanner input{color:#111}
+.scanner-list{list-style:none;padding:0;margin:0 auto;width:100%;max-width:560px}.scanner-list li{padding:.45rem .6rem;border-radius:8px;margin-bottom:.35rem;background:#1e293b;color:#fff;font-size:.95rem}
+.scanner-list li.ok{border-left:4px solid #22c55e}.scanner-list li.err{border-left:4px solid #ef4444}
 /* 0.20.6 phones. overflow-x on html only: on body it turns body into a scroll container and position:sticky (cart bar) stops working. */
 html{overflow-x:hidden}.card{overflow-x:auto}
 @media(max-width:600px){header{padding:.5rem .75rem}header nav{margin-left:0;width:100%;overflow-x:auto;gap:1rem;padding-bottom:.2rem;white-space:nowrap}
