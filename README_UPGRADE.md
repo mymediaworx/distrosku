@@ -1,7 +1,15 @@
-# Vega ERP — Phase 20.22 UPGRADE (existing install at vegatest1.distrosku.com)
+# Vega ERP — Phase 20.23 UPGRADE (existing install at vegatest1.distrosku.com)
 
 For a site already installed from `vega-erp-phase1.zip` and upgraded through phase 3 (a phase-2 site can also take this zip: seeders are cumulative). TEST data only. No secrets in this package.
 This zip contains **no `laravel/.env` and no `laravel/storage/`**, so extracting it over the live site keeps both.
+
+## What's new in 0.20.23 (includes everything through 0.20.22)
+
+**Tax fix: chewing tobacco stays on Kentucky's per-unit rates. One re-runnable migration (`2026_12_01_000001_phase2023_remove_chew_percent`). No new PHP extensions, no `.env` change. No secrets are in this package.**
+
+- **Why:** 0.20.17 added a "chew at 15% of wholesale" rate starting 2026-11-01 from a walkthrough note. The Kentucky Department of Revenue tobacco page (checked 2026-10-29) still taxes chewing tobacco per unit, and its 15% rate covers tobacco products *other than* snuff and chew. Approved by Michael 2026-10-29.
+- **What changes:** the migration deletes only the 15% chew rate that 0.20.17 created (Tax Filings > Tax rates, type `chew_percent`, source "Owner decision 2026-10-27"). No other rate is touched. Chew stays at $0.19 under 4 oz, $0.40 for 4–8 oz, $0.65 for over 8–16 oz, plus $0.19 per 4 oz over 16 oz. The seeder no longer adds the 15% rate.
+- **Nothing to recompute:** the 15% rate started 2026-11-01, so no real sale was taxed with it if this is installed before then. If it is installed later, re-check chew lines on POs received and sales delivered from 11/01 onward.
 
 ## What's new in 0.20.22 (includes everything through 0.20.21)
 
