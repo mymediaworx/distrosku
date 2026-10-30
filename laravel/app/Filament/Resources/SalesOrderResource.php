@@ -173,6 +173,8 @@ class SalesOrderResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            // #10: empty state with the next step
+            ->emptyStateHeading('No sales orders yet')->emptyStateDescription('Create an order, or sell at the counter POS. Portal orders from customers show up here too.')->emptyStateIcon('heroicon-o-shopping-cart')
             ->defaultSort('id', 'desc')
             ->modifyQueryUsing(fn ($query) => $query->with('shipTo')) // the customer description reads the ship-to state
             ->columns([

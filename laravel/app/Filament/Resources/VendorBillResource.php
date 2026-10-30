@@ -175,7 +175,10 @@ class VendorBillResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return $table->defaultSort('id', 'desc')
+        return $table
+            // #10: empty state with the next step
+            ->emptyStateHeading('No vendor bills yet')->emptyStateDescription('Enter a bill when a vendor invoice arrives; it can be matched to a received PO.')->emptyStateIcon('heroicon-o-document-text')
+            ->defaultSort('id', 'desc')
             ->columns([
                 Tables\Columns\TextColumn::make('number')->searchable()->sortable(),
                 Tables\Columns\TextColumn::make('vendor.name')->searchable(),

@@ -98,7 +98,10 @@ class PurchaseOrderResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return $table->defaultSort('id', 'desc')
+        return $table
+            // #10: empty state with the next step
+            ->emptyStateHeading('No purchase orders yet')->emptyStateDescription('Create a PO to a vendor. Reorder suggestions (Inventory) can draft one for you.')->emptyStateIcon('heroicon-o-truck')
+            ->defaultSort('id', 'desc')
             ->columns([
                 Tables\Columns\TextColumn::make('number')->searchable(),
                 Tables\Columns\TextColumn::make('vendor.name')->searchable()->wrap()->extraAttributes(['style' => 'min-width:12rem']), // UI audit #7: wraps to 2 lines, not 4

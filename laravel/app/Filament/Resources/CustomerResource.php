@@ -149,6 +149,8 @@ class CustomerResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            // #10: empty state with the next step
+            ->emptyStateHeading('No customers yet')->emptyStateDescription('Add a customer, or import your customer list under Settings > Imports (dry run first).')->emptyStateIcon('heroicon-o-user-group')
             ->columns([
                 Tables\Columns\TextColumn::make('code')->label('Account Number')
                     ->searchable()->sortable(),
