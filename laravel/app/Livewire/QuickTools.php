@@ -4,16 +4,24 @@ namespace App\Livewire;
 
 use App\Catalog\CatalogService;
 use App\Catalog\ImageService;
+use App\Catalog\SkuApproval;
 use App\Inventory\QuickCountService;
 use App\Models\Company;
 use App\Models\Department;
 use App\Models\Product;
+use App\Models\User;
+use App\Pos\PosPin;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
-/** Public employee page /q/{token}: create SKU, lookup, print labels. No login; token + rate limits; no customer/financial data. */
+/**
+ * Public employee page /q/{token}: create SKU, lookup, print labels, counts. No login; token + rate limits; no customer/financial data.
+ * #45: creating a SKU and submitting a count need the employee's 4-digit PIN (the same PIN as the POS, set under Users). The PIN
+ * names who did it; new SKUs wait for an owner/admin to approve them (Products > New SKUs to approve) before they can be sold.
+ */
 class QuickTools extends Component
 {
     use WithFileUploads;
@@ -56,6 +64,13 @@ class QuickTools extends Component
 
     public ?string $countDone = null;
 
+    /** #45: PIN typed to unlock create / count (never kept after the check). */
+    public string $pin = '';
+
+    public const STAFF_SESSION = 'quick_staff';
+
+    public const STAFF_IDLE_SECONDS = 900;
+
     public function mount(string $token): void
     {
         $this->token = $token;
@@ -68,6 +83,55 @@ class QuickTools extends Component
         abort_unless($c->public_token && hash_equals($c->public_token, $this->token), 404);
 
         return $c;
+    }
+
+    /** #45: the employee who unlocked this page with their PIN, if still within the idle window. */
+    public function staff(): ?User
+    {
+        $s = session(self::STAFF_SESSION);
+        if (! is_array($s) || ! isset($s['id'], $s['at']) || now()->timestamp - (int) $s['at'] > self::STAFF_IDLE_SECONDS) {
+            return null;
+        }
+        $u = User::find($s['id']);
+        if (! $u || ! $u->active) {
+            return null;
+        }
+        session([self::STAFF_SESSION => ['id' => $u->id, 'at' => now()->timestamp]]);
+
+        return $u;
+    }
+
+    public function unlock(): void
+    {
+        $pin = $this->pin;
+        $this->pin = '';
+        if ($this->guard()->suspended || ! $this->limit('pin', 10)) {
+            return;
+        }
+        $u = PosPin::valid($pin) ? User::where('pos_pin_lookup', PosPin::lookup($pin))->first() : null;
+        if (! $u || ! $u->active || ! $u->pos_pin_hash || ! Hash::check($pin, $u->pos_pin_hash)) {
+            app(PosPin::class)->log($u, 'quick_tools_failed');
+            $this->addError('pin', 'Wrong PIN. Ask a manager to set your PIN under Users.');
+
+            return;
+        }
+        session([self::STAFF_SESSION => ['id' => $u->id, 'at' => now()->timestamp]]);
+        app(PosPin::class)->log($u, 'quick_tools_unlock');
+    }
+
+    public function lock(): void
+    {
+        session()->forget(self::STAFF_SESSION);
+    }
+
+    private function requireStaff(): ?User
+    {
+        $u = $this->staff();
+        if (! $u) {
+            $this->addError('pin', 'Enter your PIN first.');
+        }
+
+        return $u;
     }
 
     private function limit(string $what, int $max): bool
@@ -88,6 +152,9 @@ class QuickTools extends Component
         if ($this->guard()->suspended || ! $this->limit('create', 20)) {
             return;
         }
+        if (! ($staff = $this->requireStaff())) {
+            return;
+        }
         $data = $this->validate([
             'department_id' => 'required|integer|exists:departments,id',
             'name' => 'required|string|max:255',
@@ -95,8 +162,14 @@ class QuickTools extends Component
             'upc' => 'nullable|string|max:20|regex:/^[0-9A-Za-z\- ]*$/',
             'image' => 'nullable|file|mimes:jpg,jpeg,png,webp,gif|mimetypes:image/jpeg,image/png,image/webp,image/gif|max:'.ImageService::MAX_KB,
         ]);
+        if ($dup = SkuApproval::duplicateUpc($data['upc'] ?? null)) { // #45: one UPC, one product
+            $this->addError('upc', "That UPC is already on {$dup->sku} {$dup->name}. Use Lookup to find it.");
+
+            return;
+        }
         try {
-            $p = $catalog->create($data, $this->image, 'quick_tools');
+            $p = $catalog->create(array_diff_key($data, ['tax_class' => 1]), $this->image, 'quick_tools'); // tax class: set by the approver
+            $p = app(SkuApproval::class)->markPending($p, $staff);
         } catch (\Throwable $e) {
             $this->addError('name', $e->getMessage());
 
@@ -137,6 +210,10 @@ class QuickTools extends Component
         if ($this->guard()->suspended || ! $this->limit('count', 60)) {
             return;
         }
+        if (! ($staff = $this->requireStaff())) {
+            return;
+        }
+        $this->count_by = $staff->name; // #45: the PIN names who counted
         $this->validate([
             'count_product_id' => 'required|integer|exists:products,id',
             'count_warehouse_id' => 'required|integer|exists:warehouses,id',
@@ -152,7 +229,7 @@ class QuickTools extends Component
     private function row(Product $p): array
     {
         return ['id' => $p->id, 'sku' => $p->sku, 'name' => $p->name, 'price' => number_format((float) $p->price, 2), 'upc' => $p->upc,
-            'dept' => $p->department?->name, 'img' => $p->imageUrl()];
+            'dept' => $p->department?->name, 'img' => $p->imageUrl(), 'pending' => $p->isPendingApproval()];
     }
 
     public function labelUrl(array $ids): string
@@ -166,6 +243,7 @@ class QuickTools extends Component
 
         return view('livewire.quick-tools', [
             'company' => $company,
+            'staff' => $company->suspended ? null : $this->staff(),
             'warehouses' => $company->suspended ? collect() : \App\Models\Warehouse::where('active', true)->orderBy('code')->get(['id', 'code', 'name']),
             'departments' => $company->suspended ? collect() : Department::where('active', true)->orderBy('name')->get(['id', 'code', 'name']),
         ])->layout('layouts.quick', ['company' => $company]);

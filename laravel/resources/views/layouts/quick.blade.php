@@ -18,7 +18,7 @@ button{background:var(--brand);color:var(--on-brand);border:0;font-weight:600;cu
 .inline{display:flex;gap:.5rem}.inline button{width:auto;white-space:nowrap}
 .tabs{display:flex;gap:.5rem;margin-bottom:1rem}.tabs button{background:#cbd5e1;color:#111}.tabs button.on{background:var(--brand);color:var(--on-brand)}
 .res{display:grid;grid-template-columns:60px 1fr auto;gap:.6rem;align-items:center;border-bottom:1px solid #eee;padding:.5rem 0}
-.thumb{width:60px;height:60px;object-fit:contain;background:#f1f5f9;border-radius:6px}.ok{color:var(--ok)}.err{color:var(--danger);font-size:.9rem}
+.thumb{width:60px;height:60px;object-fit:contain;background:#f1f5f9;border-radius:6px}.ok{color:var(--ok)}.pill{display:inline-block;padding:.05rem .45rem;border-radius:999px;background:#fef3c7;color:#92400e;font-size:.8rem;font-weight:600}.staff{display:flex;justify-content:space-between;align-items:center;gap:.5rem}.err{color:var(--danger);font-size:.9rem}
 #reader{width:100%;margin-top:.5rem}
 </style>
 @livewireStyles

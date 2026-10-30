@@ -144,6 +144,8 @@ class Phase4Test extends TestCase
 
         $this->get("/q/{$token}")->assertOk()->assertSee('Create SKU')->assertSee('html5-qrcode.min.js');
         $this->assertFileExists(public_path('vendor/html5-qrcode/html5-qrcode.min.js'));
+        $staff = \App\Models\User::factory()->create(['name' => 'Pat Clerk']); // 0.20.24 (#45): create needs an employee PIN
+        session([QuickTools::STAFF_SESSION => ['id' => $staff->id, 'at' => now()->timestamp]]);
         Livewire::test(QuickTools::class, ['token' => $token])
             ->set('department_id', $this->elec->id)->set('name', 'Earbuds')->set('price', '15.5')->set('upc', '123456789012')
             ->set('image', UploadedFile::fake()->image('e.png', 800, 800))
