@@ -11,6 +11,10 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/admin');
+// #35 Stage 1: read-only MCP endpoint for an AI agent (Bearer token, off by default). No session cookie or CSRF: token only.
+Route::post('/mcp', \App\Http\Controllers\McpController::class)->middleware(BlockWhenSuspended::class)
+    ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class])->name('mcp');
+Route::get('/mcp', fn () => response()->json(['error' => 'Use POST (MCP Streamable HTTP).'], 405, ['Allow' => 'POST']));
 Route::middleware('throttle:30,1')->get('/health', \App\Http\Controllers\HealthController::class)->name('health'); // #22 uptime monitor
 
 // 0.14.1: /pos accepts a password login or a POS PIN session (PosAccess); PIN sessions never reach /admin.
