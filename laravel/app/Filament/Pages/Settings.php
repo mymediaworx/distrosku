@@ -68,6 +68,8 @@ class Settings extends Page implements HasForms
             'count_auto_approve_value' => Setting::get('count_auto_approve_value', 25), 'count_auto_approve_pct' => Setting::get('count_auto_approve_pct', 2),
             'pact_interstate_enabled' => (bool) Setting::get('pact_interstate_enabled'), 'msa_directory_strict' => (bool) Setting::get('msa_directory_strict'), 'coa_expiry_warn_days' => Setting::get('coa_expiry_warn_days', 30),
             'pos_hold_days' => Setting::get('pos_hold_days', 7), 'allow_negative_inventory_sales' => \App\Inventory\NegativeStock::allowed(),
+            // #43: sales tax (off by default)
+            'sales_tax_enabled' => \App\Tax\SalesTax::enabled(), 'sales_tax_rate' => \App\Tax\SalesTax::rate(), 'sales_tax_name' => \App\Tax\SalesTax::name(), 'sales_tax_state' => \App\Tax\SalesTax::state(),
             'cycle_plan_enabled' => \App\Warehouse\CycleCountPlanner::enabled(), 'cycle_plan_frequency' => \App\Warehouse\CycleCountPlanner::frequency(),
             'cycle_plan_weekday' => (string) \App\Warehouse\CycleCountPlanner::weekday(), 'cycle_plan_size' => \App\Warehouse\CycleCountPlanner::size(),
             'cycle_plan_high_risk_classes' => implode(', ', \App\Warehouse\CycleCountPlanner::highRiskClasses()), 'cycle_plan_high_risk_departments' => (string) Setting::get('cycle_plan_high_risk_departments'),
@@ -155,6 +157,15 @@ class Settings extends Page implements HasForms
                         Forms\Components\Placeholder::make('portal_pay')->label('Card payments')
                             ->content(fn () => Setting::get('authnet_login_id') && Setting::get('authnet_transaction_key') ? 'Gateway keys are saved (see Payment gateway).' : 'Gateway keys are not set; the portal can show invoices but cannot take card payments.'),
                     ]),
+                ]),
+                // #43: state sales tax + exemption certificates. OFF until the owner turns it on.
+                Forms\Components\Tabs\Tab::make('Sales tax')->icon('heroicon-o-receipt-percent')->schema([
+                    Forms\Components\Section::make('Sales tax on invoices')->description('Off by default. When on, every sale to a customer WITHOUT a current resale or exemption certificate (Customers > Licenses: type Resale Certificate or Sales Tax Exemption Certificate, with a number or document, not expired) gets this tax on top of the price and the product\'s own taxes. It shows on the invoice and is owed on account 2200 Sales Tax Payable. Walk-in / cash sales always pay it. Posted invoices are not changed.')->schema([
+                        Forms\Components\Toggle::make('sales_tax_enabled')->label('Charge sales tax')->live(),
+                        Forms\Components\TextInput::make('sales_tax_rate')->label('Rate (%)')->numeric()->minValue(0)->maxValue(99.999)->required(fn (Forms\Get $get) => (bool) $get('sales_tax_enabled')),
+                        Forms\Components\TextInput::make('sales_tax_name')->label('Name on the invoice')->maxLength(40)->placeholder('KY sales tax'),
+                        Forms\Components\TextInput::make('sales_tax_state')->label('State (certificates for this state count)')->maxLength(2)->placeholder('KY'),
+                    ])->columns(4),
                 ]),
                 Forms\Components\Tabs\Tab::make('Warehouse')->icon('heroicon-o-archive-box')->schema([
                     Forms\Components\Section::make('Warehouse')->schema([
@@ -276,6 +287,13 @@ class Settings extends Page implements HasForms
                 \App\Audit\Audit::action('negative_inventory_sales', null, 'Allow negative inventory sales turned '.($d['allow_negative_inventory_sales'] ? 'ON' : 'OFF'));
             }
             unset($d['allow_negative_inventory_sales']);
+        }
+        if (array_key_exists('sales_tax_enabled', $d)) { // #43: a money setting: every change is logged
+            $before = [\App\Tax\SalesTax::enabled(), \App\Tax\SalesTax::rate()];
+            $after = [(bool) $d['sales_tax_enabled'], (string) ($d['sales_tax_rate'] ?? $before[1])];
+            if ($before[0] !== $after[0] || ($after[0] && (float) $before[1] !== (float) $after[1])) {
+                \App\Audit\Audit::action('sales_tax_setting', null, 'Sales tax '.($after[0] ? 'ON at '.$after[1].'%' : 'OFF'), ['before' => $before, 'after' => $after]);
+            }
         }
         $lists = array_intersect_key($d, array_flip(['lot_track_departments', 'lot_track_tax_classes', 'lot_track_apply_existing']));
         $d = array_diff_key($d, $lists);
