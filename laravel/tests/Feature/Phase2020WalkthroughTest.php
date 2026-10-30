@@ -286,9 +286,11 @@ class Phase2020WalkthroughTest extends TestCase
         $token = Company::current()->rotateToken();
         $p = Product::where('sku', 'TST-GEN-001')->first();
         $before = (string) Inventory::where('product_id', $p->id)->where('warehouse_id', $this->main->id)->value('qty');
+        $sam = User::factory()->create(['name' => 'Sam']); // 0.20.24 (#45): the PIN names who counted
+        session([QuickTools::STAFF_SESSION => ['id' => $sam->id, 'at' => now()->timestamp]]);
         Livewire::test(QuickTools::class, ['token' => $token])->set('tab', 'count')
             ->set('cq', 'TST-GEN-001')->call('countSearch')
-            ->set('count_warehouse_id', $this->main->id)->set('count_qty', '12')->set('count_by', 'Sam')->set('count_note', 'back shelf')
+            ->set('count_warehouse_id', $this->main->id)->set('count_qty', '12')->set('count_note', 'back shelf')
             ->call('submitCount')->assertHasNoErrors()->assertSeeHtml('data-test="count-done"');
         $q = QuickCount::firstOrFail();
         $this->assertSame('pending', $q->status);
@@ -296,12 +298,16 @@ class Phase2020WalkthroughTest extends TestCase
         $this->assertSame($before, (string) Inventory::where('product_id', $p->id)->where('warehouse_id', $this->main->id)->value('qty'));
     }
 
-    public function test_quick_count_needs_a_name_and_quantity(): void
+    public function test_quick_count_needs_a_pin_and_quantity(): void
     {
         $token = Company::current()->rotateToken();
+        Livewire::test(QuickTools::class, ['token' => $token])->set('tab', 'count') // 0.20.24 (#45): no PIN, nothing saved
+            ->set('cq', 'TST-GEN-001')->call('countSearch')->set('count_warehouse_id', $this->main->id)->set('count_qty', '3')
+            ->call('submitCount')->assertHasErrors(['pin']);
+        session([QuickTools::STAFF_SESSION => ['id' => User::factory()->create()->id, 'at' => now()->timestamp]]);
         Livewire::test(QuickTools::class, ['token' => $token])->set('tab', 'count')
             ->set('cq', 'TST-GEN-001')->call('countSearch')->set('count_warehouse_id', $this->main->id)
-            ->call('submitCount')->assertHasErrors(['count_qty', 'count_by']);
+            ->call('submitCount')->assertHasErrors(['count_qty']);
     }
 
     public function test_admin_applies_a_quick_count_as_an_adjustment_or_dismisses_it(): void
