@@ -87,6 +87,8 @@
         </div>
         <div class="side">
             <div class="card checkout" id="pos-checkout" data-test="checkout">
+                @php($till = \App\Till\TillService::current(\App\Livewire\CounterPos::register()))
+                <p class="tillbar" data-test="till-bar"><a href="{{ route('pos.till') }}">@if($till)Till open since {{ $till->opened_at->format('g:i A') }} · Cash in/out, close @else Till not open · Open the till @endif</a></p>
                 <p class="total">${{ number_format((float) $this->total, 2) }}</p>
                 @if(($posTax = (float) \App\Services\InvoiceTax::cartTax($cart, $customerId)) > 0)<small data-test="pos-tax">Includes ${{ number_format($posTax, 2) }} tax</small>@endif
                 <div class="tenders">

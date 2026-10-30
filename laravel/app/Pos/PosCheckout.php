@@ -36,6 +36,7 @@ final class PosCheckout
                 'customer_id' => $sale['customer_id'], 'ship_to_id' => $delivery ? ($sale['ship_to_id'] ?? null) : null, 'warehouse_id' => $sale['warehouse_id'],
                 'fulfillment' => $delivery ? 'delivery' : 'pickup', 'channel' => 'pos',
                 'order_date' => $sale['order_date'] ?? now()->toDateString(), 'notes' => trim((string) ($sale['notes'] ?? '')) ?: null,
+                'till_session_id' => $sale['till_session_id'] ?? null, // #44: sale made while a till was open on this register
             ]);
             foreach ($sale['lines'] as $l) {
                 $lotId = isset($l['lot_id']) && $l['lot_id'] ? (int) $l['lot_id'] : null; // 0.20.15 (#36): optional lot from the picker
