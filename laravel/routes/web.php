@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/admin');
+Route::middleware('throttle:30,1')->get('/health', \App\Http\Controllers\HealthController::class)->name('health'); // #22 uptime monitor
 
 // 0.14.1: /pos accepts a password login or a POS PIN session (PosAccess); PIN sessions never reach /admin.
 Route::middleware([\App\Http\Middleware\PosAccess::class])->group(function () {
