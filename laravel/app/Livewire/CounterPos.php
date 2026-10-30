@@ -238,7 +238,8 @@ class CounterPos extends Component
             }
         }
         $q = $this->quote($p, $qty);
-        $this->cart[] = ['product_id' => $p->id, 'sku' => $p->sku, 'name' => $p->name, 'qty' => self::q($qty), 'price' => $q->price, 'quoted' => $q->price, 'source' => $q->source, 'reasons' => []];
+        $this->cart[] = ['product_id' => $p->id, 'sku' => $p->sku, 'name' => $p->name, 'qty' => self::q($qty), 'price' => $q->price, 'quoted' => $q->price, 'source' => $q->source, 'reasons' => []]
+            + \App\Warehouse\LotChoice::forLine($p, $this->warehouseId); // #36: lot picker when 2+ lots are on hand
         $this->recheck();
 
         return true;
@@ -587,7 +588,7 @@ class CounterPos extends Component
                 'customer_id' => $this->customerId, 'warehouse_id' => $this->warehouseId,
                 'fulfillment' => $this->fulfillment, 'ship_to_id' => $this->shipToId, 'notes' => $this->notes,
                 'tender' => $this->tender, 'signature' => $this->sigInput(),
-                'lines' => array_map(fn ($l) => ['product_id' => $l['product_id'], 'qty' => $l['qty'], 'price' => $l['price']], $this->cart),
+                'lines' => array_map(fn ($l) => ['product_id' => $l['product_id'], 'qty' => $l['qty'], 'price' => $l['price'], 'lot_id' => \App\Warehouse\LotChoice::picked($l)], $this->cart),
             ]);
             $change = $this->changeDue;
             $this->message = "Sale {$so->number} complete: \$".number_format((float) $so->total, 2).'.'.($change !== null && (float) $change >= 0 ? " Change due \${$change}." : '');

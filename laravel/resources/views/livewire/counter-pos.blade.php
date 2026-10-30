@@ -76,6 +76,7 @@
                         <input class="price" type="number" step="0.01" min="0" inputmode="decimal" wire:model.blur="cart.{{ $i }}.price" aria-label="Price">
                         <span class="ext" data-test="line-total">${{ number_format((float) \App\Services\Money::mul($line['qty'] ?: 0, $line['price'] ?: 0), 2) }}</span>
                         <button type="button" class="x" wire:click="remove({{ $i }})" aria-label="Remove">×</button>
+                        @if(! empty($line['lots']))<label class="lot" data-test="line-lot">Lot <select wire:model.change="cart.{{ $i }}.lot_id" aria-label="Lot for {{ $line['sku'] }}">@foreach($line['lots'] as $lid => $lbl)<option value="{{ $lid }}">{{ $lbl }}</option>@endforeach</select></label>@endif
                         @foreach($line['reasons'] as $r)<div class="blk">⛔ {{ $r }}</div>@endforeach
                     </div>
                 @empty
