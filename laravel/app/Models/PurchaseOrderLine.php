@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasLineUnit;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class PurchaseOrderLine extends Model
 {
-    use HasFactory;
+    use HasFactory, HasLineUnit;
 
     protected $guarded = ['id'];
 
@@ -17,6 +18,7 @@ class PurchaseOrderLine extends Model
     {
         return [
             'qty' => 'decimal:4',
+            'unit_qty' => 'decimal:4',
             'unit_cost' => 'decimal:4',
             'qty_received' => 'decimal:4',
             'excise_accrued' => 'decimal:4',

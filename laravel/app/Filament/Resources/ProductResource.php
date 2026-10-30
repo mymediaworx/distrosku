@@ -218,6 +218,8 @@ class ProductResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            // #10: empty state with the next step
+            ->emptyStateHeading('No products yet')->emptyStateDescription('Add a product, or import your catalog under Settings > Imports (dry run first).')->emptyStateIcon('heroicon-o-cube')
             ->columns([
                 Tables\Columns\ImageColumn::make('image_path')->label('')->disk('public')->width(60)->height(60)->visibleFrom('sm') // UI audit #7: phones show SKU, name, price
                     ->extraImgAttributes(['style' => 'object-fit:contain;width:60px;height:60px;background:#f1f5f9;border-radius:4px']),

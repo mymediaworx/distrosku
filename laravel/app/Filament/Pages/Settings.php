@@ -56,7 +56,7 @@ class Settings extends Page implements HasForms
     }
 
     public const COMPANY_FIELDS = ['company_name' => 'name', 'company_address_line1' => 'address_line1', 'company_address_line2' => 'address_line2',
-        'company_city' => 'city', 'company_state' => 'state', 'company_postal_code' => 'postal_code', 'company_phone' => 'phone', 'company_email' => 'email'];
+        'company_city' => 'city', 'company_state' => 'state', 'company_postal_code' => 'postal_code', 'company_phone' => 'phone', 'company_email' => 'email', 'company_brand_color' => 'brand_color'];
 
     public function mount(): void
     {
@@ -112,9 +112,12 @@ class Settings extends Page implements HasForms
                         Forms\Components\TextInput::make('company_state')->label('State')->maxLength(8),
                         Forms\Components\TextInput::make('company_postal_code')->label('ZIP')->maxLength(16),
                     ])->columns(3),
-                    Forms\Components\Section::make('Brand')->description('Logo shown on documents and in the quick-tools pages.')->schema([
+                    Forms\Components\Section::make('Brand')->description('Logo shown on documents and in the quick-tools pages; brand color on the counter, warehouse, driver and portal screens.')->schema([
                         Forms\Components\FileUpload::make('logo_path')->label('Logo')->image()->disk('public')->directory('branding')
                             ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])->maxSize(ImageService::MAX_KB),
+                        // #10: one brand color for the POS, warehouse, driver, portal and quick-tools screens (blank = built-in colors)
+                        Forms\Components\ColorPicker::make('company_brand_color')->label('Brand color')
+                            ->regex('/^#[0-9a-fA-F]{6}$/')->helperText('Header and main buttons on the POS, warehouse, driver, portal and quick-tools screens. Leave blank for the built-in blue (green on driver screens). Text color is picked automatically for contrast.'),
                     ]),
                     Forms\Components\Section::make('Employee Quick Tools link (no login)')->description('Anyone with this link can create and look up SKUs and print labels. Regenerate it if it leaks.')->schema([
                         Forms\Components\Placeholder::make('quick_link')->label('Link')

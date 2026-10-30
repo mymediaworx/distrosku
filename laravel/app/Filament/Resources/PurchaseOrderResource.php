@@ -13,6 +13,7 @@ use App\Support\ProductSearch;
 use App\Services\PurchaseOrderService;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
@@ -67,7 +68,7 @@ class PurchaseOrderResource extends Resource
             Forms\Components\Actions::make([
                 ProductPickerField::addLinesAction('lines', fn (Product $p) => ['product_id' => $p->id, 'qty' => 1, 'unit_cost' => $p->cost], showCost: true),
             ])->visible(fn (?PurchaseOrder $record) => ! in_array($record?->status, ['received', 'partial'], true))->columnSpanFull()->key('add_products'),
-            Forms\Components\Repeater::make('lines')->relationship()->columns(['default' => 2, 'md' => 4])
+            Forms\Components\Repeater::make('lines')->relationship()->columns(['default' => 2, 'md' => 6])
                 ->disabled(fn (?PurchaseOrder $record) => in_array($record?->status, ['received', 'partial'], true))
                 ->schema([
                     Forms\Components\Select::make('product_id')->label('Product')->required()->searchable()
@@ -78,10 +79,18 @@ class PurchaseOrderResource extends Resource
                         })
                         ->getSearchResultsUsing(fn (string $search) => ProductSearch::options($search))
                         ->getOptionLabelUsing(fn ($value) => ($p = Product::find($value)) ? "{$p->sku} {$p->name}" : null)
-                        ->live()->afterStateUpdated(fn ($state, Set $set) => $set('unit_cost', Product::find($state)?->cost))
+                        ->live()->afterStateUpdated(function ($state, Set $set) {
+                            $set('unit_cost', Product::find($state)?->cost);
+                            $set('product_unit_id', null); // #25
+                            $set('unit_qty', null);
+                        })
                         ->columnSpan(['default' => 2, 'md' => 2]),
-                    Forms\Components\TextInput::make('qty')->numeric()->default(1)->required()->minValue(0.0001),
-                    Forms\Components\TextInput::make('unit_cost')->numeric()->required()->prefix('$'),
+                    // #25: buy by case / carton; qty stays the stock-unit quantity received into stock
+                    ...\App\Filament\Forms\LineUnitFields::make(null, ['default' => 1, 'md' => 1]),
+                    Forms\Components\TextInput::make('qty')->numeric()->default(1)->required()->minValue(0.0001)
+                        ->hidden(fn (Get $get) => filled($get('product_unit_id')))->dehydratedWhenHidden(),
+                    Forms\Components\TextInput::make('unit_cost')->numeric()->required()->prefix('$')
+                        ->helperText(fn (Get $get) => \App\Filament\Forms\LineUnitFields::perUnitHint($get, 'unit_cost')),
                 ])->defaultItems(1)->columnSpanFull(),
             Forms\Components\Textarea::make('notes')->columnSpanFull(),
         ]);
@@ -89,7 +98,10 @@ class PurchaseOrderResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return $table->defaultSort('id', 'desc')
+        return $table
+            // #10: empty state with the next step
+            ->emptyStateHeading('No purchase orders yet')->emptyStateDescription('Create a PO to a vendor. Reorder suggestions (Inventory) can draft one for you.')->emptyStateIcon('heroicon-o-truck')
+            ->defaultSort('id', 'desc')
             ->columns([
                 Tables\Columns\TextColumn::make('number')->searchable(),
                 Tables\Columns\TextColumn::make('vendor.name')->searchable()->wrap()->extraAttributes(['style' => 'min-width:12rem']), // UI audit #7: wraps to 2 lines, not 4

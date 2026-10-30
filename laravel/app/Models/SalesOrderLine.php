@@ -3,12 +3,13 @@
 namespace App\Models;
 
 use App\Pricing\PricingEngine;
+use App\Models\Concerns\HasLineUnit;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class SalesOrderLine extends Model
 {
-    use HasFactory;
+    use HasFactory, HasLineUnit;
 
     protected $guarded = ['id'];
 
@@ -21,6 +22,7 @@ class SalesOrderLine extends Model
     {
         return [
             'qty' => 'decimal:4',
+            'unit_qty' => 'decimal:4',
             'unit_price' => 'decimal:4',
             'unit_cost' => 'decimal:4',
             'line_total' => 'decimal:4',

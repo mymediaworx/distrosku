@@ -51,6 +51,8 @@ class VendorResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            // #10: empty state with the next step
+            ->emptyStateHeading('No vendors yet')->emptyStateDescription('Add a vendor, or import vendors and vendor costs under Settings > Imports.')->emptyStateIcon('heroicon-o-building-storefront')
             ->columns([
                 Tables\Columns\TextColumn::make('code')
                     ->searchable(),
