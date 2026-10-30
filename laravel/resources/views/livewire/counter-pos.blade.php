@@ -45,6 +45,7 @@
                 <div class="dgrid">
                     <div class="dcust">
                         <livewire:customer-picker wire:model.live="customerId" :walk-in="true" label="Customer" wire:key="pos-customer-picker" />
+                        @if($customerId && \App\Tax\SalesTax::enabled())@php($stx = \App\Tax\SalesTax::exemption(\App\Models\Customer::find($customerId)))<small data-test="pos-sales-tax" style="display:block;color:{{ $stx['exempt'] ? '#047857' : '#92400e' }}">{{ $stx['message'] }}</small>@endif
                         @if(! is_null($this->customerBalance))<small data-test="customer-balance">Account balance: {{ number_format((float) $this->customerBalance, 2) }}{{ (float) $this->customerBalance < 0 ? ' (credit)' : '' }}</small>@endif</div>
                     <div><label for="pos-fulfillment">Fulfillment</label>
                         <select id="pos-fulfillment" wire:model.live="fulfillment" data-test="fulfillment"><option value="pickup">Counter pickup</option><option value="delivery">Delivery</option></select></div>
@@ -89,7 +90,7 @@
                 @php($till = \App\Till\TillService::current(\App\Livewire\CounterPos::register()))
                 <p class="tillbar" data-test="till-bar"><a href="{{ route('pos.till') }}">@if($till)Till open since {{ $till->opened_at->format('g:i A') }} · Cash in/out, close @else Till not open · Open the till @endif</a></p>
                 <p class="total">${{ number_format((float) $this->total, 2) }}</p>
-                @if(($posTax = (float) \App\Services\InvoiceTax::cartTax($cart)) > 0)<small data-test="pos-tax">Includes ${{ number_format($posTax, 2) }} tax</small>@endif
+                @if(($posTax = (float) \App\Services\InvoiceTax::cartTax($cart, $customerId)) > 0)<small data-test="pos-tax">Includes ${{ number_format($posTax, 2) }} tax</small>@endif
                 <div class="tenders">
                     @foreach(['cash' => 'Cash', 'check' => 'Check', 'card' => 'Card (manual)', 'account' => 'Charge to account'] as $k => $v)
                         <button type="button" wire:click="$set('tender', '{{ $k }}')" class="{{ $tender === $k ? 'on' : '' }}">{{ $v }}</button>

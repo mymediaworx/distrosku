@@ -140,7 +140,7 @@ class VanSale extends Component
 
     public function getTotalProperty(): string
     {
-        return Money::s(Money::add(0, \App\Services\InvoiceTax::cartTax($this->cart), ...array_map(fn ($l) => Money::mul($l['qty'] ?: 0, $l['price']), $this->cart)));
+        return Money::s(Money::add(0, \App\Services\InvoiceTax::cartTax($this->cart, $this->customerId), ...array_map(fn ($l) => Money::mul($l['qty'] ?: 0, $l['price']), $this->cart)));
     }
 
     public function sell(VanSaleService $svc): void

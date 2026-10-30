@@ -56,7 +56,7 @@ class Settings extends Page implements HasForms
     }
 
     public const COMPANY_FIELDS = ['company_name' => 'name', 'company_address_line1' => 'address_line1', 'company_address_line2' => 'address_line2',
-        'company_city' => 'city', 'company_state' => 'state', 'company_postal_code' => 'postal_code', 'company_phone' => 'phone', 'company_email' => 'email'];
+        'company_city' => 'city', 'company_state' => 'state', 'company_postal_code' => 'postal_code', 'company_phone' => 'phone', 'company_email' => 'email', 'company_brand_color' => 'brand_color'];
 
     public function mount(): void
     {
@@ -67,7 +67,10 @@ class Settings extends Page implements HasForms
             'reorder_cover_days' => Setting::get('reorder_cover_days', 14),
             'count_auto_approve_value' => Setting::get('count_auto_approve_value', 25), 'count_auto_approve_pct' => Setting::get('count_auto_approve_pct', 2),
             'pact_interstate_enabled' => (bool) Setting::get('pact_interstate_enabled'), 'msa_directory_strict' => (bool) Setting::get('msa_directory_strict'), 'coa_expiry_warn_days' => Setting::get('coa_expiry_warn_days', 30),
+            'stamping_enabled' => \App\Compliance\TaxStamps::enabled(), // #40
             'pos_hold_days' => Setting::get('pos_hold_days', 7), 'allow_negative_inventory_sales' => \App\Inventory\NegativeStock::allowed(),
+            // #43: sales tax (off by default)
+            'sales_tax_enabled' => \App\Tax\SalesTax::enabled(), 'sales_tax_rate' => \App\Tax\SalesTax::rate(), 'sales_tax_name' => \App\Tax\SalesTax::name(), 'sales_tax_state' => \App\Tax\SalesTax::state(),
             'cycle_plan_enabled' => \App\Warehouse\CycleCountPlanner::enabled(), 'cycle_plan_frequency' => \App\Warehouse\CycleCountPlanner::frequency(),
             'cycle_plan_weekday' => (string) \App\Warehouse\CycleCountPlanner::weekday(), 'cycle_plan_size' => \App\Warehouse\CycleCountPlanner::size(),
             'cycle_plan_high_risk_classes' => implode(', ', \App\Warehouse\CycleCountPlanner::highRiskClasses()), 'cycle_plan_high_risk_departments' => (string) Setting::get('cycle_plan_high_risk_departments'),
@@ -112,9 +115,12 @@ class Settings extends Page implements HasForms
                         Forms\Components\TextInput::make('company_state')->label('State')->maxLength(8),
                         Forms\Components\TextInput::make('company_postal_code')->label('ZIP')->maxLength(16),
                     ])->columns(3),
-                    Forms\Components\Section::make('Brand')->description('Logo shown on documents and in the quick-tools pages.')->schema([
+                    Forms\Components\Section::make('Brand')->description('Logo shown on documents and in the quick-tools pages; brand color on the counter, warehouse, driver and portal screens.')->schema([
                         Forms\Components\FileUpload::make('logo_path')->label('Logo')->image()->disk('public')->directory('branding')
                             ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])->maxSize(ImageService::MAX_KB),
+                        // #10: one brand color for the POS, warehouse, driver, portal and quick-tools screens (blank = built-in colors)
+                        Forms\Components\ColorPicker::make('company_brand_color')->label('Brand color')
+                            ->regex('/^#[0-9a-fA-F]{6}$/')->helperText('Header and main buttons on the POS, warehouse, driver, portal and quick-tools screens. Leave blank for the built-in blue (green on driver screens). Text color is picked automatically for contrast.'),
                     ]),
                     Forms\Components\Section::make('Employee Quick Tools link (no login)')->description('Anyone with this link can create and look up SKUs and print labels. Regenerate it if it leaks.')->schema([
                         Forms\Components\Placeholder::make('quick_link')->label('Link')
@@ -156,6 +162,15 @@ class Settings extends Page implements HasForms
                             ->content(fn () => Setting::get('authnet_login_id') && Setting::get('authnet_transaction_key') ? 'Gateway keys are saved (see Payment gateway).' : 'Gateway keys are not set; the portal can show invoices but cannot take card payments.'),
                     ]),
                 ]),
+                // #43: state sales tax + exemption certificates. OFF until the owner turns it on.
+                Forms\Components\Tabs\Tab::make('Sales tax')->icon('heroicon-o-receipt-percent')->schema([
+                    Forms\Components\Section::make('Sales tax on invoices')->description('Off by default. When on, every sale to a customer WITHOUT a current resale or exemption certificate (Customers > Licenses: type Resale Certificate or Sales Tax Exemption Certificate, with a number or document, not expired) gets this tax on top of the price and the product\'s own taxes. It shows on the invoice and is owed on account 2200 Sales Tax Payable. Walk-in / cash sales always pay it. Posted invoices are not changed.')->schema([
+                        Forms\Components\Toggle::make('sales_tax_enabled')->label('Charge sales tax')->live(),
+                        Forms\Components\TextInput::make('sales_tax_rate')->label('Rate (%)')->numeric()->minValue(0)->maxValue(99.999)->required(fn (Forms\Get $get) => (bool) $get('sales_tax_enabled')),
+                        Forms\Components\TextInput::make('sales_tax_name')->label('Name on the invoice')->maxLength(40)->placeholder('KY sales tax'),
+                        Forms\Components\TextInput::make('sales_tax_state')->label('State (certificates for this state count)')->maxLength(2)->placeholder('KY'),
+                    ])->columns(4),
+                ]),
                 Forms\Components\Tabs\Tab::make('Warehouse')->icon('heroicon-o-archive-box')->schema([
                     Forms\Components\Section::make('Warehouse')->schema([
                         Forms\Components\TextInput::make('over_receipt_pct')->label('Global over-receipt allowance %')->numeric()->minValue(0)->maxValue(100)
@@ -196,6 +211,10 @@ class Settings extends Page implements HasForms
                             ->helperText('Off = PACT items cannot ship outside the home state (previous behaviour).'),
                         Forms\Components\Toggle::make('msa_directory_strict')->label('Block cigarette / RYO sales into states with no directory list loaded'),
                         Forms\Components\TextInput::make('coa_expiry_warn_days')->label('COA: warn this many days before expiry')->integer()->minValue(0)->maxValue(365),
+                    ]),
+                    // #40: off by default (Vega buys stamped cigarettes); for distributors that are state stamping agents
+                    Forms\Components\Section::make('Cigarette tax stamping')->description('Only for distributors licensed to buy and affix state cigarette tax stamps. Turns on Compliance > Tax stamps (stamp purchases, affixing unstamped packs into stamped SKUs, reconciliation) and blocks shipping a stamped SKU into another state.')->schema([
+                        Forms\Components\Toggle::make('stamping_enabled')->label('This company stamps cigarettes'),
                     ]),
                     Forms\Components\Section::make('KY filer (EDI XML header)')->schema($filer)->columns(3),
                 ]),
@@ -276,6 +295,13 @@ class Settings extends Page implements HasForms
                 \App\Audit\Audit::action('negative_inventory_sales', null, 'Allow negative inventory sales turned '.($d['allow_negative_inventory_sales'] ? 'ON' : 'OFF'));
             }
             unset($d['allow_negative_inventory_sales']);
+        }
+        if (array_key_exists('sales_tax_enabled', $d)) { // #43: a money setting: every change is logged
+            $before = [\App\Tax\SalesTax::enabled(), \App\Tax\SalesTax::rate()];
+            $after = [(bool) $d['sales_tax_enabled'], (string) ($d['sales_tax_rate'] ?? $before[1])];
+            if ($before[0] !== $after[0] || ($after[0] && (float) $before[1] !== (float) $after[1])) {
+                \App\Audit\Audit::action('sales_tax_setting', null, 'Sales tax '.($after[0] ? 'ON at '.$after[1].'%' : 'OFF'), ['before' => $before, 'after' => $after]);
+            }
         }
         $lists = array_intersect_key($d, array_flip(['lot_track_departments', 'lot_track_tax_classes', 'lot_track_apply_existing']));
         $d = array_diff_key($d, $lists);

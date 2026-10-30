@@ -33,7 +33,9 @@ class CustomerGroupResource extends Resource
     public static function form(Form $form): Form
     {
         return $form->schema([
-            Forms\Components\TextInput::make('code')->required()->maxLength(30)->unique(ignoreRecord: true),
+            Forms\Components\TextInput::make('code')->required()->maxLength(30)->unique(ignoreRecord: true)
+                ->disabled(fn (?\App\Models\CustomerGroup $record) => (bool) $record?->isSystem())
+                ->helperText(fn (?\App\Models\CustomerGroup $record) => $record?->isSystem() ? 'Built-in group: the code is fixed.'.($record->isWholesale() ? ' Customers in Wholesale are not charged sales tax.' : '') : null),
             Forms\Components\TextInput::make('name')->required(),
         ]);
     }
@@ -41,7 +43,8 @@ class CustomerGroupResource extends Resource
     public static function table(Table $table): Table
     {
         return $table->columns([
-            Tables\Columns\TextColumn::make('code')->searchable()->sortable(),
+            Tables\Columns\TextColumn::make('code')->searchable()->sortable()
+                ->description(fn (\App\Models\CustomerGroup $r) => $r->isSystem() ? 'Built in' : null),
             Tables\Columns\TextColumn::make('name')->searchable(),
             Tables\Columns\TextColumn::make('customers_count')->counts('customers')->label('Customers'),
         ])->actions([Tables\Actions\EditAction::make()]);

@@ -7,6 +7,20 @@
         <button type="button" class="{{ $tab === 'count' ? 'on' : '' }}" wire:click="$set('tab','count')" data-test="tab-count">Count</button></div>
     @error('rate')<p class="err">{{ $message }}</p>@enderror
 
+    {{-- #45: creating a SKU and saving a count need the employee's PIN (same as the POS) --}}
+    @if($tab !== 'lookup')
+        @if($staff)
+            <div class="card staff" data-test="staff">Signed in as <strong>{{ $staff->name }}</strong> <button type="button" class="sec" wire:click="lock" style="width:auto">Not you? Lock</button></div>
+        @else
+            <form class="card" wire:submit="unlock" data-test="pin-form">
+                <label for="pin">Your 4-digit PIN</label>
+                <div class="inline"><input id="pin" type="password" wire:model="pin" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" required><button type="submit" style="width:auto">Unlock</button></div>
+                @error('pin')<p class="err">{{ $message }}</p>@enderror
+                <small>Same PIN as the counter POS. A manager sets it under Users.</small>
+            </form>
+        @endif
+    @endif
+
     @if($tab === 'create')
     <form class="card" wire:submit="create">
         <label for="d">Department</label>
@@ -27,7 +41,7 @@
         <p><button type="submit" wire:loading.attr="disabled">Create SKU</button></p>
     </form>
     @if($created)
-        <div class="card ok" data-test="created">Created <strong>{{ $created['sku'] }}</strong> {{ $created['name'] }}.
+        <div class="card ok" data-test="created">Created <strong>{{ $created['sku'] }}</strong> {{ $created['name'] }}. <strong>Waiting for manager approval</strong>: it can't be sold until a manager approves it.
             <a href="{{ $this->labelUrl([$created['id']]) }}" target="_blank">Print label</a></div>
     @endif
     @elseif($tab === 'count')
@@ -55,7 +69,6 @@
         <select id="cw" wire:model="count_warehouse_id"><option value="">Choose…</option>@foreach($warehouses as $w)<option value="{{ $w->id }}">{{ $w->name }} ({{ $w->code }})</option>@endforeach</select>
         @error('count_warehouse_id')<p class="err">{{ $message }}</p>@enderror
         <label for="cn">How many are there</label><input id="cn" wire:model="count_qty" inputmode="decimal" required>@error('count_qty')<p class="err">{{ $message }}</p>@enderror
-        <label for="cb">Your name</label><input id="cb" wire:model="count_by" maxlength="100" required>@error('count_by')<p class="err">{{ $message }}</p>@enderror
         <label for="cm">Note (optional)</label><input id="cm" wire:model="count_note" maxlength="255">
         <p><button type="submit" wire:loading.attr="disabled">Save count</button></p>
         <small>This does not change stock. A manager reviews it first.</small>
@@ -75,7 +88,7 @@
         <div class="card">
             @foreach($results as $r)
                 <div class="res">@if($r['img'])<img class="thumb" src="{{ $r['img'] }}" alt="">@else<div class="thumb"></div>@endif
-                    <div><strong>{{ $r['sku'] }}</strong> {{ $r['name'] }}<br><small>{{ $r['dept'] }} · ${{ $r['price'] }}@if($r['upc']) · UPC {{ $r['upc'] }}@endif</small></div>
+                    <div><strong>{{ $r['sku'] }}</strong> {{ $r['name'] }}@if(! empty($r['pending'])) <span class="pill" data-test="pending">Waiting for approval</span>@endif<br><small>{{ $r['dept'] }} · ${{ $r['price'] }}@if($r['upc']) · UPC {{ $r['upc'] }}@endif</small></div>
                     <a href="{{ $this->labelUrl([$r['id']]) }}" target="_blank">Label</a></div>
             @endforeach
             <p><a href="{{ $this->labelUrl(array_column($results, 'id')) }}" target="_blank">Print all labels</a></p>

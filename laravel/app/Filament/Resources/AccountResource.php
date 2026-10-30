@@ -35,6 +35,8 @@ class AccountResource extends Resource
                     ->required(),
                 Forms\Components\TextInput::make('type')
                     ->required(),
+                Forms\Components\TextInput::make('qb_name')->label('QuickBooks name')->maxLength(100)
+                    ->helperText('Name of this account in QuickBooks, for the QuickBooks export. Blank = same as the name above.'), // #40
                 Forms\Components\Toggle::make('active')
                     ->required(),
             ]);

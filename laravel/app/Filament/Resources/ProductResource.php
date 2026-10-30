@@ -123,6 +123,9 @@ class ProductResource extends Resource
                 Forms\Components\TextInput::make('category'),
                 Forms\Components\Select::make('tax_class')->options(TaxClass::options())->required()->default('general')->live()
                     ->afterStateUpdated(fn ($state, Forms\Set $set) => in_array($state, Product::PACT_DEFAULT_CLASSES, true) ? $set('pact_covered', true) : null),
+                Forms\Components\TextInput::make('stamp_state')->label('Tax stamp state')->maxLength(2)->placeholder('Unstamped') // #40
+                    ->visible(fn () => \App\Compliance\TaxStamps::enabled())->dehydrateStateUsing(fn ($s) => filled($s) ? strtoupper(trim($s)) : null)
+                    ->helperText('The state whose tax stamp is on this SKU (stamped stock). Blank = unstamped.'),
                 Forms\Components\Toggle::make('pact_covered')->label('PACT covered')
                     ->helperText('Defaults on for cigarette, RYO, smokeless and vapor; you can turn it off.')
                     ->required(),
@@ -141,7 +144,7 @@ class ProductResource extends Resource
                     Forms\Components\Toggle::make('flavored')->label('Flavored'),
                     Forms\Components\Select::make('fda_status')->label('FDA marketing authorization (vapor)')->options(\App\Models\Product::FDA_STATUSES)->placeholder('Not set'),
                 ]),
-                Forms\Components\Select::make('smokeless_type')->options(['snuff' => 'Snuff (incl. snus)', 'chew' => 'Chewing tobacco'])->helperText('Snuff/chew only: sets the KY tax basis'),
+                Forms\Components\Select::make('smokeless_type')->options(['snuff' => 'Snuff (incl. snus)', 'chew' => 'Chewing tobacco (loose leaf)', 'plug' => 'Chewing tobacco (plug)', 'twist' => 'Chewing tobacco (twist)'])->helperText('Snuff/chew only: sets the KY tax basis'),
                 Forms\Components\TextInput::make('net_weight_oz')->label('Net weight per consumer unit (oz)')->numeric(),
                 Forms\Components\TextInput::make('units_per_case')->label('Consumer units per sold unit')->numeric()->default(1)->required(),
                 Forms\Components\TextInput::make('sticks_per_unit')->label('Cigarette sticks per sold unit')->numeric()->helperText('Carton = 200'),
@@ -218,6 +221,8 @@ class ProductResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            // #10: empty state with the next step
+            ->emptyStateHeading('No products yet')->emptyStateDescription('Add a product, or import your catalog under Settings > Imports (dry run first).')->emptyStateIcon('heroicon-o-cube')
             ->columns([
                 Tables\Columns\ImageColumn::make('image_path')->label('')->disk('public')->width(60)->height(60)->visibleFrom('sm') // UI audit #7: phones show SKU, name, price
                     ->extraImgAttributes(['style' => 'object-fit:contain;width:60px;height:60px;background:#f1f5f9;border-radius:4px']),

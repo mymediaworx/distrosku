@@ -13,7 +13,13 @@ class OfflineSaleController extends Controller
 {
     public const MAX_PER_REQUEST = 25;
 
-    public function sync(Request $request, OfflineSaleSync $sync): JsonResponse
+    /** #26: van sales made offline (driver app). Same rules; the sale runs through VanSaleService. */
+    public function syncVan(Request $request, OfflineSaleSync $sync): JsonResponse
+    {
+        return $this->sync($request, $sync, 'van');
+    }
+
+    public function sync(Request $request, OfflineSaleSync $sync, string $channel = 'pos'): JsonResponse
     {
         $data = $request->validate([
             'device_id' => 'nullable|string|max:64',
@@ -24,7 +30,7 @@ class OfflineSaleController extends Controller
         $results = [];
         foreach ($data['sales'] as $sale) {
             try {
-                $row = $sync->ingest($sale, $request->user(), $data['device_id'] ?? null, 'pos');
+                $row = $sync->ingest($sale, $request->user(), $data['device_id'] ?? null, $channel);
                 $results[] = self::result($row);
             } catch (ValidationException $e) {
                 // no usable UUID: the device keeps it queued and shows the error

@@ -555,7 +555,7 @@ class CounterPos extends Component
     public function getTotalProperty(): string
     {
         // 0.20.20: product taxes are part of what the customer pays (and of the invoice total)
-        return Money::add(\App\Services\InvoiceTax::cartTax($this->cart), ...array_map(fn ($l) => Money::mul($l['qty'] ?: 0, $l['price'] ?: 0), $this->cart));
+        return Money::add(\App\Services\InvoiceTax::cartTax($this->cart, $this->customerId), ...array_map(fn ($l) => Money::mul($l['qty'] ?: 0, $l['price'] ?: 0), $this->cart));
     }
 
     public function getBlockedProperty(): bool

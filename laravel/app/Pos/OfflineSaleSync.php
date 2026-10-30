@@ -80,7 +80,7 @@ final class OfflineSaleSync
         }
 
         try {
-            $so = $this->checkout->complete([
+            $so = $row->channel === 'van' ? $this->vanSale($row, $sale) : $this->checkout->complete([
                 'customer_id' => (int) $sale['customer_id'], 'warehouse_id' => (int) $sale['warehouse_id'],
                 'fulfillment' => $sale['fulfillment'] ?? 'pickup', 'ship_to_id' => $sale['ship_to_id'] ?? null,
                 'notes' => trim('Offline sale '.mb_substr($row->uuid, 0, 8).'. '.($sale['notes'] ?? '')),
@@ -122,6 +122,22 @@ final class OfflineSaleSync
         Audit::action('offline_sale_resolved', $row, "Offline sale {$row->uuid} marked resolved: {$note}", ['problems' => $row->problems], [], $by->id);
 
         return $row;
+    }
+
+    /** #26: a van sale made offline goes through the same service as the live van-sale screen (van stock, signature, delivery). */
+    private function vanSale(OfflineSale $row, array $sale): \App\Models\SalesOrder
+    {
+        $van = \App\Models\Warehouse::where('is_van', true)->find((int) $sale['warehouse_id']);
+        if (! $van) {
+            throw new \App\Exceptions\WorkflowException('The van on this offline sale is not a van/truck warehouse.');
+        }
+        $so = app(\App\Delivery\VanSaleService::class)->sell($van, Customer::findOrFail((int) $sale['customer_id']),
+            ! empty($sale['ship_to_id']) ? \App\Models\ShipTo::where('customer_id', (int) $sale['customer_id'])->find((int) $sale['ship_to_id']) : null,
+            array_map(fn ($l) => ['product_id' => (int) $l['product_id'], 'qty' => $l['qty'], 'price' => $l['price'], 'lot_id' => ! empty($l['lot_id']) ? (int) $l['lot_id'] : null], $sale['lines']),
+            (string) $sale['tender'], $sale['signature'] ?? null, ($sale['fulfillment'] ?? 'pickup') === 'delivery' ? \App\Models\SalesOrder::DELIVERY : \App\Models\SalesOrder::PICKUP);
+        $so->update(['notes' => trim('Offline van sale '.mb_substr($row->uuid, 0, 8).'. '.($so->notes ?? '').' '.($sale['notes'] ?? ''))]);
+
+        return $so;
     }
 
     /** @return list<string> reasons the sale can't be completed as sent */

@@ -89,9 +89,9 @@ class Phase208InstanceManagerTest extends TestCase
         $this->get('/admin')->assertStatus(503);
         // manager can still talk to it
         $this->signed('status')->assertOk()->assertJsonPath('suspended', true);
-        // scheduled jobs (except the backup) are paused
+        // scheduled jobs (except the backup and the #22 health heartbeat, which only says cron is alive) are paused
         $events = collect(app(Schedule::class)->events());
-        $this->assertTrue($events->reject(fn ($e) => str_contains($e->command, 'erp:backup'))->every(fn ($e) => ! $e->filtersPass($this->app)));
+        $this->assertTrue($events->reject(fn ($e) => str_contains((string) $e->command, 'erp:backup') || $e->description === 'health-heartbeat')->every(fn ($e) => ! $e->filtersPass($this->app)));
         $this->assertSame($before, Customer::count());
         $this->signed('resume', ['by' => 'michael@brandworx.ai'])->assertOk();
         $this->assertNotSame(503, $this->get('/admin')->status());

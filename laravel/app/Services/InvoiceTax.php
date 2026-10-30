@@ -34,7 +34,7 @@ class InvoiceTax
     }
 
     /** @return array{total: string, items: list<array{name: string, per_unit: string}>}  tax charged for ONE unit at $unitPrice */
-    public static function perUnit(?Product $p, mixed $unitPrice): array
+    public static function perUnit(?Product $p, mixed $unitPrice, ?\App\Models\Customer $customer = null, mixed $date = null): array
     {
         $items = [];
         $sum = Money::of(0);
@@ -45,31 +45,38 @@ class InvoiceTax
             $items[] = ['name' => $t['name'], 'per_unit' => Money::s($amt)];
             $sum = $sum->plus($amt);
         }
+        // #43: state sales tax (off by default) on the price plus the product's own taxes, unless the customer holds a valid certificate
+        if ($p && ($st = \App\Tax\SalesTax::perUnit($customer, Money::of($unitPrice)->plus($sum), $date))) {
+            $items[] = $st;
+            $sum = $sum->plus(Money::of($st['per_unit']));
+        }
 
         return ['total' => Money::s($sum), 'items' => $items];
     }
 
     /** Total tax on $qty units of $p at $unitPrice. */
-    public static function lineTax(?Product $p, mixed $qty, mixed $unitPrice): string
+    public static function lineTax(?Product $p, mixed $qty, mixed $unitPrice, ?\App\Models\Customer $customer = null): string
     {
-        return Money::mul($qty, self::perUnit($p, $unitPrice)['total']);
+        return Money::mul($qty, self::perUnit($p, $unitPrice, $customer)['total']);
     }
 
     /** Sum of the tax on a cart of ['product_id','qty','price'] rows (POS / van sale totals). */
-    public static function cartTax(array $cart): string
+    public static function cartTax(array $cart, mixed $customerId = null): string
     {
         if (! $cart) {
             return Money::s(0);
         }
         $products = Product::whereIn('id', array_column($cart, 'product_id'))->get()->keyBy('id');
+        $c = $customerId ? \App\Models\Customer::find($customerId) : null; // #43: sales tax depends on the customer's certificate
 
-        return Money::add(...array_map(fn ($l) => self::lineTax($products[$l['product_id']] ?? null, $l['qty'] ?: 0, $l['price'] ?: 0), $cart));
+        return Money::add(...array_map(fn ($l) => self::lineTax($products[$l['product_id']] ?? null, $l['qty'] ?: 0, $l['price'] ?: 0, $c), $cart));
     }
 
     /** Snapshot the tax on a line (qty x tax per unit, with the per-tax detail). Does not save. */
     public static function applyToLine(\App\Models\SalesOrderLine $l): void
     {
-        $pu = self::perUnit($l->product, $l->unit_price);
+        $so = $l->salesOrder; // #43: sales tax follows the order's customer and date
+        $pu = self::perUnit($l->product, $l->unit_price, $so?->customer, $so?->order_date);
         $l->tax_per_unit = $pu['total'];
         $l->tax_total = Money::mul($l->qty, $pu['total']);
         $l->tax_detail = $pu['items'];

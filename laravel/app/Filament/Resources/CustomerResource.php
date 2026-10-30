@@ -149,6 +149,8 @@ class CustomerResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            // #10: empty state with the next step
+            ->emptyStateHeading('No customers yet')->emptyStateDescription('Add a customer, or import your customer list under Settings > Imports (dry run first).')->emptyStateIcon('heroicon-o-user-group')
             ->columns([
                 Tables\Columns\TextColumn::make('code')->label('Account Number')
                     ->searchable()->sortable(),
@@ -175,6 +177,12 @@ class CustomerResource extends Resource
                     ->state(fn (Customer $r) => $r->beginning_balance)->numeric(2)
                     ->visible(fn () => CustomerBalanceService::canManage(auth()->user()))
                     ->toggleable(),
+                // #43: resale / exemption certificate status (valid, expiring within 30 days, expired, none)
+                Tables\Columns\TextColumn::make('tax_cert')->label('Tax certificate')->badge()
+                    ->state(fn (Customer $r) => ['valid' => 'Exempt', 'expiring' => 'Expiring', 'expired' => 'Expired', 'missing' => 'None'][\App\Tax\SalesTax::exemption($r)['status']])
+                    ->color(fn ($state) => ['Exempt' => 'success', 'Expiring' => 'warning', 'Expired' => 'danger'][$state] ?? 'gray')
+                    ->tooltip(fn (Customer $r) => \App\Tax\SalesTax::exemption($r)['message'])
+                    ->visibleFrom('lg')->toggleable(),
                 Tables\Columns\IconColumn::make('active')
                     ->boolean(),
                 Tables\Columns\TextColumn::make('created_at')
@@ -189,6 +197,20 @@ class CustomerResource extends Resource
             ->filters([
                 Tables\Filters\SelectFilter::make('type')->label('Customer type')->options(CustomerType::OPTIONS),
                 Tables\Filters\SelectFilter::make('customer_group_id')->label('Price group')->relationship('customerGroup', 'name'),
+                // #43: customers who would be charged sales tax (no current resale / exemption certificate), or whose certificate runs out within 30 days
+                Tables\Filters\SelectFilter::make('tax_cert')->label('Tax certificate')
+                    ->options(['none' => 'Charged sales tax (no certificate, not Wholesale)', 'expiring' => 'Expiring within 30 days'])
+                    ->query(function ($query, array $data) {
+                        $today = today()->toDateString();
+                        $valid = fn ($q) => $q->whereIn('type', \App\Tax\SalesTax::EXEMPT_TYPES)->where(fn ($w) => $w->whereNull('expires_at')->orWhereDate('expires_at', '>=', $today));
+                        return match ($data['value'] ?? null) {
+                            'none' => $query->whereDoesntHave('licenses', $valid)
+                                ->where(fn ($q) => $q->whereNull('customer_group_id')->orWhereNotIn('customer_group_id', \App\Models\CustomerGroup::where('code', \App\Models\CustomerGroup::WHOLESALE)->select('id'))),
+                            'expiring' => $query->whereHas('licenses', fn ($q) => $q->whereIn('type', \App\Tax\SalesTax::EXEMPT_TYPES)
+                                ->whereDate('expires_at', '>=', $today)->whereDate('expires_at', '<=', today()->addDays(30)->toDateString())),
+                            default => $query,
+                        };
+                    }),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
