@@ -54,7 +54,7 @@ class Phase2024LineUnitsTest extends TestCase
     public function test_model_sets_stock_qty_from_the_unit_and_drops_a_unit_from_another_product(): void
     {
         $c = Customer::where('code', 'CTEST-KY')->firstOrFail();
-        $so = SalesOrder::create(['customer_id' => $c->id, 'warehouse_id' => 1, 'order_date' => now()]);
+        $so = SalesOrder::create(['customer_id' => $c->id, 'warehouse_id' => \App\Models\Warehouse::where('code', 'MAIN')->value('id'), 'order_date' => now()]);
 
         $line = $so->lines()->create(['product_id' => $this->p->id, 'product_unit_id' => $this->ctn->id, 'unit_qty' => 3, 'qty' => 1, 'unit_price' => $this->p->price]);
         $this->assertEqualsWithDelta(30, (float) $line->fresh()->qty, 0.0001);   // browser said 1; server makes it 3 x 10
@@ -109,7 +109,7 @@ class Phase2024LineUnitsTest extends TestCase
         $undo = Repeater::fake();
         $v = Vendor::factory()->create();
         Livewire::test(CreatePurchaseOrder::class)
-            ->set('data.vendor_id', $v->id)->set('data.warehouse_id', 1)
+            ->set('data.vendor_id', $v->id)->set('data.warehouse_id', \App\Models\Warehouse::where('code', 'MAIN')->value('id'))
             ->set('data.lines', [['product_id' => null, 'qty' => 1, 'unit_cost' => null]])
             ->set('data.lines.0.product_id', $this->p->id)
             ->set('data.lines.0.product_unit_id', $this->cs->id)
@@ -126,7 +126,7 @@ class Phase2024LineUnitsTest extends TestCase
     public function test_invoice_shows_the_unit_the_line_was_ordered_in(): void
     {
         $c = Customer::where('code', 'CTEST-KY')->firstOrFail();
-        $so = SalesOrder::create(['customer_id' => $c->id, 'warehouse_id' => 1, 'order_date' => now()]);
+        $so = SalesOrder::create(['customer_id' => $c->id, 'warehouse_id' => \App\Models\Warehouse::where('code', 'MAIN')->value('id'), 'order_date' => now()]);
         $so->lines()->create(['product_id' => $this->p->id, 'product_unit_id' => $this->ctn->id, 'unit_qty' => 3, 'qty' => 30, 'unit_price' => $this->p->price]);
 
         $html = view('docs.invoice', ['so' => $so->fresh('lines.product', 'lines.unit'), 'company' => \App\Models\Company::current(), 'info' => config('erp.company'), 'screen' => true])->render();
