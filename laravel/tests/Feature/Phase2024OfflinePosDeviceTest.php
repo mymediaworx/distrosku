@@ -36,7 +36,7 @@ class Phase2024OfflinePosDeviceTest extends TestCase
         $this->assertStringContainsString('name="csrf-token"', $html);
         $this->assertStringContainsString('pos\\/offline\\/sync', $html);                         // same-origin paths
         $this->assertStringContainsString('pos\\/offline\\/catalog', $html);
-        $this->assertStringContainsString("indexedDB.open('distrosku-pos'", $html);
+        $this->assertStringContainsString("'distrosku-pos'", $html);
         $this->assertStringContainsString('/pos-sw.js', $html);
         $this->assertStringNotContainsString('data-tender="card"', $html);                 // card can't be taken offline
         foreach (['cash', 'check', 'account'] as $t) {
@@ -73,7 +73,8 @@ class Phase2024OfflinePosDeviceTest extends TestCase
     public function test_service_worker_only_caches_the_offline_page_navigation(): void
     {
         $sw = file_get_contents(public_path('pos-sw.js'));
-        $this->assertStringContainsString("const PAGE = '/pos/offline'", $sw);
+        $this->assertStringContainsString("'/pos/offline'", $sw);
+        $this->assertStringContainsString("'/driver/van/offline'", $sw);
         $this->assertStringContainsString("req.mode !== 'navigate'", $sw);                   // never caches data, Livewire or sync calls
         $this->assertStringContainsString("req.method !== 'GET'", $sw);
     }

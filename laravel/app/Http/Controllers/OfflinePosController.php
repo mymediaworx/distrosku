@@ -25,6 +25,27 @@ class OfflinePosController extends Controller
             'warehouseId' => $wh,
             'maxAgeHours' => OfflineSaleSync::MAX_CATALOG_AGE_HOURS,
             'tenders' => OfflineSaleSync::OFFLINE_TENDERS,
+            'mode' => 'pos', 'title' => 'Offline POS', 'backUrl' => route('pos'), 'backLabel' => 'Back to the regular POS',
+            'catalogUrl' => route('pos.offline.catalog', [], false), 'syncUrl' => route('pos.offline.sync', [], false), 'swScope' => '/pos',
+        ])->header('Cache-Control', 'no-cache');
+    }
+
+    /** #26: van sales with no signal (driver app). The van is the driver's van (or ?van= for admins / shared vans). */
+    public function vanPage(\Illuminate\Http\Request $request)
+    {
+        $u = $request->user();
+        $vans = Warehouse::where('is_van', true)->where('active', true)
+            ->when(! $u->isAdmin(), fn ($q) => $q->where(fn ($w) => $w->where('van_driver_id', $u->id)->orWhereNull('van_driver_id')));
+        $van = $request->integer('van') ? (clone $vans)->find($request->integer('van')) : null;
+        $van ??= (clone $vans)->orderByRaw('van_driver_id IS NULL')->orderBy('name')->first();
+        abort_unless($van, 404, 'No van is assigned to you.');
+
+        return response()->view('pos.offline', [
+            'warehouseId' => $van->id,
+            'maxAgeHours' => OfflineSaleSync::MAX_CATALOG_AGE_HOURS,
+            'tenders' => OfflineSaleSync::OFFLINE_TENDERS,
+            'mode' => 'van', 'title' => 'Offline van sale · '.$van->name, 'backUrl' => route('driver.van'), 'backLabel' => 'Back to van sales',
+            'catalogUrl' => route('driver.van.offline.catalog', [], false), 'syncUrl' => route('driver.van.offline.sync', [], false), 'swScope' => '/driver',
         ])->header('Cache-Control', 'no-cache');
     }
 

@@ -45,6 +45,9 @@ Route::middleware(['auth', BlockWhenSuspended::class])->prefix('driver')->name('
     Route::get('/', \App\Livewire\Driver\Today::class)->name('today');
     Route::get('/stop/{stop}', \App\Livewire\Driver\StopScreen::class)->name('stop');
     Route::get('/van', \App\Livewire\Driver\VanSale::class)->name('van');
+    Route::get('/van/offline', [\App\Http\Controllers\OfflinePosController::class, 'vanPage'])->name('van.offline'); // #26 van sales with no signal
+    Route::get('/van/offline/catalog', [\App\Http\Controllers\OfflinePosController::class, 'catalog'])->middleware('throttle:30,1')->name('van.offline.catalog');
+    Route::post('/van/offline/sync', [\App\Http\Controllers\OfflineSaleController::class, 'syncVan'])->middleware('throttle:60,1')->name('van.offline.sync');
     Route::get('/pickup/{so}', \App\Livewire\Driver\PickupSign::class)->name('pickup');
     Route::get('/stop/{stop}/photo', [\App\Http\Controllers\DeliveryDocsController::class, 'photo'])->name('photo');
 });
