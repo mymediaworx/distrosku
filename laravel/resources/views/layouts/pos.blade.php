@@ -33,6 +33,7 @@ button{background:#1e3a8a;color:#fff;border:0;font-weight:600;cursor:pointer}but
 .warn{color:#92400e;background:#fef3c7;padding:.35rem .5rem;border-radius:.4rem;margin:.3rem 0}
 .ovl{position:fixed;inset:0;background:rgba(15,23,42,.55);display:flex;align-items:flex-start;justify-content:center;padding:2vh 2vw;z-index:50;overflow:auto}
 .ovl-in{background:#fff;border-radius:.8rem;padding:1rem;width:100%;max-width:1100px}
+/* #44 till */.tillbar{margin:0 0 .3rem;font-size:.9rem}.tillbar a{color:#1e3a8a;font-weight:600;min-height:44px;display:inline-flex;align-items:center}.till{max-width:720px;margin:0 auto}.tbl{width:100%;border-collapse:collapse}.tbl td{padding:.45rem;border-bottom:1px solid #e5e7eb}.tbl .r{text-align:right}.tbl .tot td{border-top:2px solid #111}.denoms{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:.5rem}.denoms label{display:flex;gap:.4rem;align-items:center}.denoms input{min-height:44px}.muted{color:#64748b;font-size:.9rem}
 .chips{display:flex;flex-wrap:wrap;gap:.4rem;margin:.6rem 0}.chips button{width:auto;min-height:48px;padding:0 1rem;background:#e5e7eb;color:#111}.chips button.on{background:#1e3a8a;color:#fff}.chips.sm button{min-height:40px;font-size:.9rem}
 .tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:.6rem}
 .tile{display:flex;flex-direction:column;align-items:flex-start;gap:.2rem;min-height:130px;padding:.7rem;background:#f8fafc;color:#111;border:1px solid #cbd5e1;text-align:left}

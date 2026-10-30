@@ -404,7 +404,7 @@ class CounterPos extends Component
         $this->message = 'Sale held'.($h->label ? " as \"{$h->label}\"" : '').'. No stock is reserved. Recall it from "Recall".';
     }
 
-    private static function register(): string
+    public static function register(): string
     {
         return mb_substr((string) (session('pos_register') ?: request()->ip()), 0, 80);
     }
@@ -588,6 +588,7 @@ class CounterPos extends Component
                 'customer_id' => $this->customerId, 'warehouse_id' => $this->warehouseId,
                 'fulfillment' => $this->fulfillment, 'ship_to_id' => $this->shipToId, 'notes' => $this->notes,
                 'tender' => $this->tender, 'signature' => $this->sigInput(),
+                'till_session_id' => \App\Till\TillService::current(self::register())?->id, // #44
                 'lines' => array_map(fn ($l) => ['product_id' => $l['product_id'], 'qty' => $l['qty'], 'price' => $l['price'], 'lot_id' => \App\Warehouse\LotChoice::picked($l)], $this->cart),
             ]);
             $change = $this->changeDue;

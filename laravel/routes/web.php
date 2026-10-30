@@ -16,6 +16,8 @@ Route::redirect('/', '/admin');
 Route::middleware([\App\Http\Middleware\PosAccess::class])->group(function () {
     Route::get('/pos', CounterPos::class)->name('pos');
     Route::get('/pos/receipt/{so}', [\App\Http\Controllers\PosReceiptController::class, 'show'])->name('pos.receipt'); // #27
+    Route::get('/pos/till', \App\Livewire\PosTill::class)->name('pos.till'); // #44 cash drawer
+    Route::get('/pos/till/{till}/z', [\App\Http\Controllers\TillReportController::class, 'show'])->name('pos.till.z');
     Route::post('/pos/offline/sync', [\App\Http\Controllers\OfflineSaleController::class, 'sync'])->middleware('throttle:60,1')->name('pos.offline.sync'); // #26
 });
 Route::middleware(['throttle:60,1'])->get('/pos/lock', \App\Livewire\PosLock::class)->name('pos.lock');
