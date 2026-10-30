@@ -46,7 +46,7 @@ class BackupService
     /** @return array{file:string,path:string,sha256:string,size:int,created_at:string,trigger:string,tables:int,rows:int} */
     public function create(string $trigger = 'manual', ?string $by = null, bool $prune = true): array
     {
-        @set_time_limit(900);
+        \App\Support\TimeLimit::extend(900);
         $trigger = Str::slug($trigger) ?: 'manual';
         $stamp = now()->utc();
         $name = $this->instance().'-'.$stamp->format('Ymd-His').'-'.$trigger.'.zip';
@@ -172,7 +172,7 @@ class BackupService
      */
     public function restore(string $fileOrPath, bool $withEnv = false, bool $safety = true, ?string $by = null): array
     {
-        @set_time_limit(1800);
+        \App\Support\TimeLimit::extend(1800);
         $path = $this->resolve($fileOrPath);
         $m = $this->verify($path);
         $safetyFile = $safety ? $this->create('pre-restore', $by, false)['file'] : null;
