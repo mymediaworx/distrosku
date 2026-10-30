@@ -73,7 +73,7 @@ class Phase2024QuickToolsApprovalsTest extends TestCase
         $p = Product::where('name', 'Mystery Vape 5000')->firstOrFail();
         $this->assertSame([SkuApproval::PENDING, $this->clerk->id, 'general'], [$p->approval_status, $p->requested_by, $p->tax_class->value]);
 
-        $so = SalesOrder::create(['customer_id' => Customer::where('code', 'CTEST-KY')->value('id'), 'warehouse_id' => 1, 'order_date' => now()]);
+        $so = SalesOrder::create(['customer_id' => Customer::where('code', 'CTEST-KY')->value('id'), 'warehouse_id' => \App\Models\Warehouse::where('code', 'MAIN')->value('id'), 'order_date' => now()]);
         $this->expectException(ValidationException::class);
         $so->lines()->create(['product_id' => $p->id, 'qty' => 1, 'unit_price' => '19.99']);
     }
@@ -91,7 +91,7 @@ class Phase2024QuickToolsApprovalsTest extends TestCase
     public function test_count_is_named_by_the_pin_not_typed(): void
     {
         $this->unlocked()->set('tab', 'count')->set('cq', 'TST-GEN-001')->call('countSearch')
-            ->set('count_warehouse_id', 1)->set('count_qty', '4')->set('count_by', 'Somebody Else')->call('submitCount')->assertHasNoErrors();
+            ->set('count_warehouse_id', \App\Models\Warehouse::where('code', 'MAIN')->value('id'))->set('count_qty', '4')->set('count_by', 'Somebody Else')->call('submitCount')->assertHasNoErrors();
         $this->assertSame('Pat Clerk', \App\Models\QuickCount::latest('id')->value('counted_by'));
     }
 
@@ -109,7 +109,7 @@ class Phase2024QuickToolsApprovalsTest extends TestCase
         $this->assertSame(['vapor', '21.5000', $owner->id], [$p->tax_class->value, (string) $p->price, $p->approved_by]);
         $this->assertTrue((bool) $p->pact_covered);
 
-        $so = SalesOrder::create(['customer_id' => Customer::where('code', 'CTEST-KY')->value('id'), 'warehouse_id' => 1, 'order_date' => now()]);
+        $so = SalesOrder::create(['customer_id' => Customer::where('code', 'CTEST-KY')->value('id'), 'warehouse_id' => \App\Models\Warehouse::where('code', 'MAIN')->value('id'), 'order_date' => now()]);
         $this->assertNotNull($so->lines()->create(['product_id' => $p->id, 'qty' => 1, 'unit_price' => '21.50'])->id);
         $this->assertDatabaseHas('activity_logs', ['event' => 'sku_approved']);
     }
