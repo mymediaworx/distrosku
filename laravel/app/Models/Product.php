@@ -40,6 +40,7 @@ class Product extends Model
             'premium_cigar' => 'boolean',
             'ky_tax_paid_by_supplier' => 'boolean',
             'archived_at' => 'datetime',
+            'approved_at' => 'datetime',
             'hemp_cannabinoid' => 'boolean',
             'taxes' => 'array',
         ];
@@ -108,6 +109,11 @@ class Product extends Model
         return $this->archived_at !== null;
     }
 
+    public function requestedBy()
+    {
+        return $this->belongsTo(User::class, 'requested_by');
+    }
+
     public function archivedBy()
     {
         return $this->belongsTo(User::class, 'archived_by');
@@ -131,6 +137,21 @@ class Product extends Model
             || StockMovement::where('product_id', $this->id)->exists()
             || CreditMemoLine::where('product_id', $this->id)->exists()
             || Inventory::where('product_id', $this->id)->where(fn ($q) => $q->where('qty', '!=', 0)->orWhere('reserved', '!=', 0))->exists();
+    }
+
+    /** #45: a SKU from the Quick Tools page waiting for an owner/admin. It can't be sold until approved. */
+    public function isPendingApproval(): bool
+    {
+        return $this->approval_status === \App\Catalog\SkuApproval::PENDING;
+    }
+
+    /** #45: throws when a pending (not yet approved) SKU is put on a sale line. */
+    public static function assertSellable($productId, string $field = 'product_id'): void
+    {
+        $p = $productId ? static::find($productId) : null;
+        if ($p && $p->isPendingApproval()) {
+            throw ValidationException::withMessages([$field => "{$p->sku} is a new SKU waiting for manager approval and can't be sold yet."]);
+        }
     }
 
     /** Throws a validation error when an archived product is put on a new order line. */

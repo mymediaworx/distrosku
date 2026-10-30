@@ -67,11 +67,13 @@ class SalesOrderLine extends Model
     {
         static::creating(function (self $l) {
             Product::assertOrderable($l->product_id);
+            Product::assertSellable($l->product_id); // #45: pending quick-tools SKUs can't be sold
             self::assertWalkInAllowed($l);
         });
         static::updating(function (self $l) {
             if ($l->isDirty('product_id')) {
                 Product::assertOrderable($l->product_id);
+                Product::assertSellable($l->product_id);
                 self::assertWalkInAllowed($l);
             }
         });
