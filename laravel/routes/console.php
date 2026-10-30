@@ -36,6 +36,8 @@ if (is_file(base_path('.env')) || app()->configurationIsCached() || app()->runni
         $event->skip(fn () => \App\Dba\InstanceState::suspended());
     }
     Schedule::command('erp:backup --trigger=nightly')->dailyAt('01:30')->withoutOverlapping(); // 0.20.8 nightly backup + retention
+    // #22: the scheduler's heartbeat for /health (UptimeRobot alerts when cron stops). Runs even while suspended: cron is still alive.
+    Schedule::call(fn () => \App\Health\HealthCheck::beat())->everyMinute()->name('health-heartbeat');
 }
 
 Artisan::command('rules:sync', function () {
