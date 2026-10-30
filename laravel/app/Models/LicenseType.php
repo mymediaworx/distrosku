@@ -55,6 +55,7 @@ class LicenseType extends Model
             ['hemp', 'KY Hemp License', 'KY', 20],
             ['tobacco_wholesale', 'Tobacco Wholesale License', null, 30],
             ['resale', 'Resale Certificate', null, 40],
+            ['sales_tax_exempt', 'Sales Tax Exemption Certificate', null, 45], // #43
             ['kratom', 'Kratom License', null, 50],
         ];
         foreach ($defaults as [$code, $name, $state, $sort]) {

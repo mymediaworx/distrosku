@@ -70,6 +70,11 @@ class SalesOrderResource extends Resource
                     ->afterStateUpdated(function (Set $set, Get $get, $state) { // 0.19.6: ship-to only matters for delivery / ship
                         $set('ship_to_id', $state && $get('fulfillment') !== 'pickup' ? \App\Models\Customer::find($state)?->resolveShipToId() : null);
                     }),
+                // #43: shown only while sales tax is on
+                Forms\Components\Placeholder::make('sales_tax_status')->label('Sales tax')
+                    ->visible(fn (Get $get) => filled($get('customer_id')) && \App\Tax\SalesTax::enabled())
+                    ->content(fn (Get $get) => \App\Tax\SalesTax::exemption(Customer::find($get('customer_id')), $get('order_date'))['message'])
+                    ->extraAttributes(['data-test' => 'sales-tax-status']),
                 Forms\Components\Placeholder::make('available_credit')->label('Available credit')
                     ->visible(fn (Get $get) => filled($get('customer_id')))
                     ->content(fn (Get $get) => ($c = Customer::find($get('customer_id'))) ? CreditLimit::summary($c) : ''),
