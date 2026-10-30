@@ -261,14 +261,15 @@ class KyTobaccoXml
         if (! $state) {
             $state = match (true) {
                 $p->tax_class === TaxClass::SnuffChew && ($p->smokeless_type ?? 'snuff') === 'snuff' => 'KY-MS1',
-                $p->tax_class === TaxClass::SnuffChew => 'KY-LL'.match (KyExcise::chewBucket($p->net_weight_oz ?? 0)) {
+                // #64: loose leaf (KY-LL), plug (KY-PL) and twist (KY-TW) chew, each by KY unit size (per-unit rates, KRS 138.140)
+                $p->tax_class === TaxClass::SnuffChew => (['plug' => 'KY-PL', 'twist' => 'KY-TW'][$p->smokeless_type] ?? 'KY-LL').match (KyExcise::chewBucket($p->net_weight_oz ?? 0)) {
                     'single' => 1, 'half_pound' => 2, 'pound' => 3, default => 4
                 },
                 $p->tax_class === TaxClass::Cigar && $p->premium_cigar => 'KY-LCGR1',
                 $p->tax_class === TaxClass::Vapor => ($p->category && str_contains(strtolower($p->category), 'open')) ? 'KY-VAP2' : 'KY-VAP1',
                 default => 'KY-TP1',
             };
-            if ($p->tax_class === TaxClass::SnuffChew) {
+            if ($p->tax_class === TaxClass::SnuffChew && ! in_array($p->smokeless_type, ['chew', 'plug', 'twist'], true)) {
                 $this->warnings["sd{$p->id}"] = "{$p->sku}: StateDesc defaulted to {$state} (set 'KY state desc' on the product if dry snuff/snus/plug/twist).";
             }
         }

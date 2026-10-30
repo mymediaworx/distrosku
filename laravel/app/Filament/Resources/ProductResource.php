@@ -141,7 +141,7 @@ class ProductResource extends Resource
                     Forms\Components\Toggle::make('flavored')->label('Flavored'),
                     Forms\Components\Select::make('fda_status')->label('FDA marketing authorization (vapor)')->options(\App\Models\Product::FDA_STATUSES)->placeholder('Not set'),
                 ]),
-                Forms\Components\Select::make('smokeless_type')->options(['snuff' => 'Snuff (incl. snus)', 'chew' => 'Chewing tobacco'])->helperText('Snuff/chew only: sets the KY tax basis'),
+                Forms\Components\Select::make('smokeless_type')->options(['snuff' => 'Snuff (incl. snus)', 'chew' => 'Chewing tobacco (loose leaf)', 'plug' => 'Chewing tobacco (plug)', 'twist' => 'Chewing tobacco (twist)'])->helperText('Snuff/chew only: sets the KY tax basis'),
                 Forms\Components\TextInput::make('net_weight_oz')->label('Net weight per consumer unit (oz)')->numeric(),
                 Forms\Components\TextInput::make('units_per_case')->label('Consumer units per sold unit')->numeric()->default(1)->required(),
                 Forms\Components\TextInput::make('sticks_per_unit')->label('Cigarette sticks per sold unit')->numeric()->helperText('Carton = 200'),
