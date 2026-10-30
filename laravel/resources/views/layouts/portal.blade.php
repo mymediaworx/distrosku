@@ -9,29 +9,30 @@
 <meta name="referrer" content="same-origin">
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <title>{{ $title ?? 'Portal' }} · {{ $company->name ?? config('app.name') }}</title>
+@include('partials.tokens')
 <style>
-*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,sans-serif;background:#f4f5f7;color:#111}
-header{background:#1e3a8a;color:#fff;padding:.6rem 1rem;display:flex;gap:.6rem;align-items:center;flex-wrap:wrap}header img{height:36px;max-width:140px;object-fit:contain;background:#fff;border-radius:4px}
+*{box-sizing:border-box}body{margin:0;font-family:var(--font);background:#f4f5f7;color:#111}
+header{background:var(--brand);color:var(--on-brand);padding:.6rem 1rem;display:flex;gap:.6rem;align-items:center;flex-wrap:wrap}header img{height:36px;max-width:140px;object-fit:contain;background:#fff;border-radius:4px}
 header nav{margin-left:auto;display:flex;gap:.8rem;align-items:center}header a,header button.link{color:#fff;background:none;border:0;padding:0;font-size:.95rem;width:auto;text-decoration:underline;cursor:pointer}
 main{max-width:960px;margin:0 auto;padding:1rem}.card{background:#fff;border-radius:10px;padding:1rem;margin-bottom:1rem;box-shadow:0 1px 2px #0001}
 label{font-size:.8rem;font-weight:600;display:block;margin:.5rem 0 .2rem}
 input,select,button,textarea{font-size:1rem;padding:.65rem;border:1px solid #ccc;border-radius:8px;width:100%}
-button{background:#1e3a8a;color:#fff;border:0;font-weight:600;cursor:pointer}button.sec{background:#475569}button[disabled]{opacity:.45;cursor:not-allowed}
+button{background:var(--brand);color:var(--on-brand);border:0;font-weight:600;cursor:pointer}button.sec{background:#475569}button[disabled]{opacity:.45;cursor:not-allowed}
 .inline{display:flex;gap:.5rem}.inline>*{flex:1}.inline button{flex:0 0 auto;width:auto}
 .grid{display:grid;grid-template-columns:1fr;gap:.75rem}@media(min-width:640px){.grid{grid-template-columns:repeat(2,1fr)}}@media(min-width:900px){.grid{grid-template-columns:repeat(3,1fr)}}
 .cat{background:#fff;border-radius:10px;padding:.5rem .7rem;margin:.4rem 0;box-shadow:0 1px 2px #0001}.cat summary{cursor:pointer;padding:.4rem 0;font-size:1.05rem}
 .item{display:grid;grid-template-columns:64px 1fr;gap:.6rem;background:#fff;border-radius:10px;padding:.7rem;box-shadow:0 1px 2px #0001}
 .thumb{width:64px;height:64px;object-fit:contain;background:#f1f5f9;border-radius:6px}
-.price{font-weight:700}.ok{color:#047857}.err{color:#b91c1c;font-size:.9rem}.na{color:#b91c1c;font-size:.85rem}.muted{color:#64748b;font-size:.85rem}
+.price{font-weight:700}.ok{color:var(--ok)}.err{color:var(--danger);font-size:.9rem}.na{color:var(--danger);font-size:.85rem}.muted{color:#64748b;font-size:.85rem}
 table{width:100%;border-collapse:collapse}td,th{padding:.45rem .3rem;border-bottom:1px solid #eee;text-align:left;font-size:.92rem}td.r,th.r{text-align:right}
 .badge{display:inline-block;padding:.1rem .45rem;border-radius:999px;background:#e2e8f0;font-size:.75rem}
-.cartbar{position:sticky;bottom:0;bottom:env(safe-area-inset-bottom);z-index:20;background:#1e3a8a;color:#fff;padding:.7rem 1rem;border-radius:10px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 -4px 14px #0f172a26}
-.cartbar button{width:auto;background:#fff;color:#1e3a8a}
+.cartbar{position:sticky;bottom:0;bottom:env(safe-area-inset-bottom);z-index:20;background:var(--brand);color:var(--on-brand);padding:.7rem 1rem;border-radius:10px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 -4px 14px #0f172a26}
+.cartbar button{width:auto;background:#fff;color:var(--brand)}
 .tabs{display:flex;gap:.25rem;margin:.5rem 0;padding:.25rem;background:#e2e8f0;border-radius:10px}
-.tabs button{flex:1;background:transparent;color:#334155;min-height:44px}.tabs button.on{background:#fff;color:#1e3a8a;box-shadow:0 1px 3px #0f172a26}
+.tabs button{flex:1;background:transparent;color:#334155;min-height:44px}.tabs button.on{background:#fff;color:var(--brand);box-shadow:0 1px 3px #0f172a26}
 /* #37 camera scanning */
 [x-cloak]{display:none!important}
-.scanbtn{margin-top:.5rem;background:#047857;min-height:48px}
+.scanbtn{margin-top:.5rem;background:var(--ok);min-height:48px}
 .scanner{position:fixed;inset:0;z-index:60;background:#0f172a;color:#fff;display:flex;flex-direction:column;padding:.75rem;padding-bottom:calc(.75rem + env(safe-area-inset-bottom));overflow-y:auto}
 .scanner-top{display:flex;justify-content:space-between;align-items:center;gap:.5rem;margin-bottom:.5rem}
 .scan-done{width:auto;min-width:96px;min-height:44px;background:#fff;color:#0f172a}
