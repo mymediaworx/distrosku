@@ -18,6 +18,8 @@ Route::middleware([\App\Http\Middleware\PosAccess::class])->group(function () {
     Route::get('/pos', CounterPos::class)->name('pos');
     Route::get('/pos/receipt/{so}', [\App\Http\Controllers\PosReceiptController::class, 'show'])->name('pos.receipt'); // #27
     Route::post('/pos/offline/sync', [\App\Http\Controllers\OfflineSaleController::class, 'sync'])->middleware('throttle:60,1')->name('pos.offline.sync'); // #26
+    Route::get('/pos/offline', [\App\Http\Controllers\OfflinePosController::class, 'page'])->name('pos.offline'); // #26 device side
+    Route::get('/pos/offline/catalog', [\App\Http\Controllers\OfflinePosController::class, 'catalog'])->middleware('throttle:30,1')->name('pos.offline.catalog');
 });
 Route::middleware(['throttle:60,1'])->get('/pos/lock', \App\Livewire\PosLock::class)->name('pos.lock');
 Route::middleware(['auth', BlockWhenSuspended::class, 'can:use-pos'])->get('/pos/pin', \App\Livewire\PosPinSetup::class)->name('pos.pin');
