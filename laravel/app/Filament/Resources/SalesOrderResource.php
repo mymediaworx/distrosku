@@ -134,7 +134,7 @@ class SalesOrderResource extends Resource
                             $set('unit_qty', null);
                             self::fillQuote($get, $set);
                         })
-                        ->columnSpan(['default' => 3, 'lg' => 4])->extraAttributes(['data-test' => 'line-product']),
+                        ->columnSpan(['default' => 3, 'lg' => 6])->extraAttributes(['data-test' => 'line-product']), // 0.20.20 (#8): product keeps half the row; with units, the line total wraps under
                     // #25: order by case / carton; qty below stays the stock-unit quantity used for stock, price, excise and GL
                     ...\App\Filament\Forms\LineUnitFields::make(fn (Get $get, Set $set) => self::fillQuote($get, $set, true)),
                     Forms\Components\TextInput::make('qty')->numeric()->default(1)->required()->minValue(0.0001)->columnSpan(['default' => 1, 'lg' => 2])
