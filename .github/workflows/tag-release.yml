@@ -1,0 +1,38 @@
+# Lead-only: tag a release commit on main (e.g. v0.20.24). Run from Actions > Tag release > Run workflow.
+# Refuses to move or replace an existing tag, and only tags commits that are on main.
+name: Tag release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Tag name, e.g. v0.20.24'
+        required: true
+      sha:
+        description: 'Commit on main to tag (full or short SHA)'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  tag:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Create the tag
+        env:
+          VERSION: ${{ inputs.version }}
+          SHA: ${{ inputs.sha }}
+        run: |
+          [[ "$VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "::error::Version must look like v0.20.24"; exit 1; }
+          git rev-parse -q --verify "refs/tags/$VERSION" >/dev/null && { echo "::error::Tag $VERSION already exists (tags are never moved)"; exit 1; }
+          FULL=$(git rev-parse --verify "$SHA^{commit}") || { echo "::error::Unknown commit $SHA"; exit 1; }
+          git merge-base --is-ancestor "$FULL" origin/main || { echo "::error::$SHA is not on main"; exit 1; }
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "$VERSION" "$FULL" -m "Release $VERSION"
+          git push origin "refs/tags/$VERSION"
+          echo "::notice::Tagged $VERSION at $FULL"
