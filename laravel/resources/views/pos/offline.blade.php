@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
 <meta name="csrf-token" content="{{ csrf_token() }}">
-<title>Offline POS · {{ config('app.name') }}</title>
+<title>{{ $title }} · {{ config('app.name') }}</title>
 {{-- #26: works with no signal. Catalog and queued sales live in this browser (IndexedDB); sales sync to pos.offline.sync. --}}
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -35,9 +35,9 @@ button.sec{background:#e5e7eb;color:#111}button.ok{background:#047857}
 </head>
 <body>
 <header>
-    <strong>Offline POS</strong>
+    <strong>{{ $title }}</strong>
     <span class="status" id="status" data-test="status">Loading…</span>
-    <a href="{{ route('pos') }}" id="back">Back to the regular POS</a>
+    <a href="{{ $backUrl }}" id="back">{{ $backLabel }}</a>
 </header>
 <main>
     <section>
@@ -75,15 +75,16 @@ button.sec{background:#e5e7eb;color:#111}button.ok{background:#047857}
 </main>
 <script>
 (() => {
-    const CFG = { catalogUrl: @js(route('pos.offline.catalog', [], false)), syncUrl: @js(route('pos.offline.sync', [], false)), warehouseId: @js($warehouseId),
+    const CFG = { catalogUrl: @js($catalogUrl), syncUrl: @js($syncUrl), warehouseId: @js($warehouseId),
         maxAgeHours: @js($maxAgeHours), csrf: document.querySelector('meta[name=csrf-token]').content, batch: 25 };
     const $ = (id) => document.getElementById(id);
+    const MODE = @js($mode); // 'pos' or 'van': separate saved catalog + queue per mode on a shared device
     const S = { catalog: null, byCode: new Map(), cart: [], customer: null, tender: 'cash', queue: [] };
 
     // ---- storage (IndexedDB; the page still works for one sale at a time if the browser refuses it) ----
     const idb = new Promise((ok) => {
         try {
-            const r = indexedDB.open('distrosku-pos', 1);
+            const r = indexedDB.open(MODE === 'van' ? 'distrosku-van' : 'distrosku-pos', 1);
             r.onupgradeneeded = () => { r.result.createObjectStore('kv'); r.result.createObjectStore('queue', { keyPath: 'uuid' }); };
             r.onsuccess = () => ok(r.result); r.onerror = () => ok(null);
         } catch (e) { ok(null); }
@@ -236,7 +237,7 @@ button.sec{background:#e5e7eb;color:#111}button.ok{background:#047857}
     window.addEventListener('online', () => { status(); loadCatalog().then(sync); });
     window.addEventListener('offline', status);
 
-    if ('serviceWorker' in navigator) navigator.serviceWorker.register('/pos-sw.js', { scope: '/pos' }).catch(() => {});
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('/pos-sw.js', { scope: @js($swScope) }).catch(() => {});
     (async () => { S.queue = await qAll().catch(() => []); await loadCatalog(); sync(); })();
     window.__offlinePos = S; // for support / tests
 })();
