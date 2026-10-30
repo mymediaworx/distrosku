@@ -6,7 +6,7 @@
 <tr><td colspan="4">@if($so->isPickup())<strong>Counter pickup</strong> {{ $so->customer->name }}@else<strong>Ship to</strong> {{ $so->customer->name }} · {{ $so->shipTo?->name }} {{ $so->shipTo?->address }} {{ $so->shipTo?->city }} {{ $so->shipTo?->state }} {{ $so->shipTo?->zip }}@endif</td></tr></table>
 <h2>Summary</h2>
 <table><thead><tr><th>SKU</th><th>UPC</th><th>Item</th><th>Ordered</th><th>Shipped</th></tr></thead><tbody>
-@foreach($lines as $l)<tr><td>{{ $l->product->sku }}</td><td>{{ $l->product->upc }}</td><td>{{ $l->product->name }}</td><td>{{ (float) $l->qty }}</td><td>{{ (float) ($l->qty_packed > 0 ? $l->qty_packed : $l->qty_picked) }}</td></tr>@endforeach
+@foreach($lines as $l)<tr><td>{{ $l->product->sku }}</td><td>{{ $l->product->upc }}</td><td>{{ $l->product->name }}</td><td>{{ (float) $l->qty }} <small>({{ \App\Warehouse\Uom::describe($l->product, $l->qty) }})</small></td><td>{{ (float) ($l->qty_packed > 0 ? $l->qty_packed : $l->qty_picked) }}</td></tr>@endforeach
 </tbody></table>
 @foreach($packages as $p)
 <h2>Carton {{ $p->seq }} of {{ $packages->count() }} @if($p->weight_lb)· {{ $p->weight_lb }} lb @endif</h2>
