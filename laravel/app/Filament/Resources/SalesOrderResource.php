@@ -129,15 +129,22 @@ class SalesOrderResource extends Resource
                             return $opts;
                         }) // 0.20.17: same matching as the picker (name/SKU/barcode/vendor item #)
                         ->getOptionLabelUsing(fn ($value) => ($p = Product::find($value)) ? "{$p->sku} {$p->name}" : null)
-                        ->live()->afterStateUpdated(fn (Get $get, Set $set) => self::fillQuote($get, $set))
-                        ->columnSpan(['default' => 3, 'lg' => 6])->extraAttributes(['data-test' => 'line-product']),
+                        ->live()->afterStateUpdated(function (Get $get, Set $set) {
+                            $set('product_unit_id', null); // #25: a new product starts in its stock unit
+                            $set('unit_qty', null);
+                            self::fillQuote($get, $set);
+                        })
+                        ->columnSpan(['default' => 3, 'lg' => 6])->extraAttributes(['data-test' => 'line-product']), // 0.20.20 (#8): product keeps half the row; with units, the line total wraps under
+                    // #25: order by case / carton; qty below stays the stock-unit quantity used for stock, price, excise and GL
+                    ...\App\Filament\Forms\LineUnitFields::make(fn (Get $get, Set $set) => self::fillQuote($get, $set, true)),
                     Forms\Components\TextInput::make('qty')->numeric()->default(1)->required()->minValue(0.0001)->columnSpan(['default' => 1, 'lg' => 2])
                         ->formatStateUsing(fn ($state) => self::displayQty($state)) // 4.0000 -> 4 (stored precision unchanged)
+                        ->hidden(fn (Get $get) => filled($get('product_unit_id')))->dehydratedWhenHidden()
                         ->live(onBlur: true)->afterStateUpdated(fn (Get $get, Set $set) => self::fillQuote($get, $set, true)),
                     Forms\Components\TextInput::make('unit_price')->numeric()->required()->prefix('$')->columnSpan(['default' => 1, 'lg' => 2])
                         ->formatStateUsing(fn ($state) => self::displayPrice($state)) // 0.9900 -> 0.99, 0.6550 -> 0.655
                         ->live(onBlur: true)
-                        ->helperText(fn (Get $get, ?SalesOrderLine $record) => self::sourceHint($get, $record)),
+                        ->helperText(fn (Get $get, ?SalesOrderLine $record) => collect([\App\Filament\Forms\LineUnitFields::perUnitHint($get, 'unit_price'), self::sourceHint($get, $record)])->filter()->implode(' · ') ?: null),
                     Forms\Components\Placeholder::make('line_total_display')->label('Line total')->columnSpan(['default' => 1, 'lg' => 2])
                         ->content(fn (Get $get) => '$'.number_format((float) self::lineTotal($get('qty'), $get('unit_price')), 2)),
                 ])->defaultItems(1)->columnSpanFull(),

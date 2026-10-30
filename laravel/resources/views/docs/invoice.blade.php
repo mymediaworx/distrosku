@@ -11,7 +11,7 @@
     <tr><th>SKU</th><th>Description</th><th class="r">Qty</th><th class="r">Unit cost</th><th class="r">Tax / unit</th><th class="r">Line total</th></tr>
     @foreach($so->lines as $l)
         <tr><td>{{ $l->product?->sku }}</td><td>{{ $l->product?->name }}@if(! empty($l->tax_detail))<br><span style="font-size:0.85em;color:#555">@foreach($l->tax_detail as $d){{ $d['name'] }} {{ \App\Services\InvoiceTax::fmt($d['per_unit']) }}@if(! $loop->last) · @endif @endforeach</span>@endif</td>
-            <td class="r">{{ rtrim(rtrim(number_format((float) $l->qty, 4, '.', ''), '0'), '.') }}</td>
+            <td class="r">{{ rtrim(rtrim(number_format((float) $l->qty, 4, '.', ''), '0'), '.') }}@if($ul = $l->unitLabel())<br><span style="font-size:0.85em;color:#555" data-test="line-unit-label">{{ $ul }}</span>@endif</td>
             <td class="r">{{ number_format((float) $l->unit_price, 2) }}</td><td class="r">{{ \App\Services\InvoiceTax::fmt($l->tax_per_unit) }}</td>
             <td class="r">{{ number_format((float) \App\Services\InvoiceTax::lineWithTax($l), 2) }}</td></tr>
     @endforeach
