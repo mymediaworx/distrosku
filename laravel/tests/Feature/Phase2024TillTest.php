@@ -79,18 +79,18 @@ class Phase2024TillTest extends TestCase
     public function test_over_posts_the_other_way_and_balanced_posts_nothing(): void
     {
         $svc = app(TillService::class);
-        $t1 = $svc->open('reg-A', 1, '100', $this->cashier);
+        $t1 = $svc->open('reg-A', \App\Models\Warehouse::where('code', 'MAIN')->value('id'), '100', $this->cashier);
         $svc->close($t1, '101', $this->cashier);
         $this->assertEqualsWithDelta(-1.00, $this->gl('6550'), 0.001);        // over: Cr Over/Short
-        $t2 = $svc->open('reg-A', 1, '100', $this->cashier);
+        $t2 = $svc->open('reg-A', \App\Models\Warehouse::where('code', 'MAIN')->value('id'), '100', $this->cashier);
         $this->assertNull($svc->close($t2, '100', $this->cashier)->journal_id);
     }
 
     public function test_one_open_till_per_register_and_bad_input_is_refused(): void
     {
         $svc = app(TillService::class);
-        $t = $svc->open('reg-B', 1, '50', $this->cashier);
-        foreach ([fn () => $svc->open('reg-B', 1, '50', $this->cashier), fn () => $svc->move($t, 'paid_out', '0', 'x', $this->cashier),
+        $t = $svc->open('reg-B', \App\Models\Warehouse::where('code', 'MAIN')->value('id'), '50', $this->cashier);
+        foreach ([fn () => $svc->open('reg-B', \App\Models\Warehouse::where('code', 'MAIN')->value('id'), '50', $this->cashier), fn () => $svc->move($t, 'paid_out', '0', 'x', $this->cashier),
             fn () => $svc->move($t, 'paid_out', '5', ' ', $this->cashier), fn () => $svc->move($t, 'bribe', '5', 'x', $this->cashier)] as $bad) {
             try {
                 $bad();
