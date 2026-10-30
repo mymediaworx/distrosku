@@ -48,7 +48,7 @@ class Phase2024DesignTokensTest extends TestCase
         Company::current()->update(['brand_color' => '#fde68a']);                                 // light yellow -> dark text
         $this->assertStringContainsString('--on-brand:#111111', Tokens::css());
 
-        Company::current()->update(['brand_color' => 'red;}body{x']);                              // never injected
+        Company::current()->update(['brand_color' => 'red;}x{']);                               // never injected
         $this->assertStringContainsString('--brand:#1e3a8a', Tokens::css());
     }
 
