@@ -13,7 +13,7 @@
     </div>
     <div class="card"><form wire:submit="add" style="display:flex;gap:.5rem"><input wire:model="scan" placeholder="Scan or type UPC / SKU / name" autofocus><button style="width:auto">Add</button></form>
         <table class="tbl" style="margin-top:.5rem">
-            @foreach($cart as $i => $l)<tr><td>{{ $l['name'] }}<br><span class="muted">{{ $l['sku'] }} · ${{ number_format((float) $l['price'], 2) }} · van has {{ (float) ($stock[$l['product_id']] ?? 0) }}</span></td>
+            @foreach($cart as $i => $l)<tr><td>{{ $l['name'] }}<br><span class="muted">{{ $l['sku'] }} · ${{ number_format((float) $l['price'], 2) }} · van has {{ (float) ($stock[$l['product_id']] ?? 0) }}</span>@if(! empty($l['lots']))<br><label data-test="line-lot">Lot <select wire:model.change="cart.{{ $i }}.lot_id" aria-label="Lot for {{ $l['sku'] }}">@foreach($l['lots'] as $lid => $lbl)<option value="{{ $lid }}">{{ $lbl }}</option>@endforeach</select></label>@endif</td>
                 <td style="width:80px"><input inputmode="decimal" wire:model.blur="cart.{{ $i }}.qty"></td><td style="width:48px"><button class="bad" wire:click="remove({{ $i }})" aria-label="Remove">×</button></td></tr>@endforeach
         </table>
         <p style="text-align:right;font-size:1.4rem;font-weight:700" data-test="total">${{ number_format((float) $this->total, 2) }}</p>

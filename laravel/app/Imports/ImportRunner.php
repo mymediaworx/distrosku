@@ -47,7 +47,7 @@ class ImportRunner
         Storage::disk('local')->put($path, $file instanceof UploadedFile ? $file->get() : file_get_contents($file));
         $b = ImportBatch::create(['type' => $type, 'status' => 'uploaded', 'original_name' => mb_substr($name, 0, 190), 'file_path' => $path,
             'vendor_id' => $vendorId, 'effective_on' => $effectiveOn ?: null, 'user_id' => $by->id]);
-        @set_time_limit(300);
+        \App\Support\TimeLimit::extend(300);
         $headers = null;
         $buf = [];
         $n = 0;
@@ -173,7 +173,7 @@ class ImportRunner
         }
         try {
             $b->refresh();
-            @set_time_limit(120);
+            \App\Support\TimeLimit::extend(120);
 
             return $b->status === 'validating' ? $this->validateChunk($b) : ($b->status === 'committing' ? $this->commitChunk($b) : false);
         } catch (Throwable $e) {
