@@ -79,6 +79,32 @@ html{overflow-x:hidden}
 </header>
 <main>{{ $slot }}</main>
 @livewireScripts
+{{-- #26: keep the offline POS ready on this device (page copy via the service worker + a fresh catalog every 10 minutes) --}}
+@auth
+<div id="offline-banner" data-test="offline-banner" hidden style="position:fixed;left:0;right:0;bottom:0;z-index:50;background:#b45309;color:#fff;padding:.8rem 1rem;display:flex;justify-content:space-between;align-items:center;gap:.5rem">
+    <strong>No connection.</strong><a href="{{ route('pos.offline') }}" style="color:#fff;font-weight:700;min-height:44px;display:inline-flex;align-items:center">Switch to offline POS</a>
+</div>
+<script>
+(() => {
+    const banner = document.getElementById('offline-banner');
+    const show = () => { banner.hidden = navigator.onLine; };
+    window.addEventListener('online', show); window.addEventListener('offline', show); show();
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('/pos-sw.js', { scope: '/pos' }).catch(() => {});
+    const save = async () => {
+        if (!navigator.onLine || !window.indexedDB) return;
+        try {
+            const r = await fetch(@js(route('pos.offline.catalog', [], false)), { headers: { Accept: 'application/json' }, credentials: 'same-origin' });
+            if (!r.ok) return;
+            const cat = await r.json();
+            const open = indexedDB.open('distrosku-pos', 1);
+            open.onupgradeneeded = () => { open.result.createObjectStore('kv'); open.result.createObjectStore('queue', { keyPath: 'uuid' }); };
+            open.onsuccess = () => { try { open.result.transaction('kv', 'readwrite').objectStore('kv').put(cat, 'catalog'); } catch (e) {} };
+        } catch (e) {}
+    };
+    setTimeout(save, 5000); setInterval(save, 10 * 60 * 1000);
+})();
+</script>
+@endauth
 @include('partials.powered-by')
 </body>
 </html>
