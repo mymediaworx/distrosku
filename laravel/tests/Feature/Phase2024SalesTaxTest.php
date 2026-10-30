@@ -50,7 +50,7 @@ class Phase2024SalesTaxTest extends TestCase
 
     private function order(?Customer $c = null): SalesOrder
     {
-        $so = SalesOrder::create(['customer_id' => ($c ?? $this->c)->id, 'warehouse_id' => 1, 'order_date' => now()->toDateString(), 'fulfillment' => 'pickup']);
+        $so = SalesOrder::create(['customer_id' => ($c ?? $this->c)->id, 'warehouse_id' => \App\Models\Warehouse::where('code', 'MAIN')->value('id'), 'order_date' => now()->toDateString(), 'fulfillment' => 'pickup']);
         $so->lines()->create(['product_id' => $this->p->id, 'qty' => 3, 'unit_price' => '10']);
 
         return app(SalesOrderService::class)->recalc($so->fresh());
