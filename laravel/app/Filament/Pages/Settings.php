@@ -67,6 +67,7 @@ class Settings extends Page implements HasForms
             'reorder_cover_days' => Setting::get('reorder_cover_days', 14),
             'count_auto_approve_value' => Setting::get('count_auto_approve_value', 25), 'count_auto_approve_pct' => Setting::get('count_auto_approve_pct', 2),
             'pact_interstate_enabled' => (bool) Setting::get('pact_interstate_enabled'), 'msa_directory_strict' => (bool) Setting::get('msa_directory_strict'), 'coa_expiry_warn_days' => Setting::get('coa_expiry_warn_days', 30),
+            'stamping_enabled' => \App\Compliance\TaxStamps::enabled(), // #40
             'pos_hold_days' => Setting::get('pos_hold_days', 7), 'allow_negative_inventory_sales' => \App\Inventory\NegativeStock::allowed(),
             'cycle_plan_enabled' => \App\Warehouse\CycleCountPlanner::enabled(), 'cycle_plan_frequency' => \App\Warehouse\CycleCountPlanner::frequency(),
             'cycle_plan_weekday' => (string) \App\Warehouse\CycleCountPlanner::weekday(), 'cycle_plan_size' => \App\Warehouse\CycleCountPlanner::size(),
@@ -199,6 +200,10 @@ class Settings extends Page implements HasForms
                             ->helperText('Off = PACT items cannot ship outside the home state (previous behaviour).'),
                         Forms\Components\Toggle::make('msa_directory_strict')->label('Block cigarette / RYO sales into states with no directory list loaded'),
                         Forms\Components\TextInput::make('coa_expiry_warn_days')->label('COA: warn this many days before expiry')->integer()->minValue(0)->maxValue(365),
+                    ]),
+                    // #40: off by default (Vega buys stamped cigarettes); for distributors that are state stamping agents
+                    Forms\Components\Section::make('Cigarette tax stamping')->description('Only for distributors licensed to buy and affix state cigarette tax stamps. Turns on Compliance > Tax stamps (stamp purchases, affixing unstamped packs into stamped SKUs, reconciliation) and blocks shipping a stamped SKU into another state.')->schema([
+                        Forms\Components\Toggle::make('stamping_enabled')->label('This company stamps cigarettes'),
                     ]),
                     Forms\Components\Section::make('KY filer (EDI XML header)')->schema($filer)->columns(3),
                 ]),
