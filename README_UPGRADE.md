@@ -1,7 +1,29 @@
-# Vega ERP — Phase 20.23 UPGRADE (existing install at vegatest1.distrosku.com)
+# Vega ERP — Phase 20.24 UPGRADE (existing install at vegatest1.distrosku.com)
 
 For a site already installed from `vega-erp-phase1.zip` and upgraded through phase 3 (a phase-2 site can also take this zip: seeders are cumulative). TEST data only. No secrets in this package.
 This zip contains **no `laravel/.env` and no `laravel/storage/`**, so extracting it over the live site keeps both.
+
+## What's new in 0.20.24 (includes everything through 0.20.23)
+
+**Go-live batch from Michael's Oct 29–30 list. Nine additive, re-runnable migrations (`2026_12_02_000001` … `000009_phase2024_*`). No new PHP extensions, no `.env` change, no new Composer packages. No secrets are in this package. Everything that changes money or tax ships OFF and is turned on separately.**
+
+Turned on by this upgrade (no money change):
+- **Units of measure (#25):** sales orders and POs can be entered by case / carton / pack (*Unit* + qty). Stock, price, cost, excise and GL stay per stock unit; invoices show "3 CTN".
+- **Lot picker (#36):** POS and van sales ask which lot when a lot-tracked item has 2+ lots on hand (first-expiring is pre-picked).
+- **Offline sales (#26):** when the connection drops, the POS shows *Switch to offline POS* and the van screen *Switch to offline van sale*. Sales are saved on the device and sync when the connection is back (same rules; doubtful ones go to *Needs review*). Open `/pos` and `/driver/van` once online on each device after the upgrade so the offline copy is saved.
+- **Portal camera scanning (#37):** customers scan pack / carton / case barcodes with the phone camera to reorder.
+- **Quick tools (#45):** *Create SKU* and *Save count* need the employee's 4-digit PIN (same as the POS; set under Users). New SKUs wait on **Products > New SKUs to approve** (owner/admin picks the tax class) and can't be sold until approved. Duplicate UPCs are refused.
+- **Counter till (#44, approved by Michael 10/30):** *Till* link on the POS: open with a float, paid in / paid out / safe drop, close with a count, Z-report. New accounts **6500 Paid-outs** and **6550 Cash Over/Short**. Sales without an open till still work.
+- **Brand color + empty states (#10):** *Company Settings > Brand > Brand color* themes the POS, warehouse, driver, portal and quick-tools screens (blank = today's colors).
+- **QuickBooks export (#40):** *Accounting > QuickBooks export* (QBO CSV / Desktop IIF); optional *QuickBooks name* per account.
+- **KY filing (#64):** plug and twist chew get KY-PL / KY-TW codes (Products > Smokeless type).
+- **Price groups:** **Standard** and **Wholesale** are built in with fixed codes STANDARD / WHOLESALE (existing groups keep their customers).
+- **`/health` (#22):** for UptimeRobot: 200 `OK`, or 503 naming the failing check (database, scheduler, queue).
+
+Shipped OFF (turn on later, each with Michael's yes):
+- **Sales tax (#43):** *Company Settings > Sales tax*. When on: 6% on sales to customers **without** a current resale / exemption certificate; **Wholesale price group is never charged**; walk-in always charged; posts to 2200. Load certificates first (Customers > Licenses; the Customers filter *Charged sales tax* shows who has none).
+- **Cigarette stamping (#40):** *Company Settings > Compliance* (Vega doesn't stamp).
+- **AI agent, read-only (#35):** *Settings > AI agent*.
 
 ## What's new in 0.20.23 (includes everything through 0.20.22)
 

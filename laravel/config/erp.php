@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'version' => '0.20.23',
+    'version' => '0.20.24',
     // 0.20.22: POS Walk-in (CASH) button fixed (Livewire property/method name clash made the click a no-op in the browser); robust CASH lookup; visible selection; Products bulk Set tax class.
     // 0.20.21: walk-in / cash customers (CASH or flagged "Walk-in / cash") cannot buy regulated products (tobacco, vapor, CBD/hemp, kratom): POS, van, sales orders, portal, picker.
     // 0.20.20: customer search picker (no default customer), TV mode removed, wider order lines, Marketing label, taxes on invoices, product Duplicate, negative-inventory setting, Quick Tools counts.
