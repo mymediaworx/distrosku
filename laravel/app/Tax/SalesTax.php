@@ -15,6 +15,7 @@ use Carbon\CarbonInterface;
  * When on, every invoice line for a customer WITHOUT a valid certificate gets "<name> <rate>%" on top of the price
  * (and on top of the product's own pass-through taxes such as excise, which are part of the sale price), through the same
  * per-line tax mechanism as 0.20.20 product taxes, so it shows on the invoice and posts to 2200 Sales Tax Payable.
+ * Customers in the built-in Wholesale price group are exempt (Michael, 2026-10-30).
  * A certificate is a customer license of type "resale" (KY 51A105) or "sales_tax_exempt" (e.g. 51A126) for the state,
  * with a number or a document, not expired on the sale date. Walk-in / cash sales never have one.
  */
@@ -56,6 +57,10 @@ class SalesTax
         $date = Carbon::parse($date ?? today())->startOfDay();
         if (! $c || \App\Compliance\WalkInRule::isWalkIn($c)) {
             return ['exempt' => false, 'license' => null, 'status' => 'missing', 'message' => 'Walk-in / cash sale: sales tax applies.'];
+        }
+        // Michael 2026-10-30: customers in the built-in Wholesale price group are not charged sales tax.
+        if ($c->customerGroup?->isWholesale()) {
+            return ['exempt' => true, 'license' => null, 'status' => 'valid', 'message' => 'Exempt: Wholesale price group.'];
         }
         $certs = $c->licenses()->whereIn('type', self::EXEMPT_TYPES)
             ->where(fn ($q) => $q->whereNull('state')->orWhere('state', '')->orWhereRaw('UPPER(state) = ?', [self::state()]))

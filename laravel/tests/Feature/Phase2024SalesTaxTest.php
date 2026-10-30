@@ -108,6 +108,37 @@ class Phase2024SalesTaxTest extends TestCase
         $this->assertFalse(SalesTax::exemption($cash)['exempt']);
     }
 
+    public function test_wholesale_price_group_is_not_charged_and_standard_is(): void
+    {
+        $this->on();
+        $this->c->update(['customer_group_id' => \App\Models\CustomerGroup::system(\App\Models\CustomerGroup::WHOLESALE)->id]);
+        $ex = SalesTax::exemption($this->c->fresh());
+        $this->assertSame([true, 'Exempt: Wholesale price group.'], [$ex['exempt'], $ex['message']]);
+        $this->assertSame('0.0000', (string) $this->order()->tax_total);
+
+        $this->c->update(['customer_group_id' => \App\Models\CustomerGroup::system(\App\Models\CustomerGroup::STANDARD)->id]);
+        $this->assertSame('1.8000', (string) $this->order()->tax_total);              // Standard, no certificate: taxed
+    }
+
+    public function test_built_in_price_groups_have_fixed_codes(): void
+    {
+        $m = require database_path('migrations/2026_12_02_000008_phase2024_system_price_groups.php');
+        $m->up();
+        $m->up();
+        $this->assertSame(1, \App\Models\CustomerGroup::where('code', 'WHOLESALE')->count());
+        $this->assertSame(1, \App\Models\CustomerGroup::where('code', 'STANDARD')->count());
+        $w = \App\Models\CustomerGroup::system('WHOLESALE');
+        foreach ([fn () => $w->update(['code' => 'WS']), fn () => $w->delete()] as $bad) {
+            try {
+                $bad();
+                $this->fail('changed a built-in price group');
+            } catch (\App\Exceptions\WorkflowException) {
+            }
+        }
+        $this->assertTrue($w->fresh()->exists);
+        $w->update(['name' => 'Wholesale']);                                            // name edits are fine
+    }
+
     public function test_posted_invoice_is_not_changed_by_turning_tax_on_later(): void
     {
         $so = $this->order();
@@ -138,7 +169,9 @@ class Phase2024SalesTaxTest extends TestCase
     {
         $this->cert();
         $this->actingAs(User::factory()->create(['role' => 'admin']));
+        $ws = Customer::where('code', '!=', 'CTEST-KY')->where('code', '!=', 'CASH')->firstOrFail();
+        $ws->update(['customer_group_id' => \App\Models\CustomerGroup::system(\App\Models\CustomerGroup::WHOLESALE)->id]);
         Livewire::test(ListCustomers::class)->filterTable('tax_cert', 'none')
-            ->assertCanNotSeeTableRecords([$this->c])->assertCanSeeTableRecords([Customer::where('code', 'CASH')->first()]);
+            ->assertCanNotSeeTableRecords([$this->c, $ws])->assertCanSeeTableRecords([Customer::where('code', 'CASH')->first()]);
     }
 }

@@ -197,12 +197,13 @@ class CustomerResource extends Resource
                 Tables\Filters\SelectFilter::make('customer_group_id')->label('Price group')->relationship('customerGroup', 'name'),
                 // #43: customers who would be charged sales tax (no current resale / exemption certificate), or whose certificate runs out within 30 days
                 Tables\Filters\SelectFilter::make('tax_cert')->label('Tax certificate')
-                    ->options(['none' => 'No current certificate', 'expiring' => 'Expiring within 30 days'])
+                    ->options(['none' => 'Charged sales tax (no certificate, not Wholesale)', 'expiring' => 'Expiring within 30 days'])
                     ->query(function ($query, array $data) {
                         $today = today()->toDateString();
                         $valid = fn ($q) => $q->whereIn('type', \App\Tax\SalesTax::EXEMPT_TYPES)->where(fn ($w) => $w->whereNull('expires_at')->orWhereDate('expires_at', '>=', $today));
                         return match ($data['value'] ?? null) {
-                            'none' => $query->whereDoesntHave('licenses', $valid),
+                            'none' => $query->whereDoesntHave('licenses', $valid)
+                                ->where(fn ($q) => $q->whereNull('customer_group_id')->orWhereNotIn('customer_group_id', \App\Models\CustomerGroup::where('code', \App\Models\CustomerGroup::WHOLESALE)->select('id'))),
                             'expiring' => $query->whereHas('licenses', fn ($q) => $q->whereIn('type', \App\Tax\SalesTax::EXEMPT_TYPES)
                                 ->whereDate('expires_at', '>=', $today)->whereDate('expires_at', '<=', today()->addDays(30)->toDateString())),
                             default => $query,
