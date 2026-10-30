@@ -123,6 +123,9 @@ class ProductResource extends Resource
                 Forms\Components\TextInput::make('category'),
                 Forms\Components\Select::make('tax_class')->options(TaxClass::options())->required()->default('general')->live()
                     ->afterStateUpdated(fn ($state, Forms\Set $set) => in_array($state, Product::PACT_DEFAULT_CLASSES, true) ? $set('pact_covered', true) : null),
+                Forms\Components\TextInput::make('stamp_state')->label('Tax stamp state')->maxLength(2)->placeholder('Unstamped') // #40
+                    ->visible(fn () => \App\Compliance\TaxStamps::enabled())->dehydrateStateUsing(fn ($s) => filled($s) ? strtoupper(trim($s)) : null)
+                    ->helperText('The state whose tax stamp is on this SKU (stamped stock). Blank = unstamped.'),
                 Forms\Components\Toggle::make('pact_covered')->label('PACT covered')
                     ->helperText('Defaults on for cigarette, RYO, smokeless and vapor; you can turn it off.')
                     ->required(),
