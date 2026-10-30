@@ -58,7 +58,12 @@ jobs:
           php artisan key:generate
 
       - name: Run tests
-        run: vendor/bin/phpunit
+        run: vendor/bin/phpunit --log-junit junit.xml
+
+      # Failures as annotations: readable from the PR checks (and the API) without opening the full log.
+      - name: Report failing tests
+        if: failure()
+        run: php ../.github/junit-annotations.php junit.xml
 
   mariadb:
     name: PHPUnit (PHP 8.2, MariaDB 11.8)
@@ -119,4 +124,9 @@ jobs:
           php artisan key:generate
 
       - name: Run tests
-        run: vendor/bin/phpunit
+        run: vendor/bin/phpunit --log-junit junit.xml
+
+      # Failures as annotations: readable from the PR checks (and the API) without opening the full log.
+      - name: Report failing tests
+        if: failure()
+        run: php ../.github/junit-annotations.php junit.xml

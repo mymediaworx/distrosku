@@ -56,7 +56,7 @@ class Settings extends Page implements HasForms
     }
 
     public const COMPANY_FIELDS = ['company_name' => 'name', 'company_address_line1' => 'address_line1', 'company_address_line2' => 'address_line2',
-        'company_city' => 'city', 'company_state' => 'state', 'company_postal_code' => 'postal_code', 'company_phone' => 'phone', 'company_email' => 'email'];
+        'company_city' => 'city', 'company_state' => 'state', 'company_postal_code' => 'postal_code', 'company_phone' => 'phone', 'company_email' => 'email', 'company_brand_color' => 'brand_color'];
 
     public function mount(): void
     {
@@ -67,6 +67,7 @@ class Settings extends Page implements HasForms
             'reorder_cover_days' => Setting::get('reorder_cover_days', 14),
             'count_auto_approve_value' => Setting::get('count_auto_approve_value', 25), 'count_auto_approve_pct' => Setting::get('count_auto_approve_pct', 2),
             'pact_interstate_enabled' => (bool) Setting::get('pact_interstate_enabled'), 'msa_directory_strict' => (bool) Setting::get('msa_directory_strict'), 'coa_expiry_warn_days' => Setting::get('coa_expiry_warn_days', 30),
+            'stamping_enabled' => \App\Compliance\TaxStamps::enabled(), // #40
             'pos_hold_days' => Setting::get('pos_hold_days', 7), 'allow_negative_inventory_sales' => \App\Inventory\NegativeStock::allowed(),
             // #43: sales tax (off by default)
             'sales_tax_enabled' => \App\Tax\SalesTax::enabled(), 'sales_tax_rate' => \App\Tax\SalesTax::rate(), 'sales_tax_name' => \App\Tax\SalesTax::name(), 'sales_tax_state' => \App\Tax\SalesTax::state(),
@@ -114,9 +115,12 @@ class Settings extends Page implements HasForms
                         Forms\Components\TextInput::make('company_state')->label('State')->maxLength(8),
                         Forms\Components\TextInput::make('company_postal_code')->label('ZIP')->maxLength(16),
                     ])->columns(3),
-                    Forms\Components\Section::make('Brand')->description('Logo shown on documents and in the quick-tools pages.')->schema([
+                    Forms\Components\Section::make('Brand')->description('Logo shown on documents and in the quick-tools pages; brand color on the counter, warehouse, driver and portal screens.')->schema([
                         Forms\Components\FileUpload::make('logo_path')->label('Logo')->image()->disk('public')->directory('branding')
                             ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])->maxSize(ImageService::MAX_KB),
+                        // #10: one brand color for the POS, warehouse, driver, portal and quick-tools screens (blank = built-in colors)
+                        Forms\Components\ColorPicker::make('company_brand_color')->label('Brand color')
+                            ->regex('/^#[0-9a-fA-F]{6}$/')->helperText('Header and main buttons on the POS, warehouse, driver, portal and quick-tools screens. Leave blank for the built-in blue (green on driver screens). Text color is picked automatically for contrast.'),
                     ]),
                     Forms\Components\Section::make('Employee Quick Tools link (no login)')->description('Anyone with this link can create and look up SKUs and print labels. Regenerate it if it leaks.')->schema([
                         Forms\Components\Placeholder::make('quick_link')->label('Link')
@@ -207,6 +211,10 @@ class Settings extends Page implements HasForms
                             ->helperText('Off = PACT items cannot ship outside the home state (previous behaviour).'),
                         Forms\Components\Toggle::make('msa_directory_strict')->label('Block cigarette / RYO sales into states with no directory list loaded'),
                         Forms\Components\TextInput::make('coa_expiry_warn_days')->label('COA: warn this many days before expiry')->integer()->minValue(0)->maxValue(365),
+                    ]),
+                    // #40: off by default (Vega buys stamped cigarettes); for distributors that are state stamping agents
+                    Forms\Components\Section::make('Cigarette tax stamping')->description('Only for distributors licensed to buy and affix state cigarette tax stamps. Turns on Compliance > Tax stamps (stamp purchases, affixing unstamped packs into stamped SKUs, reconciliation) and blocks shipping a stamped SKU into another state.')->schema([
+                        Forms\Components\Toggle::make('stamping_enabled')->label('This company stamps cigarettes'),
                     ]),
                     Forms\Components\Section::make('KY filer (EDI XML header)')->schema($filer)->columns(3),
                 ]),

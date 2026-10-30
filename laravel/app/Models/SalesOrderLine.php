@@ -3,12 +3,13 @@
 namespace App\Models;
 
 use App\Pricing\PricingEngine;
+use App\Models\Concerns\HasLineUnit;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class SalesOrderLine extends Model
 {
-    use HasFactory;
+    use HasFactory, HasLineUnit;
 
     protected $guarded = ['id'];
 
@@ -21,6 +22,7 @@ class SalesOrderLine extends Model
     {
         return [
             'qty' => 'decimal:4',
+            'unit_qty' => 'decimal:4',
             'unit_price' => 'decimal:4',
             'unit_cost' => 'decimal:4',
             'line_total' => 'decimal:4',
@@ -63,15 +65,29 @@ class SalesOrderLine extends Model
         }
     }
 
+    /** #40: when stamping is on, a SKU carrying a state's tax stamp can't go to a customer in another state. */
+    private static function assertStampState(self $l): void
+    {
+        if (! \App\Compliance\TaxStamps::enabled()) {
+            return;
+        }
+        $so = $l->salesOrder;
+        $dest = $so?->fulfillment === SalesOrder::DELIVERY ? $so->shipTo?->state : (Company::current()->state ?? null);
+        \App\Compliance\TaxStamps::assertDestination(Product::find($l->product_id), $dest);
+    }
+
     protected static function booted(): void
     {
         static::creating(function (self $l) {
             Product::assertOrderable($l->product_id);
+            Product::assertSellable($l->product_id); // #45: pending quick-tools SKUs can't be sold
+            self::assertStampState($l); // #40: stamped stock stays in its stamp state
             self::assertWalkInAllowed($l);
         });
         static::updating(function (self $l) {
             if ($l->isDirty('product_id')) {
                 Product::assertOrderable($l->product_id);
+                Product::assertSellable($l->product_id);
                 self::assertWalkInAllowed($l);
             }
         });
