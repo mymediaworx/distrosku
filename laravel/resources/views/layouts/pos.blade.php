@@ -25,7 +25,7 @@ button{background:var(--brand);color:var(--on-brand);border:0;font-weight:600;cu
 .line{border-bottom:1px solid #eee;padding:.6rem 0;display:grid;grid-template-columns:1fr auto 110px 52px;gap:.5rem;align-items:center}
 .step{display:flex;align-items:center;gap:.25rem}.step button{width:52px;min-height:52px;font-size:1.5rem;padding:0}
 .step input{width:64px;text-align:center;padding:.3rem}.line .price{text-align:right}
-.x{background:var(--danger);min-height:52px;font-size:1.3rem;padding:0}.blk{grid-column:1/-1;color:var(--danger);font-size:.9rem}
+.x{background:var(--danger);min-height:52px;font-size:1.3rem;padding:0}.blk{grid-column:1/-1;color:var(--danger);font-size:.9rem}.lot{grid-column:1/-1;font-size:.9rem;display:flex;gap:.4rem;align-items:center}.lot select{min-height:44px;flex:1}
 .src{color:#555}.total{font-size:1.9rem;font-weight:700;text-align:right;margin:.5rem 0}.ok{color:var(--ok);font-weight:600}.err{color:var(--danger);font-weight:600}
 .keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem;margin:.5rem 0}.keypad button{min-height:64px;font-size:1.6rem;background:#e5e7eb;color:#111}
 .keypad button.alt{background:#cbd5e1}.tenders{display:grid;grid-template-columns:repeat(2,1fr);gap:.5rem}

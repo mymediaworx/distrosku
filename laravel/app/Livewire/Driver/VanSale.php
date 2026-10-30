@@ -109,7 +109,8 @@ class VanSale extends Component
                 return;
             }
         }
-        $this->cart[] = ['product_id' => $p->id, 'name' => $p->name, 'sku' => $p->sku, 'qty' => $hit['qty'], 'price' => '0'];
+        $this->cart[] = ['product_id' => $p->id, 'name' => $p->name, 'sku' => $p->sku, 'qty' => $hit['qty'], 'price' => '0']
+            + \App\Warehouse\LotChoice::forLine($p, $this->vanId); // #36: lot picker when 2+ lots are on the van
         $this->scan = '';
         $this->reprice();
     }
@@ -151,7 +152,7 @@ class VanSale extends Component
             $c = Customer::findOrFail($this->customerId);
             $delivery = $this->fulfillment === 'delivery';
             $st = $delivery && $this->shipToId ? ShipTo::where('customer_id', $c->id)->find($this->shipToId) : null;
-            $so = $svc->sell($van, $c, $st, array_map(fn ($l) => ['product_id' => $l['product_id'], 'qty' => $l['qty']], $this->cart), $this->tender, $this->sigInput(), $delivery ? 'delivery' : 'pickup');
+            $so = $svc->sell($van, $c, $st, array_map(fn ($l) => ['product_id' => $l['product_id'], 'qty' => $l['qty'], 'lot_id' => \App\Warehouse\LotChoice::picked($l)], $this->cart), $this->tender, $this->sigInput(), $delivery ? 'delivery' : 'pickup');
             $this->ok = "Sale {$so->number} invoiced: \$".number_format((float) $so->total, 2).($this->tender === 'account' ? ' charged to account.' : " paid by {$this->tender}.");
             $this->cart = [];
             $this->resetSignature();
