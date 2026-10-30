@@ -128,7 +128,7 @@ class Phase2024SalesTaxTest extends TestCase
         $this->assertSame(1, \App\Models\CustomerGroup::where('code', 'WHOLESALE')->count());
         $this->assertSame(1, \App\Models\CustomerGroup::where('code', 'STANDARD')->count());
         $w = \App\Models\CustomerGroup::system('WHOLESALE');
-        foreach ([fn () => $w->update(['code' => 'WS']), fn () => $w->delete()] as $bad) {
+        foreach ([fn () => $w->fresh()->update(['code' => 'WS']), fn () => $w->fresh()->delete()] as $bad) {
             try {
                 $bad();
                 $this->fail('changed a built-in price group');
